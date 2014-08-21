@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['this_20is_20a_20test',['This is a test',['../index.html',1,'']]],
   ['tic',['tic',['../structLinAlg_1_1Utilities_1_1Timer.html#a53016fb4ccce81285f1bbe83eb48e9de',1,'LinAlg::Utilities::Timer']]],
   ['timer',['Timer',['../structLinAlg_1_1Utilities_1_1Timer.html',1,'LinAlg::Utilities']]],
   ['timer',['Timer',['../structLinAlg_1_1Utilities_1_1Timer.html#ab3fb575ccba6fc1b3cedc052bee74777',1,'LinAlg::Utilities::Timer::Timer(bool us=false)'],['../structLinAlg_1_1Utilities_1_1Timer.html#ae90a044d6c255021b1ffcc8c558a4d62',1,'LinAlg::Utilities::Timer::Timer(const char *name_in, bool us=false)']]],
