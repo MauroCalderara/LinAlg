@@ -1,0 +1,4 @@
+<map id="LinAlg::MetaData::int2trans" name="LinAlg::MetaData::int2trans">
+<area shape="rect" id="node3" href="$structLinAlg_1_1MetaData.html#ab7a25f297f0e874c7bcb152f08220454" title="Apply meta data to a matrix. " alt="" coords="236,5,396,33"/>
+<area shape="rect" id="node5" href="$namespaceLinAlg_1_1MPI.html#ab961feef7f5a7ebf618dddf5da86ce56" title="Receive meta data about a matrix and save/apply it to the supplied matrix. " alt="" coords="445,5,621,33"/>
+</map>

@@ -1,0 +1,8 @@
+<map id="include/utilities/buffer.h" name="include/utilities/buffer.h">
+<area shape="rect" id="node3" href="$buffer_8cc.html" title="A memory buffer. " alt="" coords="5,83,144,111"/>
+<area shape="rect" id="node5" href="$utilities_8h.html" title="Inclusion of all utility function headers. " alt="" coords="168,83,331,111"/>
+<area shape="rect" id="node7" href="$abstract_8h.html" title="Convenience bindings like multiply(), inv() and solve() " alt="" coords="87,262,212,290"/>
+<area shape="rect" id="node9" href="$linalg_8h.html" title="Meta&#45;header including all other headers of the LinAlg library. " alt="" coords="196,347,303,375"/>
+<area shape="rect" id="node11" href="$send__recv__matrix_8h.html" title="Sending/receiving matrices using MPI. " alt="" coords="287,161,441,205"/>
+<area shape="rect" id="node13" href="$message__passing_8h.html" title="Inclusion of all MPI headers. " alt="" coords="288,254,435,298"/>
+</map>

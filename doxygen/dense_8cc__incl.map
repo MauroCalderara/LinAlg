@@ -1,0 +1,11 @@
+<map id="src/dense.cc" name="src/dense.cc">
+<area shape="rect" id="node3" href="$dense_8h.html" title="Dense matrix struct (Dense&lt;T&gt;) " alt="" coords="853,83,920,111"/>
+<area shape="rect" id="node15" href="$cuda__memory__allocation_8h.html" title="CUDA memory management (allocation and deletion) " alt="" coords="381,161,597,189"/>
+<area shape="rect" id="node25" href="$types_8h.html" title="Type definitions and preprocessor macros. " alt="" coords="729,331,793,359"/>
+<area shape="rect" id="node37" href="$exceptions_8h.html" title="Exceptions. " alt="" coords="47,331,143,359"/>
+<area shape="rect" id="node50" href="$matrix_8h.html" title="Matrix base class. " alt="" coords="1263,161,1332,189"/>
+<area shape="rect" id="node53" href="$utilities__forward_8h.html" title="Forward declaration of utility functions required in dense.h and sparse.h. " alt="" coords="853,238,960,282"/>
+<area shape="rect" id="node60" href="$blas__forward_8h.html" title="Forward declaration of BLAS functions required in dense.h and sparse.h. " alt="" coords="483,246,627,274"/>
+<area shape="rect" id="node29" href="$cuda__checks_8h.html" title="CUDA/CUBLAS/CUSPARSE error checking. " alt="" coords="299,246,408,274"/>
+<area shape="rect" id="node45" href="$stringformat_8h.html" title="Sprintf&#45;like functionality for std::string. " alt="" coords="157,409,304,437"/>
+</map>

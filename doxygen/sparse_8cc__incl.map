@@ -1,0 +1,10 @@
+<map id="src/sparse.cc" name="src/sparse.cc">
+<area shape="rect" id="node3" href="$sparse_8h.html" title="Sparse matrix struct (Sparse&lt;T&gt;) " alt="" coords="713,83,785,111"/>
+<area shape="rect" id="node13" href="$cuda__memory__allocation_8h.html" title="CUDA memory management (allocation and deletion) " alt="" coords="455,161,671,189"/>
+<area shape="rect" id="node22" href="$types_8h.html" title="Type definitions and preprocessor macros. " alt="" coords="688,331,752,359"/>
+<area shape="rect" id="node34" href="$exceptions_8h.html" title="Exceptions. " alt="" coords="269,331,365,359"/>
+<area shape="rect" id="node47" href="$matrix_8h.html" title="Matrix base class. " alt="" coords="1099,161,1168,189"/>
+<area shape="rect" id="node50" href="$utilities__forward_8h.html" title="Forward declaration of utility functions required in dense.h and sparse.h. " alt="" coords="787,238,893,282"/>
+<area shape="rect" id="node26" href="$cuda__checks_8h.html" title="CUDA/CUBLAS/CUSPARSE error checking. " alt="" coords="391,246,500,274"/>
+<area shape="rect" id="node42" href="$stringformat_8h.html" title="Sprintf&#45;like functionality for std::string. " alt="" coords="120,409,267,437"/>
+</map>

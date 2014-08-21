@@ -1,0 +1,25 @@
+<map id="include/utilities/utilities.h" name="include/utilities/utilities.h">
+<area shape="rect" id="node3" href="$buffer_8h.html" title="A memory buffer. " alt="" coords="241,238,308,266"/>
+<area shape="rect" id="node23" href="$stringformat_8h.html" title="Sprintf&#45;like functionality for std::string. " alt="" coords="2552,547,2699,575"/>
+<area shape="rect" id="node59" href="$checks_8h.html" title="Argument checking. " alt="" coords="1799,393,1873,421"/>
+<area shape="rect" id="node63" href="$copy__array_8h.html" title="General 1D and 2D array copy. " alt="" coords="1563,83,1659,111"/>
+<area shape="rect" id="node112" href="$CSR_8h.html" title="Reading/writing CSR files. " alt="" coords="2583,161,2641,189"/>
+<area shape="rect" id="node128" href="$misc_8h.html" title="Routines that don&#39;t fit elsewhere. " alt="" coords="3224,238,3331,266"/>
+<area shape="rect" id="node146" href="$IJV_8h.html" title="Reading/writing IJV files. " alt="" coords="2941,238,3040,266"/>
+<area shape="rect" id="node158" href="$format__convert_8h.html" title="Conversion of storage formats. " alt="" coords="2113,238,2233,266"/>
+<area shape="rect" id="node166" href="$memory__allocation_8h.html" title="Memory allocation using smart pointers. " alt="" coords="217,315,359,343"/>
+<area shape="rect" id="node174" href="$timer_8h.html" title="A timer class. " alt="" coords="2767,83,2828,111"/>
+<area shape="rect" id="node11" href="$types_8h.html" title="Type definitions and preprocessor macros. " alt="" coords="1840,470,1904,498"/>
+<area shape="rect" id="node15" href="$exceptions_8h.html" title="Exceptions. " alt="" coords="1964,470,2060,498"/>
+<area shape="rect" id="node28" href="$streams_8h.html" title="Streams (handling of concurrent execution) " alt="" coords="760,315,840,343"/>
+<area shape="rect" id="node36" href="$cuda__checks_8h.html" title="CUDA/CUBLAS/CUSPARSE error checking. " alt="" coords="303,393,452,421"/>
+<area shape="rect" id="node71" href="$blas_8h.html" title="Inclusion of all BLAS headers. " alt="" coords="1564,161,1657,189"/>
+<area shape="rect" id="node73" href="$copy_8h.html" title="xCOPY (BLAS&#45;1) " alt="" coords="1791,315,1852,343"/>
+<area shape="rect" id="node88" href="$geam_8h.html" title="xGEAM (CUBLAS BLAS&#45;like) " alt="" coords="1527,238,1591,266"/>
+<area shape="rect" id="node97" href="$gemm_8h.html" title="xGEMM (BLAS&#45;3) " alt="" coords="1596,315,1665,343"/>
+<area shape="rect" id="node105" href="$omatcopy_8h.html" title="xomatcopy (MKL BLAS&#45;like) " alt="" coords="1412,238,1503,266"/>
+<area shape="rect" id="node107" href="$trsm_8h.html" title="xTRSM (BLAS&#45;3) " alt="" coords="1311,393,1369,421"/>
+<area shape="rect" id="node77" href="$dense_8h.html" title="Dense matrix struct (Dense&lt;T&gt;) " alt="" coords="2100,393,2167,421"/>
+<area shape="rect" id="node134" href="$sparse_8h.html" title="Sparse matrix struct (Sparse&lt;T&gt;) " alt="" coords="2241,393,2313,421"/>
+<area shape="rect" id="node142" href="$fills_8h.html" title="Matrix fills. " alt="" coords="2281,315,2335,343"/>
+</map>

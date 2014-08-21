@@ -1,0 +1,11 @@
+<map id="LinAlg::MPI::receive_meta" name="LinAlg::MPI::receive_meta">
+<area shape="rect" id="node3" href="$namespaceLinAlg_1_1MPI.html#a6230b1503d13359e0a24ccce1e44eef5" title="Receive meta data. " alt="" coords="229,106,405,134"/>
+<area shape="rect" id="node13" href="$structLinAlg_1_1MetaData.html#ab7a25f297f0e874c7bcb152f08220454" title="Apply meta data to a matrix. " alt="" coords="237,223,397,251"/>
+<area shape="rect" id="node5" href="$namespaceLinAlg_1_1MPI.html#a07b302b4ac026bccbbc19dec6647e059" title="Wrapper for MPI_Recv. " alt="" coords="469,5,619,33"/>
+<area shape="rect" id="node7" href="$structLinAlg_1_1MetaData.html#accf73dbe6a2cf81aea0bd34485b955f3" title="Return a pointer to the array that contains the meta data. " alt="" coords="467,55,621,83"/>
+<area shape="rect" id="node9" href="$structLinAlg_1_1MetaData.html#a307dcb3f9c47d5b44c4ed0ca7d60ced1" title="Return the size of the meta data array. " alt="" coords="467,106,621,134"/>
+<area shape="rect" id="node11" href="$namespaceLinAlg_1_1MPI.html#a0343c7e4fe81d438d13a6f438e118576" title="Routine to construct an MPI_Status. " alt="" coords="468,157,620,201"/>
+<area shape="rect" id="node15" href="$structLinAlg_1_1MetaData.html#a87beebe4ceb284e136c8158ccb175ef8" title="Convert I_t to transposition status. " alt="" coords="455,223,633,251"/>
+<area shape="rect" id="node17" href="$structLinAlg_1_1Dense.html#a68dae69fd073d1edd0cd63f7f8ca55e2" title="Allocates new empty memory for an already constructed matrix. " alt="" coords="461,274,627,302"/>
+<area shape="rect" id="node19" href="$namespaceLinAlg_1_1CUDA.html#ac9c9086a371c084fb70e3e2795e8b5f9" title="Allocate memory on the GPGPU. " alt="" coords="683,266,821,310"/>
+</map>

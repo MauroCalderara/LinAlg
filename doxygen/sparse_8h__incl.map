@@ -1,0 +1,9 @@
+<map id="include/sparse.h" name="include/sparse.h">
+<area shape="rect" id="node11" href="$cuda__memory__allocation_8h.html" title="CUDA memory management (allocation and deletion) " alt="" coords="455,83,671,111"/>
+<area shape="rect" id="node20" href="$types_8h.html" title="Type definitions and preprocessor macros. " alt="" coords="688,254,752,282"/>
+<area shape="rect" id="node32" href="$exceptions_8h.html" title="Exceptions. " alt="" coords="269,254,365,282"/>
+<area shape="rect" id="node45" href="$matrix_8h.html" title="Matrix base class. " alt="" coords="1099,83,1168,111"/>
+<area shape="rect" id="node48" href="$utilities__forward_8h.html" title="Forward declaration of utility functions required in dense.h and sparse.h. " alt="" coords="787,161,893,205"/>
+<area shape="rect" id="node24" href="$cuda__checks_8h.html" title="CUDA/CUBLAS/CUSPARSE error checking. " alt="" coords="391,169,500,197"/>
+<area shape="rect" id="node40" href="$stringformat_8h.html" title="Sprintf&#45;like functionality for std::string. " alt="" coords="120,331,267,359"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="LinAlg::MPI::receive_meta" name="LinAlg::MPI::receive_meta">
+<area shape="rect" id="node3" href="$namespaceLinAlg_1_1MPI.html#ab961feef7f5a7ebf618dddf5da86ce56" title="Receive meta data about a matrix and save/apply it to the supplied matrix. " alt="" coords="229,5,405,33"/>
+<area shape="rect" id="node5" href="$namespaceLinAlg_1_1MPI.html#aba121d646b5c97b25b86b87ade29b9a2" title="Receive meta data asynchronously. " alt="" coords="248,55,387,99"/>
+<area shape="rect" id="node7" href="$namespaceLinAlg_1_1MPI.html#aaea96aacaaf503c6caed573629871fa4" title="LinAlg::MPI::receive\l_meta_async" alt="" coords="455,55,593,99"/>
+</map>

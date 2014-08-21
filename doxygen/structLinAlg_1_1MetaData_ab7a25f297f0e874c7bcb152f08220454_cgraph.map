@@ -1,0 +1,5 @@
+<map id="LinAlg::MetaData::apply" name="LinAlg::MetaData::apply">
+<area shape="rect" id="node3" href="$structLinAlg_1_1MetaData.html#a87beebe4ceb284e136c8158ccb175ef8" title="Convert I_t to transposition status. " alt="" coords="217,5,396,33"/>
+<area shape="rect" id="node5" href="$structLinAlg_1_1Dense.html#a68dae69fd073d1edd0cd63f7f8ca55e2" title="Allocates new empty memory for an already constructed matrix. " alt="" coords="224,55,389,83"/>
+<area shape="rect" id="node7" href="$namespaceLinAlg_1_1CUDA.html#ac9c9086a371c084fb70e3e2795e8b5f9" title="Allocate memory on the GPGPU. " alt="" coords="445,47,584,91"/>
+</map>

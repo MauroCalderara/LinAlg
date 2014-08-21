@@ -1,0 +1,4 @@
+<map id="LinAlg::Utilities::sparse2dense" name="LinAlg::Utilities::sparse2dense">
+<area shape="rect" id="node3" href="$structLinAlg_1_1Dense.html#a68dae69fd073d1edd0cd63f7f8ca55e2" title="Allocates new empty memory for an already constructed matrix. " alt="" coords="172,13,337,41"/>
+<area shape="rect" id="node5" href="$namespaceLinAlg_1_1CUDA.html#ac9c9086a371c084fb70e3e2795e8b5f9" title="Allocate memory on the GPGPU. " alt="" coords="387,5,525,49"/>
+</map>

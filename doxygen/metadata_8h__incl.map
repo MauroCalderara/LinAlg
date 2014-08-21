@@ -1,0 +1,11 @@
+<map id="include/metadata.h" name="include/metadata.h">
+<area shape="rect" id="node5" href="$types_8h.html" title="Type definitions and preprocessor macros. " alt="" coords="199,331,263,359"/>
+<area shape="rect" id="node9" href="$dense_8h.html" title="Dense matrix struct (Dense&lt;T&gt;) " alt="" coords="555,83,621,111"/>
+<area shape="rect" id="node21" href="$cuda__memory__allocation_8h.html" title="CUDA memory management (allocation and deletion) " alt="" coords="843,161,1059,189"/>
+<area shape="rect" id="node39" href="$exceptions_8h.html" title="Exceptions. " alt="" coords="477,331,573,359"/>
+<area shape="rect" id="node52" href="$matrix_8h.html" title="Matrix base class. " alt="" coords="699,161,768,189"/>
+<area shape="rect" id="node55" href="$utilities__forward_8h.html" title="Forward declaration of utility functions required in dense.h and sparse.h. " alt="" coords="36,238,143,282"/>
+<area shape="rect" id="node62" href="$blas__forward_8h.html" title="Forward declaration of BLAS functions required in dense.h and sparse.h. " alt="" coords="425,246,569,274"/>
+<area shape="rect" id="node31" href="$cuda__checks_8h.html" title="CUDA/CUBLAS/CUSPARSE error checking. " alt="" coords="644,246,753,274"/>
+<area shape="rect" id="node47" href="$stringformat_8h.html" title="Sprintf&#45;like functionality for std::string. " alt="" coords="325,409,472,437"/>
+</map>

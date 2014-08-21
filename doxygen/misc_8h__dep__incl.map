@@ -1,0 +1,9 @@
+<map id="include/utilities/misc.h" name="include/utilities/misc.h">
+<area shape="rect" id="node3" href="$CSR_8h.html" title="Reading/writing CSR files. " alt="" coords="57,83,207,111"/>
+<area shape="rect" id="node7" href="$utilities_8h.html" title="Inclusion of all utility function headers. " alt="" coords="163,161,325,189"/>
+<area shape="rect" id="node5" href="$CSR_8cc.html" title="Reading/writing CSR files. " alt="" coords="5,161,139,189"/>
+<area shape="rect" id="node9" href="$abstract_8h.html" title="Convenience bindings like multiply(), inv() and solve() " alt="" coords="81,339,207,367"/>
+<area shape="rect" id="node11" href="$linalg_8h.html" title="Meta&#45;header including all other headers of the LinAlg library. " alt="" coords="191,425,297,453"/>
+<area shape="rect" id="node13" href="$send__recv__matrix_8h.html" title="Sending/receiving matrices using MPI. " alt="" coords="281,238,436,282"/>
+<area shape="rect" id="node15" href="$message__passing_8h.html" title="Inclusion of all MPI headers. " alt="" coords="284,331,431,375"/>
+</map>

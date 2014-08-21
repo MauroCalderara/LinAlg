@@ -1,0 +1,10 @@
+<map id="LinAlg::LAPACK::xGETRI" name="LinAlg::LAPACK::xGETRI">
+<area shape="rect" id="node3" href="$namespaceLinAlg_1_1LAPACK.html#a1c92a85bd049f3d91e8b9e0a5730de64" title="Compute the inverse using the LU decomposition of a matrix in&#45;place or out&#45;of&#45;place. " alt="" coords="227,143,400,171"/>
+<area shape="rect" id="node5" href="$structLinAlg_1_1Dense.html#aed23f54ed89f429f1de7010aa5599cd5" title="Return the number of rows in the matrix. " alt="" coords="473,5,612,33"/>
+<area shape="rect" id="node7" href="$structLinAlg_1_1Dense.html#af086cb2b605ab13b58f6a573d8ee79d0" title="Return the number of columns in the matrix. " alt="" coords="476,55,609,83"/>
+<area shape="rect" id="node9" href="$namespaceLinAlg_1_1LAPACK_1_1FORTRAN.html#aae7e79f920fc5291cecd26de0dc51cc5" title="ILAENV. " alt="" coords="449,106,636,150"/>
+<area shape="rect" id="node11" href="$structLinAlg_1_1Dense.html#a68dae69fd073d1edd0cd63f7f8ca55e2" title="Allocates new empty memory for an already constructed matrix. " alt="" coords="460,173,625,201"/>
+<area shape="rect" id="node15" href="$namespaceLinAlg_1_1LAPACK_1_1FORTRAN.html#a7e6917b661b5a479d729a94e59a1c228" title="GETRI. " alt="" coords="449,223,636,267"/>
+<area shape="rect" id="node17" href="$namespaceLinAlg_1_1LAPACK_1_1CUBLAS.html#a93db30dfd392733d85ca04d29c9ce4e5" title="Invert a matrix in LU decomposed format. " alt="" coords="453,290,632,334"/>
+<area shape="rect" id="node13" href="$namespaceLinAlg_1_1CUDA.html#ac9c9086a371c084fb70e3e2795e8b5f9" title="Allocate memory on the GPGPU. " alt="" coords="685,165,824,209"/>
+</map>

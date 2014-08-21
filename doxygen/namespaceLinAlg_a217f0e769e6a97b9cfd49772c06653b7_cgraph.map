@@ -1,0 +1,14 @@
+<map id="LinAlg::invert" name="LinAlg::invert">
+<area shape="rect" id="node3" href="$namespaceLinAlg.html#a34df5b89f8d79f9310980800baf86f53" title="Invert a matrix in&#45;place or out&#45;of&#45;place. " alt="" coords="152,251,251,279"/>
+<area shape="rect" id="node5" href="$namespaceLinAlg_1_1LAPACK.html#a1a14c7f1e5076a2a87c94465a911e1cb" title="Compute the LU decomposition of a matrix. " alt="" coords="300,306,476,334"/>
+<area shape="rect" id="node15" href="$namespaceLinAlg_1_1LAPACK.html#a1c92a85bd049f3d91e8b9e0a5730de64" title="Compute the inverse using the LU decomposition of a matrix in&#45;place or out&#45;of&#45;place. " alt="" coords="301,197,475,225"/>
+<area shape="rect" id="node7" href="$structLinAlg_1_1Dense.html#aed23f54ed89f429f1de7010aa5599cd5" title="Return the number of rows in the matrix. " alt="" coords="551,255,689,283"/>
+<area shape="rect" id="node9" href="$structLinAlg_1_1Dense.html#af086cb2b605ab13b58f6a573d8ee79d0" title="Return the number of columns in the matrix. " alt="" coords="553,306,687,334"/>
+<area shape="rect" id="node11" href="$namespaceLinAlg_1_1LAPACK_1_1FORTRAN.html#a471cc46bf74dc7cd096ee865c6d5d92b" title="Compute LU factorization. " alt="" coords="527,357,713,401"/>
+<area shape="rect" id="node13" href="$namespaceLinAlg_1_1LAPACK_1_1CUBLAS.html#a9e4e8ad961587954311a295240ac791b" title="Compute LU factorization. " alt="" coords="531,423,709,467"/>
+<area shape="rect" id="node19" href="$namespaceLinAlg_1_1LAPACK_1_1FORTRAN.html#aae7e79f920fc5291cecd26de0dc51cc5" title="ILAENV. " alt="" coords="527,5,713,49"/>
+<area shape="rect" id="node21" href="$structLinAlg_1_1Dense.html#a68dae69fd073d1edd0cd63f7f8ca55e2" title="Allocates new empty memory for an already constructed matrix. " alt="" coords="537,71,703,99"/>
+<area shape="rect" id="node25" href="$namespaceLinAlg_1_1LAPACK_1_1FORTRAN.html#a7e6917b661b5a479d729a94e59a1c228" title="GETRI. " alt="" coords="527,122,713,166"/>
+<area shape="rect" id="node27" href="$namespaceLinAlg_1_1LAPACK_1_1CUBLAS.html#a93db30dfd392733d85ca04d29c9ce4e5" title="Invert a matrix in LU decomposed format. " alt="" coords="531,189,709,233"/>
+<area shape="rect" id="node23" href="$namespaceLinAlg_1_1CUDA.html#ac9c9086a371c084fb70e3e2795e8b5f9" title="Allocate memory on the GPGPU. " alt="" coords="763,63,901,107"/>
+</map>

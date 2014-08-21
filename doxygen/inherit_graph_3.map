@@ -1,0 +1,6 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$structLinAlg_1_1StreamBase.html" title="StreamBase. " alt="" coords="5,55,144,83"/>
+<area shape="rect" id="node3" href="$structLinAlg_1_1CUDAStream.html" title="Class to encapsulate a CUDA stream. " alt="" coords="192,5,336,33"/>
+<area shape="rect" id="node5" href="$structLinAlg_1_1MPIStream.html" title="MPIStream. " alt="" coords="199,55,329,83"/>
+<area shape="rect" id="node7" href="$structLinAlg_1_1Stream.html" title="LinAlg::Stream" alt="" coords="211,106,317,134"/>
+</map>

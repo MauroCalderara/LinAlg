@@ -1,0 +1,9 @@
+<map id="LinAlg::MPI::mpi_send" name="LinAlg::MPI::mpi_send">
+<area shape="rect" id="node3" href="$namespaceLinAlg_1_1MPI.html#a5ab79d223436bea3f09ee8f4aec494bb" title="Send a matrix to a remote host synchronously. " alt="" coords="209,17,377,45"/>
+<area shape="rect" id="node9" href="$namespaceLinAlg_1_1MPI.html#a6da2ed136736dd0fe57421c80df89eed" title="Send meta data. " alt="" coords="212,71,375,99"/>
+<area shape="rect" id="node5" href="$namespaceLinAlg_1_1MPI.html#a18d5f3ef6939776003635a486af7b27a" title="Send a matrix asynchronously. " alt="" coords="428,5,596,49"/>
+<area shape="rect" id="node7" href="$namespaceLinAlg_1_1MPI.html#af9576a3779caea8835a65154cf365265" title="LinAlg::MPI::send_matrix\l_async" alt="" coords="647,5,815,49"/>
+<area shape="rect" id="node11" href="$namespaceLinAlg_1_1MPI.html#a5cda4130aa87511473ccf0042e05996f" title="Send meta data about a matrix. " alt="" coords="431,71,593,99"/>
+<area shape="rect" id="node13" href="$namespaceLinAlg_1_1MPI.html#a989395f6e79378b63a9136f5e6ae5c7d" title="Send meta data about a matrix asynchronously. " alt="" coords="431,122,593,166"/>
+<area shape="rect" id="node15" href="$namespaceLinAlg_1_1MPI.html#a5ba9fb3165845af93cc8404dc11653da" title="LinAlg::MPI::send_meta\l_async" alt="" coords="649,122,812,166"/>
+</map>

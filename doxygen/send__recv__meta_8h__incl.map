@@ -1,0 +1,14 @@
+<map id="include/MPI/send_recv_meta.h" name="include/MPI/send_recv_meta.h">
+<area shape="rect" id="node13" href="$types_8h.html" title="Type definitions and preprocessor macros. " alt="" coords="1800,425,1864,453"/>
+<area shape="rect" id="node17" href="$exceptions_8h.html" title="Exceptions. " alt="" coords="296,425,392,453"/>
+<area shape="rect" id="node28" href="$streams_8h.html" title="Streams (handling of concurrent execution) " alt="" coords="691,254,771,282"/>
+<area shape="rect" id="node60" href="$metadata_8h.html" title="Matrix metadata. " alt="" coords="1180,99,1265,127"/>
+<area shape="rect" id="node64" href="$dense_8h.html" title="Dense matrix struct (Dense&lt;T&gt;) " alt="" coords="1567,177,1633,205"/>
+<area shape="rect" id="node99" href="$send__recv_8h.html" title="Overloads for MPI_Xsend() and MPI_Xrecv() " alt="" coords="93,177,213,205"/>
+<area shape="rect" id="node23" href="$stringformat_8h.html" title="Sprintf&#45;like functionality for std::string. " alt="" coords="445,502,592,530"/>
+<area shape="rect" id="node36" href="$cuda__checks_8h.html" title="CUDA/CUBLAS/CUSPARSE error checking. " alt="" coords="1232,339,1381,367"/>
+<area shape="rect" id="node73" href="$cuda__memory__allocation_8h.html" title="CUDA memory management (allocation and deletion) " alt="" coords="1347,254,1563,282"/>
+<area shape="rect" id="node83" href="$matrix_8h.html" title="Matrix base class. " alt="" coords="1637,254,1707,282"/>
+<area shape="rect" id="node86" href="$utilities__forward_8h.html" title="Forward declaration of utility functions required in dense.h and sparse.h. " alt="" coords="2080,331,2187,375"/>
+<area shape="rect" id="node93" href="$blas__forward_8h.html" title="Forward declaration of BLAS functions required in dense.h and sparse.h. " alt="" coords="1507,339,1651,367"/>
+</map>

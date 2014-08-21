@@ -1,0 +1,14 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" title="STL class. " alt="" coords="5,233,109,261"/>
+<area shape="rect" id="node3" href="$classLinAlg_1_1excLinAlg.html" title="Virtual exception base class. " alt="" coords="157,233,280,261"/>
+<area shape="rect" id="node5" href="$classLinAlg_1_1CUDA_1_1excCUBLASError.html" title="Exception to signal that there was an error while executing a CUBLAS routine. " alt="" coords="339,5,549,33"/>
+<area shape="rect" id="node7" href="$classLinAlg_1_1CUDA_1_1excCUDAError.html" title="Exception to signal that there was an error while executing a CUDA routine. " alt="" coords="347,55,541,83"/>
+<area shape="rect" id="node9" href="$classLinAlg_1_1CUDA_1_1excCUSPARSEError.html" title="Exception to signal that there was an error while executing a CUSPARSE routine.. " alt="" coords="329,106,559,134"/>
+<area shape="rect" id="node11" href="$classLinAlg_1_1excBadArgument.html" title="Exception to signal that there&#39;s an error in the arguments provided. " alt="" coords="361,157,527,185"/>
+<area shape="rect" id="node13" href="$classLinAlg_1_1excBadFile.html" title="Exception to signal that a file has invalid syntax. " alt="" coords="379,207,509,235"/>
+<area shape="rect" id="node15" href="$classLinAlg_1_1excBufferHelper.html" title="Exception to signal that a file has invalid syntax. " alt="" coords="365,258,523,286"/>
+<area shape="rect" id="node17" href="$classLinAlg_1_1excMallocError.html" title="Exception to signal that there was an error while allocating memory. " alt="" coords="368,309,520,337"/>
+<area shape="rect" id="node19" href="$classLinAlg_1_1excMath.html" title="Exception to signal a mathematical problem. " alt="" coords="387,359,501,387"/>
+<area shape="rect" id="node21" href="$classLinAlg_1_1excUnimplemented.html" title="Exception to throw to signal unimplemented functionality. " alt="" coords="356,410,532,438"/>
+<area shape="rect" id="node23" href="$classLinAlg_1_1MPI_1_1excMPIError.html" title="Exception to signal that there was an error in an MPI call. " alt="" coords="359,461,529,489"/>
+</map>

@@ -1,0 +1,34 @@
+<map id="include/abstract.h" name="include/abstract.h">
+<area shape="rect" id="node3" href="$types_8h.html" title="Type definitions and preprocessor macros. " alt="" coords="2636,563,2700,591"/>
+<area shape="rect" id="node7" href="$exceptions_8h.html" title="Exceptions. " alt="" coords="212,478,308,506"/>
+<area shape="rect" id="node20" href="$utilities_8h.html" title="Inclusion of all utility function headers. " alt="" coords="1343,83,1460,111"/>
+<area shape="rect" id="node54" href="$blas_8h.html" title="Inclusion of all BLAS headers. " alt="" coords="2151,238,2244,266"/>
+<area shape="rect" id="node60" href="$dense_8h.html" title="Dense matrix struct (Dense&lt;T&gt;) " alt="" coords="1352,393,1419,421"/>
+<area shape="rect" id="node132" href="$sparse_8h.html" title="Sparse matrix struct (Sparse&lt;T&gt;) " alt="" coords="796,393,868,421"/>
+<area shape="rect" id="node177" href="$lapack_8h.html" title="Inclusion of all lapack headers. " alt="" coords="2408,238,2533,266"/>
+<area shape="rect" id="node15" href="$stringformat_8h.html" title="Sprintf&#45;like functionality for std::string. " alt="" coords="31,563,177,591"/>
+<area shape="rect" id="node22" href="$buffer_8h.html" title="A memory buffer. " alt="" coords="1448,315,1515,343"/>
+<area shape="rect" id="node42" href="$checks_8h.html" title="Argument checking. " alt="" coords="2245,393,2320,421"/>
+<area shape="rect" id="node46" href="$copy__array_8h.html" title="General 1D and 2D array copy. " alt="" coords="1756,161,1852,189"/>
+<area shape="rect" id="node113" href="$CSR_8h.html" title="Reading/writing CSR files. " alt="" coords="1067,161,1125,189"/>
+<area shape="rect" id="node128" href="$misc_8h.html" title="Routines that don&#39;t fit elsewhere. " alt="" coords="1348,238,1455,266"/>
+<area shape="rect" id="node147" href="$IJV_8h.html" title="Reading/writing IJV files. " alt="" coords="895,238,993,266"/>
+<area shape="rect" id="node159" href="$format__convert_8h.html" title="Conversion of storage formats. " alt="" coords="700,238,820,266"/>
+<area shape="rect" id="node167" href="$memory__allocation_8h.html" title="Memory allocation using smart pointers. " alt="" coords="2287,478,2428,506"/>
+<area shape="rect" id="node174" href="$timer_8h.html" title="A timer class. " alt="" coords="981,161,1043,189"/>
+<area shape="rect" id="node32" href="$streams_8h.html" title="Streams (handling of concurrent execution) " alt="" coords="1656,393,1736,421"/>
+<area shape="rect" id="node56" href="$copy_8h.html" title="xCOPY (BLAS&#45;1) " alt="" coords="2159,315,2220,343"/>
+<area shape="rect" id="node92" href="$geam_8h.html" title="xGEAM (CUBLAS BLAS&#45;like) " alt="" coords="1841,315,1905,343"/>
+<area shape="rect" id="node100" href="$gemm_8h.html" title="xGEMM (BLAS&#45;3) " alt="" coords="1929,315,1999,343"/>
+<area shape="rect" id="node107" href="$omatcopy_8h.html" title="xomatcopy (MKL BLAS&#45;like) " alt="" coords="2244,315,2335,343"/>
+<area shape="rect" id="node109" href="$trsm_8h.html" title="xTRSM (BLAS&#45;3) " alt="" coords="2113,478,2172,506"/>
+<area shape="rect" id="node69" href="$cuda__memory__allocation_8h.html" title="CUDA memory management (allocation and deletion) " alt="" coords="905,478,1121,506"/>
+<area shape="rect" id="node77" href="$matrix_8h.html" title="Matrix base class. " alt="" coords="564,478,633,506"/>
+<area shape="rect" id="node80" href="$utilities__forward_8h.html" title="Forward declaration of utility functions required in dense.h and sparse.h. " alt="" coords="383,470,489,514"/>
+<area shape="rect" id="node87" href="$blas__forward_8h.html" title="Forward declaration of BLAS functions required in dense.h and sparse.h. " alt="" coords="1399,478,1543,506"/>
+<area shape="rect" id="node143" href="$fills_8h.html" title="Matrix fills. " alt="" coords="800,315,853,343"/>
+<area shape="rect" id="node179" href="$gesv_8h.html" title="xGESV " alt="" coords="2023,315,2084,343"/>
+<area shape="rect" id="node186" href="$getrf_8h.html" title="xGETRF " alt="" coords="2359,315,2417,343"/>
+<area shape="rect" id="node193" href="$getri_8h.html" title="xGETRI " alt="" coords="2441,315,2500,343"/>
+<area shape="rect" id="node200" href="$ilaenv_8h.html" title="ILAENV. " alt="" coords="2196,478,2263,506"/>
+</map>

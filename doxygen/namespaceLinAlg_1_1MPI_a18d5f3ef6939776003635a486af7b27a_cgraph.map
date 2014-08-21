@@ -1,0 +1,9 @@
+<map id="LinAlg::MPI::send_matrix_async" name="LinAlg::MPI::send_matrix_async">
+<area shape="rect" id="node3" href="$namespaceLinAlg_1_1MPI.html#a5ab79d223436bea3f09ee8f4aec494bb" title="Send a matrix to a remote host synchronously. " alt="" coords="225,93,393,121"/>
+<area shape="rect" id="node5" href="$structLinAlg_1_1Dense.html#a5ff5441a3d979a9e147316070837057f" title="Cloning from an existing matrix. " alt="" coords="444,5,617,33"/>
+<area shape="rect" id="node13" href="$namespaceLinAlg_1_1MPI.html#a0343c7e4fe81d438d13a6f438e118576" title="Routine to construct an MPI_Status. " alt="" coords="455,157,607,201"/>
+<area shape="rect" id="node16" href="$namespaceLinAlg_1_1MPI.html#a3ed7a36908bb75e9e6d6b53794d6ab40" title="Wrapper for MPI_Isend. " alt="" coords="231,194,388,222"/>
+<area shape="rect" id="node7" href="$structLinAlg_1_1Dense.html#a68dae69fd073d1edd0cd63f7f8ca55e2" title="Allocates new empty memory for an already constructed matrix. " alt="" coords="448,55,613,83"/>
+<area shape="rect" id="node11" href="$namespaceLinAlg_1_1MPI.html#a0b29bcc51088642550e3af325bad8ad6" title="Wrapper for MPI_Send. " alt="" coords="453,106,608,134"/>
+<area shape="rect" id="node9" href="$namespaceLinAlg_1_1CUDA.html#ac9c9086a371c084fb70e3e2795e8b5f9" title="Allocate memory on the GPGPU. " alt="" coords="667,47,805,91"/>
+</map>

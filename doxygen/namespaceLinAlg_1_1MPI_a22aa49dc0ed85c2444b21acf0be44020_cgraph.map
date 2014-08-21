@@ -1,0 +1,6 @@
+<map id="LinAlg::MPI::receive_matrix" name="LinAlg::MPI::receive_matrix">
+<area shape="rect" id="node3" href="$structLinAlg_1_1Dense.html#a5ff5441a3d979a9e147316070837057f" title="Cloning from an existing matrix. " alt="" coords="196,5,369,33"/>
+<area shape="rect" id="node5" href="$structLinAlg_1_1Dense.html#a68dae69fd073d1edd0cd63f7f8ca55e2" title="Allocates new empty memory for an already constructed matrix. " alt="" coords="200,55,365,83"/>
+<area shape="rect" id="node9" href="$namespaceLinAlg_1_1MPI.html#a07b302b4ac026bccbbc19dec6647e059" title="Wrapper for MPI_Recv. " alt="" coords="208,106,357,134"/>
+<area shape="rect" id="node7" href="$namespaceLinAlg_1_1CUDA.html#ac9c9086a371c084fb70e3e2795e8b5f9" title="Allocate memory on the GPGPU. " alt="" coords="419,47,557,91"/>
+</map>

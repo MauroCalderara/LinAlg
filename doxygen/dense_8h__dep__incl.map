@@ -1,0 +1,25 @@
+<map id="include/dense.h" name="include/dense.h">
+<area shape="rect" id="node3" href="$dense_8cc.html" title="Specialized members of Dense&lt;T&gt; " alt="" coords="5,83,101,111"/>
+<area shape="rect" id="node5" href="$CSR_8h.html" title="Reading/writing CSR files. " alt="" coords="1344,262,1493,290"/>
+<area shape="rect" id="node11" href="$abstract_8h.html" title="Convenience bindings like multiply(), inv() and solve() " alt="" coords="812,433,937,461"/>
+<area shape="rect" id="node13" href="$linalg_8h.html" title="Meta&#45;header including all other headers of the LinAlg library. " alt="" coords="1211,611,1317,639"/>
+<area shape="rect" id="node15" href="$send__recv__matrix_8h.html" title="Sending/receiving matrices using MPI. " alt="" coords="1344,425,1499,469"/>
+<area shape="rect" id="node21" href="$format__convert_8h.html" title="Conversion of storage formats. " alt="" coords="1027,161,1176,205"/>
+<area shape="rect" id="node24" href="$IJV_8h.html" title="Reading/writing IJV files. " alt="" coords="1200,169,1341,197"/>
+<area shape="rect" id="node28" href="$copy_8h.html" title="xCOPY (BLAS&#45;1) " alt="" coords="1075,83,1219,111"/>
+<area shape="rect" id="node37" href="$geam_8h.html" title="xGEAM (CUBLAS BLAS&#45;like) " alt="" coords="728,83,875,111"/>
+<area shape="rect" id="node40" href="$gemm_8h.html" title="xGEMM (BLAS&#45;3) " alt="" coords="899,83,1051,111"/>
+<area shape="rect" id="node43" href="$gesv_8h.html" title="xGESV " alt="" coords="125,83,288,111"/>
+<area shape="rect" id="node49" href="$getrf_8h.html" title="xGETRF " alt="" coords="312,83,472,111"/>
+<area shape="rect" id="node52" href="$getri_8h.html" title="xGETRI " alt="" coords="496,83,653,111"/>
+<area shape="rect" id="node56" href="$fills_8h.html" title="Matrix fills. " alt="" coords="1344,83,1443,111"/>
+<area shape="rect" id="node63" href="$metadata_8h.html" title="Matrix metadata. " alt="" coords="1556,347,1687,375"/>
+<area shape="rect" id="node67" href="$send__recv__meta_8h.html" title="Sending/receiving metadata using MPI. " alt="" coords="1580,425,1735,469"/>
+<area shape="rect" id="node7" href="$CSR_8cc.html" title="Reading/writing CSR files. " alt="" coords="1348,347,1481,375"/>
+<area shape="rect" id="node9" href="$utilities_8h.html" title="Inclusion of all utility function headers. " alt="" coords="1107,347,1269,375"/>
+<area shape="rect" id="node17" href="$message__passing_8h.html" title="Inclusion of all MPI headers. " alt="" coords="1348,518,1495,562"/>
+<area shape="rect" id="node30" href="$blas_8h.html" title="Inclusion of all BLAS headers. " alt="" coords="864,169,1003,197"/>
+<area shape="rect" id="node32" href="$copy__array_8h.html" title="General 1D and 2D array copy. " alt="" coords="1012,254,1151,298"/>
+<area shape="rect" id="node45" href="$lapack_8h.html" title="Inclusion of all lapack headers. " alt="" coords="483,169,653,197"/>
+<area shape="rect" id="node69" href="$send__recv__meta_8cc.html" title="Sending/receiving matrix metadata via MPI. " alt="" coords="1571,526,1757,554"/>
+</map>

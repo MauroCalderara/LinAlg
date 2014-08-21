@@ -1,0 +1,22 @@
+<map id="LinAlg::Dense::reallocate" name="LinAlg::Dense::reallocate">
+<area shape="rect" id="node3" href="$namespaceLinAlg.html#a3e54403c74df09eaabc82883e28a92c5" title="Solve a linear system. " alt="" coords="260,5,356,33"/>
+<area shape="rect" id="node7" href="$structLinAlg_1_1Dense.html#a52970a96d1937b0152f83d447c6ce166" title="Allocating&#45;only constructor. " alt="" coords="235,55,381,83"/>
+<area shape="rect" id="node9" href="$structLinAlg_1_1Dense.html#a4bd7f5c29ffce4c4b236ef1fa78ec301" title="Print the matrix contents. " alt="" coords="240,106,376,134"/>
+<area shape="rect" id="node11" href="$namespaceLinAlg_1_1LAPACK.html#a1c92a85bd049f3d91e8b9e0a5730de64" title="Compute the inverse using the LU decomposition of a matrix in&#45;place or out&#45;of&#45;place. " alt="" coords="221,157,395,185"/>
+<area shape="rect" id="node19" href="$structLinAlg_1_1MetaData.html#ab7a25f297f0e874c7bcb152f08220454" title="Apply meta data to a matrix. " alt="" coords="228,207,388,235"/>
+<area shape="rect" id="node23" href="$namespaceLinAlg_1_1MPI.html#a5ab79d223436bea3f09ee8f4aec494bb" title="Send a matrix to a remote host synchronously. " alt="" coords="224,258,392,286"/>
+<area shape="rect" id="node29" href="$namespaceLinAlg_1_1MPI.html#a22aa49dc0ed85c2444b21acf0be44020" title="Receive a remote matrix into a preallocated local matrix. " alt="" coords="239,311,377,355"/>
+<area shape="rect" id="node35" href="$namespaceLinAlg_1_1Utilities.html#ac0cacd78b70fea4acc2d7ca9ae57f799" title="Read from a CSR file into a matrix. " alt="" coords="249,382,367,426"/>
+<area shape="rect" id="node41" href="$namespaceLinAlg_1_1Utilities.html#a1a54c47f89ee71016d470e2863686db2" title="Add a subblock of a sparse matrix to a dense matrix. " alt="" coords="249,449,367,493"/>
+<area shape="rect" id="node5" href="$namespaceLinAlg.html#a2ef71996ea941a7a545acf6051962a56" title="LinAlg::solve" alt="" coords="483,5,579,33"/>
+<area shape="rect" id="node13" href="$namespaceLinAlg.html#a34df5b89f8d79f9310980800baf86f53" title="Invert a matrix in&#45;place or out&#45;of&#45;place. " alt="" coords="481,98,580,126"/>
+<area shape="rect" id="node17" href="$namespaceLinAlg_1_1LAPACK.html#a05ab4091b5f2ade2806c10575a29a8e5" title="LinAlg::LAPACK::xGETRI" alt="" coords="444,149,617,177"/>
+<area shape="rect" id="node15" href="$namespaceLinAlg.html#a217f0e769e6a97b9cfd49772c06653b7" title="LinAlg::invert" alt="" coords="703,98,801,126"/>
+<area shape="rect" id="node21" href="$namespaceLinAlg_1_1MPI.html#ab961feef7f5a7ebf618dddf5da86ce56" title="Receive meta data about a matrix and save/apply it to the supplied matrix. " alt="" coords="443,199,619,227"/>
+<area shape="rect" id="node25" href="$namespaceLinAlg_1_1MPI.html#a18d5f3ef6939776003635a486af7b27a" title="Send a matrix asynchronously. " alt="" coords="447,250,615,294"/>
+<area shape="rect" id="node27" href="$namespaceLinAlg_1_1MPI.html#af9576a3779caea8835a65154cf365265" title="LinAlg::MPI::send_matrix\l_async" alt="" coords="668,250,836,294"/>
+<area shape="rect" id="node31" href="$namespaceLinAlg_1_1MPI.html#af1cc31f5894a9c4cc4a43e82c41e8d39" title="Receive a remote matrix into a preallocated local matrix asynchronously. " alt="" coords="461,317,600,361"/>
+<area shape="rect" id="node33" href="$namespaceLinAlg_1_1MPI.html#ac311b041d7ec11012cbff117d4361280" title="LinAlg::MPI::receive\l_matrix_async" alt="" coords="683,317,821,361"/>
+<area shape="rect" id="node37" href="$namespaceLinAlg_1_1Utilities.html#ab04becd6b0e4fa097225fe182a45f73a" title="LinAlg::Utilities::\lread_CSR" alt="" coords="472,383,589,427"/>
+<area shape="rect" id="node39" href="$namespaceLinAlg_1_1Utilities.html#a2dd5ded7f9f6ead533d5d5556929dc91" title="LinAlg::Utilities::\lwrite_CSR" alt="" coords="472,450,589,494"/>
+</map>

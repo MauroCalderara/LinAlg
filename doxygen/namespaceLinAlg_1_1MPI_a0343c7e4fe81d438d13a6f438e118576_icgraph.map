@@ -1,0 +1,15 @@
+<map id="LinAlg::MPI::construct_status" name="LinAlg::MPI::construct_status">
+<area shape="rect" id="node3" href="$namespaceLinAlg_1_1MPI.html#a5ab79d223436bea3f09ee8f4aec494bb" title="Send a matrix to a remote host synchronously. " alt="" coords="209,5,377,33"/>
+<area shape="rect" id="node5" href="$namespaceLinAlg_1_1MPI.html#a18d5f3ef6939776003635a486af7b27a" title="Send a matrix asynchronously. " alt="" coords="433,13,601,57"/>
+<area shape="rect" id="node10" href="$namespaceLinAlg_1_1MPI.html#af1cc31f5894a9c4cc4a43e82c41e8d39" title="Receive a remote matrix into a preallocated local matrix asynchronously. " alt="" coords="224,106,363,150"/>
+<area shape="rect" id="node14" href="$namespaceLinAlg_1_1MPI.html#a6da2ed136736dd0fe57421c80df89eed" title="Send meta data. " alt="" coords="212,173,375,201"/>
+<area shape="rect" id="node18" href="$namespaceLinAlg_1_1MPI.html#a989395f6e79378b63a9136f5e6ae5c7d" title="Send meta data about a matrix asynchronously. " alt="" coords="436,211,599,255"/>
+<area shape="rect" id="node23" href="$namespaceLinAlg_1_1MPI.html#a6230b1503d13359e0a24ccce1e44eef5" title="Receive meta data. " alt="" coords="205,278,381,306"/>
+<area shape="rect" id="node27" href="$namespaceLinAlg_1_1MPI.html#aba121d646b5c97b25b86b87ade29b9a2" title="Receive meta data asynchronously. " alt="" coords="448,329,587,373"/>
+<area shape="rect" id="node7" href="$namespaceLinAlg_1_1MPI.html#af9576a3779caea8835a65154cf365265" title="LinAlg::MPI::send_matrix\l_async" alt="" coords="655,13,823,57"/>
+<area shape="rect" id="node12" href="$namespaceLinAlg_1_1MPI.html#ac311b041d7ec11012cbff117d4361280" title="LinAlg::MPI::receive\l_matrix_async" alt="" coords="448,94,587,138"/>
+<area shape="rect" id="node16" href="$namespaceLinAlg_1_1MPI.html#a5cda4130aa87511473ccf0042e05996f" title="Send meta data about a matrix. " alt="" coords="436,161,599,189"/>
+<area shape="rect" id="node20" href="$namespaceLinAlg_1_1MPI.html#a5ba9fb3165845af93cc8404dc11653da" title="LinAlg::MPI::send_meta\l_async" alt="" coords="657,211,820,255"/>
+<area shape="rect" id="node25" href="$namespaceLinAlg_1_1MPI.html#ab961feef7f5a7ebf618dddf5da86ce56" title="Receive meta data about a matrix and save/apply it to the supplied matrix. " alt="" coords="429,278,605,306"/>
+<area shape="rect" id="node29" href="$namespaceLinAlg_1_1MPI.html#aaea96aacaaf503c6caed573629871fa4" title="LinAlg::MPI::receive\l_meta_async" alt="" coords="669,329,808,373"/>
+</map>

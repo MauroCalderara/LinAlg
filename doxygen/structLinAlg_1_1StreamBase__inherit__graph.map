@@ -1,0 +1,5 @@
+<map id="LinAlg::StreamBase" name="LinAlg::StreamBase">
+<area shape="rect" id="node3" href="$structLinAlg_1_1CUDAStream.html" title="Class to encapsulate a CUDA stream. " alt="" coords="5,83,149,111"/>
+<area shape="rect" id="node5" href="$structLinAlg_1_1MPIStream.html" title="MPIStream. " alt="" coords="173,83,304,111"/>
+<area shape="rect" id="node7" href="$structLinAlg_1_1Stream.html" title="LinAlg::Stream" alt="" coords="328,83,435,111"/>
+</map>

@@ -1,0 +1,6 @@
+<map id="include/MPI/status.h" name="include/MPI/status.h">
+<area shape="rect" id="node3" href="$send__recv__meta_8cc.html" title="Sending/receiving matrix metadata via MPI. " alt="" coords="5,91,192,119"/>
+<area shape="rect" id="node5" href="$status_8cc.html" title="MPI_Status creation. " alt="" coords="216,91,341,119"/>
+<area shape="rect" id="node7" href="$message__passing_8h.html" title="Inclusion of all MPI headers. " alt="" coords="365,83,512,127"/>
+<area shape="rect" id="node9" href="$linalg_8h.html" title="Meta&#45;header including all other headers of the LinAlg library. " alt="" coords="385,177,492,205"/>
+</map>

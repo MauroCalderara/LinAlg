@@ -1,0 +1,13 @@
+<map id="include/sparse.h" name="include/sparse.h">
+<area shape="rect" id="node3" href="$sparse_8cc.html" title="Specialized members of Sparse&lt;T&gt; " alt="" coords="5,83,107,111"/>
+<area shape="rect" id="node5" href="$CSR_8h.html" title="Reading/writing CSR files. " alt="" coords="448,254,597,282"/>
+<area shape="rect" id="node11" href="$abstract_8h.html" title="Convenience bindings like multiply(), inv() and solve() " alt="" coords="181,417,307,445"/>
+<area shape="rect" id="node13" href="$linalg_8h.html" title="Meta&#45;header including all other headers of the LinAlg library. " alt="" coords="355,595,461,623"/>
+<area shape="rect" id="node21" href="$format__convert_8h.html" title="Conversion of storage formats. " alt="" coords="232,161,381,205"/>
+<area shape="rect" id="node24" href="$IJV_8h.html" title="Reading/writing IJV files. " alt="" coords="405,169,547,197"/>
+<area shape="rect" id="node29" href="$fills_8h.html" title="Matrix fills. " alt="" coords="427,83,525,111"/>
+<area shape="rect" id="node7" href="$CSR_8cc.html" title="Reading/writing CSR files. " alt="" coords="464,331,597,359"/>
+<area shape="rect" id="node9" href="$utilities_8h.html" title="Inclusion of all utility function headers. " alt="" coords="277,331,440,359"/>
+<area shape="rect" id="node15" href="$send__recv__matrix_8h.html" title="Sending/receiving matrices using MPI. " alt="" coords="331,409,485,453"/>
+<area shape="rect" id="node17" href="$message__passing_8h.html" title="Inclusion of all MPI headers. " alt="" coords="335,502,481,546"/>
+</map>

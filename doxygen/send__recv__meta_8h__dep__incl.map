@@ -1,0 +1,5 @@
+<map id="include/MPI/send_recv_meta.h" name="include/MPI/send_recv_meta.h">
+<area shape="rect" id="node3" href="$send__recv__meta_8cc.html" title="Sending/receiving matrix metadata via MPI. " alt="" coords="5,107,192,135"/>
+<area shape="rect" id="node5" href="$message__passing_8h.html" title="Inclusion of all MPI headers. " alt="" coords="216,99,363,143"/>
+<area shape="rect" id="node7" href="$linalg_8h.html" title="Meta&#45;header including all other headers of the LinAlg library. " alt="" coords="236,193,343,221"/>
+</map>

@@ -1,0 +1,35 @@
+<map id="include/CUDA/cuda_checks.h" name="include/CUDA/cuda_checks.h">
+<area shape="rect" id="node3" href="$memory__allocation_8h.html" title="Memory allocation using smart pointers. " alt="" coords="1865,83,2023,127"/>
+<area shape="rect" id="node17" href="$cuda__memory__allocation_8h.html" title="CUDA memory management (allocation and deletion) " alt="" coords="1053,83,1243,127"/>
+<area shape="rect" id="node91" href="$cuda__cublas_8h.html" title="CUBLAS handles. " alt="" coords="2047,91,2236,119"/>
+<area shape="rect" id="node95" href="$streams_8h.html" title="Streams (handling of concurrent execution) " alt="" coords="2232,177,2357,205"/>
+<area shape="rect" id="node5" href="$utilities_8h.html" title="Inclusion of all utility function headers. " alt="" coords="1363,518,1525,546"/>
+<area shape="rect" id="node7" href="$abstract_8h.html" title="Convenience bindings like multiply(), inv() and solve() " alt="" coords="1187,603,1312,631"/>
+<area shape="rect" id="node9" href="$linalg_8h.html" title="Meta&#45;header including all other headers of the LinAlg library. " alt="" coords="1293,782,1400,810"/>
+<area shape="rect" id="node11" href="$send__recv__matrix_8h.html" title="Sending/receiving matrices using MPI. " alt="" coords="2177,595,2332,639"/>
+<area shape="rect" id="node13" href="$message__passing_8h.html" title="Inclusion of all MPI headers. " alt="" coords="2388,689,2535,733"/>
+<area shape="rect" id="node19" href="$dense_8h.html" title="Dense matrix struct (Dense&lt;T&gt;) " alt="" coords="1092,177,1204,205"/>
+<area shape="rect" id="node81" href="$sparse_8h.html" title="Sparse matrix struct (Sparse&lt;T&gt;) " alt="" coords="243,177,360,205"/>
+<area shape="rect" id="node21" href="$dense_8cc.html" title="Specialized members of Dense&lt;T&gt; " alt="" coords="939,254,1035,282"/>
+<area shape="rect" id="node23" href="$CSR_8h.html" title="Reading/writing CSR files. " alt="" coords="373,433,523,461"/>
+<area shape="rect" id="node28" href="$format__convert_8h.html" title="Conversion of storage formats. " alt="" coords="543,331,692,375"/>
+<area shape="rect" id="node31" href="$IJV_8h.html" title="Reading/writing IJV files. " alt="" coords="377,339,519,367"/>
+<area shape="rect" id="node35" href="$copy_8h.html" title="xCOPY (BLAS&#45;1) " alt="" coords="595,254,739,282"/>
+<area shape="rect" id="node44" href="$geam_8h.html" title="xGEAM (CUBLAS BLAS&#45;like) " alt="" coords="1576,254,1723,282"/>
+<area shape="rect" id="node47" href="$gemm_8h.html" title="xGEMM (BLAS&#45;3) " alt="" coords="763,254,915,282"/>
+<area shape="rect" id="node50" href="$gesv_8h.html" title="xGESV " alt="" coords="1747,254,1909,282"/>
+<area shape="rect" id="node56" href="$getrf_8h.html" title="xGETRF " alt="" coords="1211,254,1371,282"/>
+<area shape="rect" id="node59" href="$getri_8h.html" title="xGETRI " alt="" coords="1395,254,1552,282"/>
+<area shape="rect" id="node63" href="$fills_8h.html" title="Matrix fills. " alt="" coords="320,254,419,282"/>
+<area shape="rect" id="node70" href="$metadata_8h.html" title="Matrix metadata. " alt="" coords="2315,254,2445,282"/>
+<area shape="rect" id="node74" href="$send__recv__meta_8h.html" title="Sending/receiving metadata using MPI. " alt="" coords="2407,331,2561,375"/>
+<area shape="rect" id="node25" href="$CSR_8cc.html" title="Reading/writing CSR files. " alt="" coords="381,518,515,546"/>
+<area shape="rect" id="node37" href="$blas_8h.html" title="Inclusion of all BLAS headers. " alt="" coords="997,339,1136,367"/>
+<area shape="rect" id="node39" href="$copy__array_8h.html" title="General 1D and 2D array copy. " alt="" coords="1375,425,1513,469"/>
+<area shape="rect" id="node52" href="$lapack_8h.html" title="Inclusion of all lapack headers. " alt="" coords="1388,339,1559,367"/>
+<area shape="rect" id="node76" href="$send__recv__meta_8cc.html" title="Sending/receiving matrix metadata via MPI. " alt="" coords="2481,433,2668,461"/>
+<area shape="rect" id="node83" href="$sparse_8cc.html" title="Specialized members of Sparse&lt;T&gt; " alt="" coords="93,254,195,282"/>
+<area shape="rect" id="node93" href="$cuda__cublas_8cc.html" title="The global CUBLAS handle vector. " alt="" coords="2035,177,2208,205"/>
+<area shape="rect" id="node98" href="$buffer_8h.html" title="A memory buffer. " alt="" coords="2085,254,2240,282"/>
+<area shape="rect" id="node100" href="$buffer_8cc.html" title="A memory buffer. " alt="" coords="2092,339,2231,367"/>
+</map>

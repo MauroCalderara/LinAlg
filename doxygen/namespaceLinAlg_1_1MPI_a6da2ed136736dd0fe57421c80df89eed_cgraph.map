@@ -1,0 +1,6 @@
+<map id="LinAlg::MPI::send_meta" name="LinAlg::MPI::send_meta">
+<area shape="rect" id="node3" href="$namespaceLinAlg_1_1MPI.html#a0b29bcc51088642550e3af325bad8ad6" title="Wrapper for MPI_Send. " alt="" coords="216,5,371,33"/>
+<area shape="rect" id="node5" href="$structLinAlg_1_1MetaData.html#accf73dbe6a2cf81aea0bd34485b955f3" title="Return a pointer to the array that contains the meta data. " alt="" coords="216,55,371,83"/>
+<area shape="rect" id="node7" href="$structLinAlg_1_1MetaData.html#a307dcb3f9c47d5b44c4ed0ca7d60ced1" title="Return the size of the meta data array. " alt="" coords="216,106,371,134"/>
+<area shape="rect" id="node9" href="$namespaceLinAlg_1_1MPI.html#a0343c7e4fe81d438d13a6f438e118576" title="Routine to construct an MPI_Status. " alt="" coords="217,157,369,201"/>
+</map>

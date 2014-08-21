@@ -1,0 +1,5 @@
+<map id="LinAlg::MetaData::trans2int" name="LinAlg::MetaData::trans2int">
+<area shape="rect" id="node3" href="$structLinAlg_1_1MetaData.html#a0972449ab30ce64090c125d12cf8e94f" title="Set transposition field. " alt="" coords="247,5,393,49"/>
+<area shape="rect" id="node5" href="$structLinAlg_1_1MetaData.html#a12f7ead90a48fb9389995decfc6b3216" title="Extract meta data from a matrix. " alt="" coords="235,71,405,99"/>
+<area shape="rect" id="node7" href="$structLinAlg_1_1MetaData.html#a47f0eab2914c710af780a0d5a275ddce" title="Constructor from matrix. " alt="" coords="453,71,640,99"/>
+</map>

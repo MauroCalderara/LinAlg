@@ -1,0 +1,6 @@
+<map id="include/utilities/utilities.h" name="include/utilities/utilities.h">
+<area shape="rect" id="node3" href="$abstract_8h.html" title="Convenience bindings like multiply(), inv() and solve() " alt="" coords="5,185,131,213"/>
+<area shape="rect" id="node5" href="$linalg_8h.html" title="Meta&#45;header including all other headers of the LinAlg library. " alt="" coords="115,270,221,298"/>
+<area shape="rect" id="node7" href="$send__recv__matrix_8h.html" title="Sending/receiving matrices using MPI. " alt="" coords="205,83,360,127"/>
+<area shape="rect" id="node9" href="$message__passing_8h.html" title="Inclusion of all MPI headers. " alt="" coords="207,177,353,221"/>
+</map>

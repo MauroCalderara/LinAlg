@@ -1,0 +1,14 @@
+<map id="include/streams.h" name="include/streams.h">
+<area shape="rect" id="node3" href="$send__recv__meta_8cc.html" title="Sending/receiving matrix metadata via MPI. " alt="" coords="43,177,229,205"/>
+<area shape="rect" id="node5" href="$buffer_8h.html" title="A memory buffer. " alt="" coords="355,91,509,119"/>
+<area shape="rect" id="node13" href="$linalg_8h.html" title="Meta&#45;header including all other headers of the LinAlg library. " alt="" coords="443,611,549,639"/>
+<area shape="rect" id="node15" href="$send__recv__matrix_8h.html" title="Sending/receiving matrices using MPI. " alt="" coords="304,425,459,469"/>
+<area shape="rect" id="node21" href="$copy__array_8h.html" title="General 1D and 2D array copy. " alt="" coords="532,254,671,298"/>
+<area shape="rect" id="node24" href="$geam_8h.html" title="xGEAM (CUBLAS BLAS&#45;like) " alt="" coords="625,91,772,119"/>
+<area shape="rect" id="node33" href="$send__recv__meta_8h.html" title="Sending/receiving metadata using MPI. " alt="" coords="125,83,280,127"/>
+<area shape="rect" id="node7" href="$buffer_8cc.html" title="A memory buffer. " alt="" coords="355,177,493,205"/>
+<area shape="rect" id="node9" href="$utilities_8h.html" title="Inclusion of all utility function headers. " alt="" coords="415,347,577,375"/>
+<area shape="rect" id="node11" href="$abstract_8h.html" title="Convenience bindings like multiply(), inv() and solve() " alt="" coords="533,433,659,461"/>
+<area shape="rect" id="node17" href="$message__passing_8h.html" title="Inclusion of all MPI headers. " alt="" coords="308,518,455,562"/>
+<area shape="rect" id="node26" href="$blas_8h.html" title="Inclusion of all BLAS headers. " alt="" coords="637,177,776,205"/>
+</map>

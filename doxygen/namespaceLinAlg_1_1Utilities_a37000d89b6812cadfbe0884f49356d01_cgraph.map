@@ -1,0 +1,8 @@
+<map id="LinAlg::Utilities::write_IJV" name="LinAlg::Utilities::write_IJV">
+<area shape="rect" id="node3" href="$namespaceLinAlg.html#acb2fe72096dd9f1e6b4e3b44464fa8d1" title="Format a std::string in sprintf&#45;like fashion. " alt="" coords="172,22,305,50"/>
+<area shape="rect" id="node5" href="$namespaceLinAlg_1_1Utilities.html#a0453294c25971b2021abd44c1d87a70c" title="Write a matrix to a file in IJV format. " alt="" coords="180,73,297,117"/>
+<area shape="rect" id="node7" href="$structLinAlg_1_1Dense.html#a5ff5441a3d979a9e147316070837057f" title="Cloning from an existing matrix. " alt="" coords="356,5,529,33"/>
+<area shape="rect" id="node9" href="$structLinAlg_1_1Dense.html#aea33f3eaeb1a664378fbf2e13effb1fa" title="Return the current location of the matrix. " alt="" coords="365,55,520,83"/>
+<area shape="rect" id="node11" href="$structLinAlg_1_1Dense.html#aed23f54ed89f429f1de7010aa5599cd5" title="Return the number of rows in the matrix. " alt="" coords="373,106,512,134"/>
+<area shape="rect" id="node13" href="$structLinAlg_1_1Dense.html#af086cb2b605ab13b58f6a573d8ee79d0" title="Return the number of columns in the matrix. " alt="" coords="376,157,509,185"/>
+</map>

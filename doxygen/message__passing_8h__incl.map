@@ -1,0 +1,28 @@
+<map id="include/MPI/message_passing.h" name="include/MPI/message_passing.h">
+<area shape="rect" id="node3" href="$send__recv_8h.html" title="Overloads for MPI_Xsend() and MPI_Xrecv() " alt="" coords="3709,331,3803,359"/>
+<area shape="rect" id="node7" href="$send__recv__matrix_8h.html" title="Sending/receiving matrices using MPI. " alt="" coords="2005,99,2141,127"/>
+<area shape="rect" id="node174" href="$send__recv__meta_8h.html" title="Sending/receiving metadata using MPI. " alt="" coords="1448,254,1576,282"/>
+<area shape="rect" id="node187" href="$status_8h.html" title="MPI_Status parsing. " alt="" coords="3808,177,3877,205"/>
+<area shape="rect" id="node18" href="$types_8h.html" title="Type definitions and preprocessor macros. " alt="" coords="1409,657,1473,685"/>
+<area shape="rect" id="node22" href="$exceptions_8h.html" title="Exceptions. " alt="" coords="627,657,723,685"/>
+<area shape="rect" id="node33" href="$streams_8h.html" title="Streams (handling of concurrent execution) " alt="" coords="2781,486,2861,514"/>
+<area shape="rect" id="node65" href="$utilities_8h.html" title="Inclusion of all utility function headers. " alt="" coords="1424,177,1499,205"/>
+<area shape="rect" id="node107" href="$dense_8h.html" title="Dense matrix struct (Dense&lt;T&gt;) " alt="" coords="1277,409,1344,437"/>
+<area shape="rect" id="node167" href="$metadata_8h.html" title="Matrix metadata. " alt="" coords="1299,331,1384,359"/>
+<area shape="rect" id="node28" href="$stringformat_8h.html" title="Sprintf&#45;like functionality for std::string. " alt="" coords="316,734,463,762"/>
+<area shape="rect" id="node41" href="$cuda__checks_8h.html" title="CUDA/CUBLAS/CUSPARSE error checking. " alt="" coords="2517,571,2667,599"/>
+<area shape="rect" id="node67" href="$buffer_8h.html" title="A memory buffer. " alt="" coords="1883,409,1949,437"/>
+<area shape="rect" id="node76" href="$checks_8h.html" title="Argument checking. " alt="" coords="600,571,675,599"/>
+<area shape="rect" id="node80" href="$copy__array_8h.html" title="General 1D and 2D array copy. " alt="" coords="2224,409,2320,437"/>
+<area shape="rect" id="node90" href="$CSR_8h.html" title="Reading/writing CSR files. " alt="" coords="1131,254,1189,282"/>
+<area shape="rect" id="node104" href="$misc_8h.html" title="Routines that don&#39;t fit elsewhere. " alt="" coords="1560,331,1667,359"/>
+<area shape="rect" id="node140" href="$IJV_8h.html" title="Reading/writing IJV files. " alt="" coords="677,331,776,359"/>
+<area shape="rect" id="node150" href="$format__convert_8h.html" title="Conversion of storage formats. " alt="" coords="1003,331,1123,359"/>
+<area shape="rect" id="node156" href="$memory__allocation_8h.html" title="Memory allocation using smart pointers. " alt="" coords="3512,486,3653,514"/>
+<area shape="rect" id="node164" href="$timer_8h.html" title="A timer class. " alt="" coords="1805,254,1867,282"/>
+<area shape="rect" id="node88" href="$blas_8h.html" title="Inclusion of all BLAS headers. " alt="" coords="3179,486,3272,514"/>
+<area shape="rect" id="node115" href="$cuda__memory__allocation_8h.html" title="CUDA memory management (allocation and deletion) " alt="" coords="2347,486,2563,514"/>
+<area shape="rect" id="node125" href="$matrix_8h.html" title="Matrix base class. " alt="" coords="1344,486,1413,514"/>
+<area shape="rect" id="node128" href="$utilities__forward_8h.html" title="Forward declaration of utility functions required in dense.h and sparse.h. " alt="" coords="1003,563,1109,607"/>
+<area shape="rect" id="node134" href="$blas__forward_8h.html" title="Forward declaration of BLAS functions required in dense.h and sparse.h. " alt="" coords="2248,571,2392,599"/>
+</map>
