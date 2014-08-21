@@ -1,4 +1,6 @@
-/** \file             gemm.h
+/** \file
+ *
+ *  \brief            xGEAM (CUBLAS BLAS-like)
  *
  *  \date             Created:  Jul 16, 2014
  *  \date             Modified: $Date$
@@ -66,7 +68,7 @@ namespace CUBLAS {
  *
  *  \param[in]        beta
  *
- *  \param[in|out]    C
+ *  \param[in,out]    C
  *
  *  \param[in]        ldc
  *
@@ -200,10 +202,6 @@ inline void xGEAM(const T alpha, const Dense<T>& A, const T beta,
  *  \param[in]        C
  *
  *  \param[in]        stream
- *                    OPTIONAL: if no stream is given, the function returns
- *                    one.
- *
- *  \returns          OPTIONAL: a stream to synchronize the operation on.
  *
  *  For more details see cublas documentation under BLAS-like functions
  */
@@ -252,6 +250,18 @@ inline void xGEAM_async(const T alpha, const Dense<T>& A, const T beta,
 
 };
 /** \overload
+ *
+ *  \param[in]        alpha
+ *
+ *  \param[in]        A
+ *
+ *  \param[in]        beta
+ *
+ *  \param[in]        B
+ *
+ *  \param[in]        C
+ *
+ *  \returns          A stream to synchronize the operation on
  */
 template <typename T>
 inline CUDAStream xGEAM_async(const T alpha, const Dense<T>& A, const T beta,

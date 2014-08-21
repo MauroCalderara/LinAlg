@@ -1,4 +1,4 @@
-/** \file             types.h
+/** \file
  *
  *  \brief            Type definitions and preprocessor macros.
  *
@@ -56,24 +56,35 @@ enum class Type {
   I,      //< Integer type
 };
 
-/** \brief            Primitive RTTI
+/** \brief            Return the LinAlg::Type member corresponding to the
+ *                    template instanciation
  *
- *  \returns          The corresponding Type
+ *  \returns          Type::U
  */
 template <typename T> inline Type type()      { return Type::U; };
 /** \overload
+ *
+ *  \returns          Type::S
  */
 template <>           inline Type type<S_t>() { return Type::S; };
 /** \overload
+ *
+ *  \returns          Type::D
  */
 template <>           inline Type type<D_t>() { return Type::D; };
 /** \overload
+ *
+ *  \returns          Type::C
  */
 template <>           inline Type type<C_t>() { return Type::C; };
 /** \overload
+ *
+ *  \returns          Type::Z
  */
 template <>           inline Type type<Z_t>() { return Type::Z; };
 /** \overload
+ *
+ *  \returns          Type::I
  */
 template <>           inline Type type<I_t>() { return Type::I; };
 
@@ -98,6 +109,11 @@ template <>           inline Type type<I_t>() { return Type::I; };
 template <typename T, typename U, typename V>
 inline T cast(U real, V imag) { T tmp(real, imag); return tmp; };
 /** \overload
+ *
+ *  \param[in]          real
+ *                      Real part.
+ *
+ *  \returns            The number as the requested type
  */
 template <typename T, typename U>
 inline T cast(U real) { T tmp(real); return tmp; };
@@ -105,10 +121,26 @@ inline T cast(U real) { T tmp(real); return tmp; };
 // These catch also cast<S_t>(1, 2) due to automatic casting of int, float,
 // double, etc.
 /** \overload
+ *
+ *  \param[in]          real
+ *                      Real part
+ *
+ *  \param[in]          imag
+ *                      Imaginary part
+ *
+ *  \returns            The number as S_t (float)
  */
 template <>
 inline S_t cast<S_t>(S_t real, S_t imag) { S_t tmp(real); return tmp; };
 /** \overload
+ *
+ *  \param[in]          real
+ *                      Real part.
+ *
+ *  \param[in]          imag
+ *                      Imaginary part.
+ *
+ *  \returns            The number as D_t (double)
  */
 template <>
 inline D_t cast<D_t>(D_t real, D_t imag) { D_t tmp(real); return tmp; };

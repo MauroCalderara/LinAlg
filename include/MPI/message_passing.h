@@ -1,7 +1,6 @@
-/** \file             message_passing.h
+/** \file
  *
- *  \brief            This file includes the individual parts of the MPI
- *                    support code
+ *  \brief            Inclusion of all MPI headers
  *
  *  \note             The name is chosen to avoid confusion with the system
  *                    mpi.h header

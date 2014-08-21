@@ -1,4 +1,4 @@
-/** \file             timer.h
+/** \file
  *
  *  \brief            A timer class
  *

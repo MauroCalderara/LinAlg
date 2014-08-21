@@ -1,6 +1,6 @@
-/** \file             CSR.cc
+/** \file
  *
- *  \brief            Various smaller helper routines
+ *  \brief            Reading/writing CSR files
  *
  *  \date             Created:  Jul 12, 2014
  *  \date             Modified: $Date$
@@ -23,26 +23,26 @@ namespace LinAlg {
 
 namespace Utilities {
 
-/** \brief              Parses the header of a CSR file to determine the size,
- *                      number of non zero elements, indexing and complexness of
- *                      the matrix contained.
+/** \brief              Parses the header of a CSR file to determine the size, 
+ *                      number of non zero elements, indexing and complexness  
+ *                      of the matrix contained
  *
- *  \param[in]          file
- *                      Path to the CSR file.
+ *  \param[in]          filename
+ *                      Path to the CSR file
  *
- *  \return             A std::tuple<I_t, I_t, I_t, bool> with the elements:
- *                      size, n_nonzero, first_index, and is_complex. Those are
- *                      the number of rows (for a CSR matrix) or columns (for a
- *                      CSC matrix), the number of non zero elements, the index
- *                      of the first element (0 for C style, 1 for FORTRAN style
- *                      indexing), and 'true' if the matrix has complex data
- *                      type (C_t or Z_t) and false otherwise.
+ *  \return             A std::tuple<I_t, I_t, I_t, bool> with the elements: 
+ *                      size, n_nonzero, first_index, and is_complex. Those  
+ *                      are the number of rows (for a CSR matrix) or columns 
+ *                      (for a CSC matrix), the number of non zero elements, 
+ *                      the index of the first element (0 for C style, 1 for 
+ *                      FORTRAN style indexing), and 'true' if the matrix has 
+ *                      complex data type (C_t or Z_t) and false otherwise
  *
- *  \todo               Have an example of how to use this using idiomatic C++
- *                      with std::tie:
- *
- *                        std::tie(size, n_nonzero, first_index, is_complex) =
- *                        parse_CSR_header(file);
+ *  Example usage:
+ *  \code
+ *     using std::tie;
+ *     tie(size, n_nonzero, first_index, is_complex) = parse_CSR_header(file);
+ *  \endcode
  */
 std::tuple<I_t, I_t, I_t, bool> parse_CSR_header(std::string filename) {
 
@@ -150,7 +150,7 @@ std::tuple<I_t, I_t, I_t, bool> parse_CSR_header(std::string filename) {
 /** \brief              Parses a CSR file to determine the size of the matrix
  *                      contained.
  *
- *  \param[in]          file
+ *  \param[in]          filename
  *                      Path to the CSR file.
  *
  *  \return             A std::tuple<I_t, I_t, bool> with the elements: rows,
@@ -159,8 +159,10 @@ std::tuple<I_t, I_t, I_t, bool> parse_CSR_header(std::string filename) {
  *  \todo               Have an example of how to use this using idiomatic C++
  *                      with std::tie:
  *
- *                        std::tie(rows, cols, is_complex) =
- *                                                  parse_CSR_body(file);
+ *  Example usage:
+ *  \code
+ *       std::tie(rows, cols, is_complex) = parse_CSR_body(file);
+ *  \endcode
  */
 std::tuple<I_t, I_t, bool> parse_CSR_body(std::string filename) {
 

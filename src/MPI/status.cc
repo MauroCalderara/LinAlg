@@ -1,6 +1,6 @@
-/** \file             status.cc
+/** \file
  *
- *  \brief            Routine to construct an MPI status
+ *  \brief            MPI_Status creation
  *
  *  \date             Created:  Jul 15, 2014
  *  \date             Modified: $Date$

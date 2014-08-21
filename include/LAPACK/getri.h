@@ -1,4 +1,6 @@
-/** \file             getri.h
+/** \file
+ *
+ *  \brief            xGETRI
  *
  *  \date             Created:  Jul 16, 2014
  *  \date             Modified: $Date$
@@ -69,17 +71,17 @@ extern C {
  *
  *  \param[in]        n
  *
- *  \param[in|out]    A
+ *  \param[in,out]    A
  *
  *  \param[in]        lda
  *
- *  \param[in|out]    ipiv
+ *  \param[in,out]    ipiv
  *
  *  \param[in]        work
  *
  *  \param[in]        lwork
  *
- *  \param[in|out]    info
+ *  \param[in,out]    info
  *
  * See [DGETRI](http://www.math.utah.edu/software/lapack/lapack-d/dgetri.html)
  */
@@ -121,17 +123,17 @@ namespace CUBLAS {
  *
  *  \param[in]        n
  *
- *  \param[in|out]    A
+ *  \param[in,out]    A
  *
  *  \param[in]        lda
  *
- *  \param[in|out]    ipiv
+ *  \param[in,out]    ipiv
  *
- *  \param[in|out]    C
+ *  \param[in,out]    C
  *
  *  \param[in]        ldc
  *
- *  \param[in|out]    info
+ *  \param[in,out]    info
  *
  *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
@@ -175,17 +177,17 @@ inline void xGETRI(cublasHandle_t handle, I_t n, Z_t* A, I_t lda, int* ipiv,
  *
  *  \param[in]        n
  *
- *  \param[in|out]    Aarray
+ *  \param[in,out]    Aarray
  *
  *  \param[in]        lda
  *
- *  \param[in|out]    PivotArray
+ *  \param[in,out]    PivotArray
  *
- *  \param[in|out]    Carray
+ *  \param[in,out]    Carray
  *
  *  \param[in]        ldc
  *
- *  \param[in|out]    infoArray
+ *  \param[in,out]    infoArray
  *
  *  \param[in]        batchSize
  *

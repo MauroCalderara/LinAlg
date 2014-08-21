@@ -1,7 +1,7 @@
-/** \file             linalg.h
+/** \file
  *
- *  \brief            A meta-header that includes all other .h files of the
- *                    linalg library.
+ *  \brief            Meta-header including all other headers of the LinAlg
+ *                    library.
  *
  *  \date             Created:  Jul  3, 2014
  *  \date             Modified: $Date$

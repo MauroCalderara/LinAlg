@@ -1,6 +1,6 @@
-/** \file             sparse.h
+/** \file
  *
- *  \brief            Sparse matrix struct
+ *  \brief            Sparse matrix struct (Sparse<T>)
  *
  *  \date             Created:  Jul 11, 2014
  *  \date             Modified: $Date$
@@ -8,9 +8,6 @@
  *  \authors          mauro <mauro@iis.ee.ethz.ch>
  *
  *  \version          $Revision$
- *
- *  \todo             Write the 3 and half: default constructor, destructor,
- *                    copy constructor, move constructor, and swap
  */
 #ifndef LINALG_SPARSE_H_
 #define LINALG_SPARSE_H_
@@ -43,10 +40,6 @@
 namespace LinAlg {
 
 /** \brief            Sparse matrix struct
- *
- *  \todo             Possibly add these constructors
- *                       Sparse from dense
- *                       Sparse from file
  */
 template <typename T>
 struct Sparse : Matrix {
@@ -202,11 +195,11 @@ Sparse<T>::Sparse(Sparse&& other) : Sparse() {
  *  \note             We can't use std::swap to swap to instances directly
  *                    as it uses the assignment operator internally itself.
  *
- *  \param[in|out]    first
+ *  \param[in,out]    first
  *                    Pointer to 'first', will later point to what was
  *                    'second' before the function call.
  *
- *  \param[in|out]    second
+ *  \param[in,out]    second
  *                    Pointer to 'second', will later point to what was
  *                    'first' before the function call.
  */

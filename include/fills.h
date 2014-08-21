@@ -1,4 +1,4 @@
-/** \file             fills.h
+/** \file
  *
  *  \brief            Matrix fills.
  *
@@ -23,7 +23,7 @@ namespace Fills {
 
 /** \brief            Fills a matrix with a constant value (preserving sparcity)
  *
- *  \param[in|out]    matrix
+ *  \param[in,out]    matrix
  *                    Matrix to operate on.
  *
  *  \param[in]        value
@@ -70,7 +70,7 @@ inline void val(Sparse<T>& matrix, T value) {
 
 /** \brief            Fills a matrix with zeros
  *
- *  \param[in|out]    matrix
+ *  \param[in,out]    matrix
  *                    Matrix to operate on.
  *
  *  \note             For sparse matrices, only the non-zero elements are set to

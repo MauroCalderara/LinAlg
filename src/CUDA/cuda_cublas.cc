@@ -1,7 +1,6 @@
-/** \file             cuda_cublas.cc
+/** \file
  *
- *  \brief            This file only contains the global
- *                    LinAlg::CUDA::CUBLAS::handle vector
+ *  \brief            The global CUBLAS handle vector
  *
  *  \date             Created:  Jan 16, 2014
  *  \date             Modified: $Date$

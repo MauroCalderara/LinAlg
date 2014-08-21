@@ -1,6 +1,6 @@
-/** \file             fills.h
+/** \file
  *
- *  \brief            Matrix base class.
+ *  \brief            Matrix base class
  *
  *  \date             Created:  Jul 21, 2014
  *  \date             Modified: $Date$

@@ -1,0 +1,117 @@
+/** \brief            The LinAlg library
+ *
+ * All entities are contained within the LinAlg namespace
+ */
+namespace LinAlg {
+
+
+/** \brief            Bindings to BLAS functions
+ *
+ * - Convenience bindings (xGEMM(Dense<T>, Dense<T>, Dense<T>)) respecting the 
+ *   location of the input
+ */
+namespace BLAS {
+
+
+/** \brief            Bindings to the FORTRAN / CPU backend of BLAS
+ *
+ * - Functions overloaded on the datatype (SGEMM, DGEMM, CGEMM, ZGEMM -> 
+ *   xGEMM)
+ */
+namespace FORTRAN {
+} /* namespace LinAlg::BLAS::FORTRAN */
+
+
+/** \brief            Bindings to the CUBLAS backend
+ *
+ * - Functions overloaded on the datatype (cublasSgemm, cublasDgemm, 
+ *   cublasCgemm, cublasZgemm -> xGEMM)
+ */
+namespace CUBLAS {
+} /* namespace LinAlg::BLAS::CUBLAS */
+
+
+/** \brief            Bindings to the MKL backend
+ *
+ * - Functions overloaded on the datatype (mkl_somatcopy, mkl_domatcopy, 
+ *   mkl_comatcopy, mkl_zomatcopy -> xomatcopy)
+ */
+namespace MKL {
+} /* namespace LinAlg::BLAS::MKL */
+
+
+} /* namespace LinAlg::BLAS */
+
+
+/** \brief            Things related to CUDA and it's sublibraries
+ */
+namespace CUDA {
+
+
+/** \brief            Things related to CUBLAS
+ */
+namespace CUBLAS {
+} /* namespace LinAlg::CUDA::CUBLAS */
+
+
+} /* namespace LinAlg::CUDA */
+
+
+/** \brief            Bindings to LAPACK functions
+ *
+ * - Convenience bindings (xGETRF(Dense<T>, Dense<T>, Dense<T>)) respecting 
+ *   the location of the input
+ */
+namespace LAPACK {
+
+
+/** \brief            Bindings to the FORTRAN / CPU backend of LAPACK
+ *
+ * - Functions overloaded on the datatype (SGETRF, DGETRF, CGETRF, ZGETRF -> 
+ *   xGETRF)
+ */
+namespace FORTRAN {
+} /* namespace LinAlg::LAPACK::FORTRAN */
+
+
+/** \brief            Bindings to the CUBLAS backend
+ *
+ * - Functions overloaded on the datatype (cublasSgetrf, cublasDgetrf, 
+ *   cublasCgetrf, cublasZgetrf -> xGETRF)
+ */
+namespace CUBLAS {
+} /* namespace LinAlg::LAPACK::CULAPACK */
+
+
+/** \brief            Bindings to the MAGMA backend
+ *
+ * - Functions overloaded on the datatype (magma_sgetrf, magma_dgetrf, 
+ *   magma_cgetrf, magma_zgetrf -> xGETRF)
+ */
+namespace MKL {
+} /* namespace LinAlg::LAPACK::MAGMA */
+
+
+} /* namespace LinAlg::LAPACK */
+
+
+/** \brief            intel MIC support
+ */
+namespace MIC {
+} /* namespace LinAlg::MIC */
+
+
+/** \brief            The Message Passing Interface (MPI) routines
+ */
+namespace MPI {
+} /* namespace LinAlg::MPI */
+
+
+/** \brief            Utility routines
+ */
+namespace Utilities {
+} /* namespace LinAlg::Utilities */
+
+}
+
+// vim: ft=cpp

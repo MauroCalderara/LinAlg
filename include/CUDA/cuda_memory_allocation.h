@@ -1,6 +1,6 @@
-/** \file             cuda_memory_allocation.h
+/** \file
  *
- *  \brief            Routines to check for CUDA/CUBLAS/CUSPARSE error messages
+ *  \brief            CUDA memory management (allocation and deletion)
  *
  *  \date             Created:  Jul 12, 2014
  *  \date             Modified: $Date$

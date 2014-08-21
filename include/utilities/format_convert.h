@@ -1,6 +1,6 @@
-/** \file             format_convert.h
+/** \file
  *
- *  \brief            Convert storage formats
+ *  \brief            Conversion of storage formats
  *
  *  \date             Created:  Jul 12, 2014
  *  \date             Modified: $Date$
@@ -25,7 +25,7 @@ namespace Utilities {
 /** \brief            Add a subblock of a sparse matrix to a dense matrix
  *
  *
- *  \param[in]        matrix_in
+ *  \param[in]        src
  *                    The sparse matrix to extract the subblock from.
  *
  *  \param[in]        first_row
@@ -40,7 +40,7 @@ namespace Utilities {
  *  \param[in]        last_col
  *                    Column to stop extraction (excluded, c-numbering).
  *
- *  \param[in|out]    matrix_out
+ *  \param[out]       dst
  *                    Dense matrix to store the subblock.
  *
  *  \todo             If the full matrix is to be converted, mkl_?dnscsr and

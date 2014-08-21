@@ -1,8 +1,7 @@
-/** \file             utilities_forward.h
+/** \file
  *
- *  \brief            Header file containing the forward declarations of those
- *                    functions that are needed in the templated members of
- *                    Dense<T> and Sparse<T>
+ *  \brief            Forward declaration of utility functions required in
+ *                    dense.h and sparse.h
  */
 
 #ifndef LINALG_UTILITIES_FORWARD_H_

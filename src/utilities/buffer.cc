@@ -1,6 +1,6 @@
-/** \file             buffer.cc
+/** \file
  *
- *  \brief            Routines for the buffer struct
+ *  \brief            A memory buffer
  *
  *  \date             Created:  Jul 12, 2014
  *  \date             Modified: $Date$
@@ -285,8 +285,8 @@ void BufferHelper::wait(I_t n) {
 
 #ifdef BUFFER_DISPLAY
   // Visualization
-  for (const auto& e : _buffer_status) { std::cout << e*; }
-  std::cout << "\n"
+  for (const auto& e : _buffer_status) { std::cout << e; }
+  std::cout << "\n";
 #endif
 
 };

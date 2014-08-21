@@ -1,6 +1,6 @@
-/** \file             mic_helper.h
+/** \file
  *
- *  \brief            Routines to help support the intel MIC engine
+ *  \brief            Support for the intel&copy; MIC engine
  *
  *  \date             Created:  Jul 12, 2014
  *  \date             Modified: $Date$

@@ -1,4 +1,6 @@
-/** \file             omatcopy.h
+/** \file
+ *
+ *  \brief            xomatcopy (MKL BLAS-like)
  *
  *  \date             Created:  Jul 16, 2014
  *  \date             Modified: $Date$
@@ -50,7 +52,7 @@ namespace MKL {
  *
  *  \param[in]        lda
  *
- *  \param[in|out]    B
+ *  \param[in,out]    B
  *
  *  \param[in]        ldb
  *

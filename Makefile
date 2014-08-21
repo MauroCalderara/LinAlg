@@ -37,4 +37,4 @@ $(OBJECTS): obj/%.o : src/%.cc
 	    $(CUDA_FLAGS) $(CUDA_INCLUDE)
 
 clean:
-	rm -rf obj/*.o obj/*/*.o lib/liblinalg.a lib/liblinalg.so doc/html/* doc/latex/*
+	rm -rf obj/*.o obj/*/*.o lib/liblinalg.a lib/liblinalg.so doc/html/doxygen/* doc/latex/*

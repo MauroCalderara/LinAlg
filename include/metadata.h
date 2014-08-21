@@ -1,6 +1,6 @@
-/** \file             metadata.h
+/** \file
  *
- *  \brief            Definition of the MetaData structure.
+ *  \brief            Matrix metadata
  *
  *  \date             Created:  Aut 10, 2014
  *  \date             Modified: $Date$

@@ -1,6 +1,6 @@
-/** \file             send_recv_meta.cc
+/** \file
  *
- *  \brief            Sending and receiving matrix metadata via MPI
+ *  \brief            Sending/receiving matrix metadata via MPI
  *
  *  \date             Created:  Jul 15, 2014
  *  \date             Modified: $Date$
@@ -77,13 +77,7 @@ void send_meta(MetaData& meta, MPI_Comm communicator, int receiving_rank,
  *                    Tag of the transfer (must match tag on receiver)
  *
  *  \param[in]        stream
- *                    OPTIONAL: stream to use. If none is specified, the
- *                    function returns one that can be used to synchronize on
- *                    the operation.
- *
- *  \returns          stream
- *                    OPTIONAL: If no stream is specified, the function
- *                    returns one to synchronize the operation.
+ *                    Stream to use
  */
 void send_meta_async(MetaData meta, MPI_Comm communicator,
                      int receiving_rank, int tag, MPIStream& stream) {
@@ -175,13 +169,7 @@ MetaData receive_meta(MPI_Comm communicator, int sending_rank, int tag) {
  *                    Tag of the transfer (must match tag on receiver)
  *
  *  \param[in]        stream
- *                    OPTIONAL: stream to use. If none is specified, the
- *                    function returns one that can be used to synchronize on
- *                    the operation.
- *
- *  \returns          stream
- *                    OPTIONAL: If no stream is specified, the function
- *                    returns one to synchronize the operation.
+ *                    Stream to use
  */
 void receive_meta_async(MetaData& meta, MPI_Comm communicator,
                         int sending_rank, int tag, MPIStream& stream) {

@@ -1,6 +1,6 @@
-/** \file             blas.h
+/** \file
  *
- *  \brief            Header to include all supported BLAS routines
+ *  \brief            Inclusion of all BLAS headers
  *
  * Organization of the namespace:
  *

@@ -1,6 +1,6 @@
-/** \file             exceptions.h
+/** \file
  *
- *  \brief            Exception classes
+ *  \brief            Exceptions
  *
  *  \date             Created: Jul 12, 2014
  *  \date             Modified: $Date$
@@ -8,11 +8,6 @@
  *  \authors          mauro <mcalderara@iis.ee.ethz.ch>
  *
  *  \version          $Revision$
- *
- *  \todo             All these exceptions could derive from one LinAlg
- *                    exception if we move the prepending of the prefix into
- *                    the .what() function member. The only customization would
- *                    be the prefix and the name.
  */
 
 #ifndef LINALG_EXCEPTIONS_H_

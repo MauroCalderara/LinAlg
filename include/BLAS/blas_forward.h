@@ -1,8 +1,7 @@
-/** \file             blas_forward.h
+/** \file
  *
- *  \brief            Header file containing the forward declarations of those
- *                    BLAS functions that are needed in the templated members
- *                    of Dense<T> and Sparse<T>
+ *  \brief            Forward declaration of BLAS functions required in
+ *                    dense.h and sparse.h
  */
 
 #ifndef LINALG_BLAS_FORWARD_H_

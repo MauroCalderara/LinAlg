@@ -1,4 +1,6 @@
-/** \file             gemm.h
+/** \file
+ *
+ *  \brief            xGEMM (BLAS-3)
  *
  *  \date             Created:  Jul 16, 2014
  *  \date             Modified: $Date$
@@ -80,7 +82,7 @@ extern "C" {
  *
  *  \param[in]        beta
  *
- *  \param[in|out]    C
+ *  \param[in,out]    C
  *
  *  \param[in]        ldc
  *
@@ -150,7 +152,7 @@ namespace CUBLAS {
  *
  *  \param[in]        beta
  *
- *  \param[in|out]    C
+ *  \param[in,out]    C
  *
  *  \param[in]        ldc
  *
@@ -218,7 +220,7 @@ using LinAlg::CUDA::CUBLAS::handles;
  *
  *  \param[in]        beta
  *
- *  \param[in|out]    C
+ *  \param[in,out]    C
  */
 template <typename T>
 inline void xGEMM(const T alpha, const Dense<T>& A, const Dense<T>& B,

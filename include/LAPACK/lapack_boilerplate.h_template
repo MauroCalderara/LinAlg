@@ -1,4 +1,6 @@
-/** \file             xyz.h
+/** \file
+ *
+ *  \brief            xXYZ
  *
  *  \date             Created:  Jul 16, 2014
  *  \date             Modified: $Date$
@@ -60,7 +62,7 @@ extern C {
  *
  *  \param[in]        Y
  *
- *  \param[in|out]    Z
+ *  \param[in,out]    Z
  *
  *  See [DXYZ](http://www.mathkeisan.com/usersguide/man/dxyz.html)
  */
@@ -97,7 +99,7 @@ namespace CUBLAS {
  *
  *  \param[in]        Y
  *
- *  \param[in|out]    Z
+ *  \param[in,out]    Z
  *
  *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
@@ -134,7 +136,7 @@ using LinAlg::Utilities::check_input_transposed;
  *
  *  \param[in]        Y
  *
- *  \param[in|out]    Z
+ *  \param[in,out]    Z
  *
  *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */

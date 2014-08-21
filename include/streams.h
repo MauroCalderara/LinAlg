@@ -1,4 +1,4 @@
-/** \file             streams.h
+/** \file
  *
  *  \brief            Streams (handling of concurrent execution)
  *

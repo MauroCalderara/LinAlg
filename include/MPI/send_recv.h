@@ -1,6 +1,6 @@
-/** \file             send_recv.h
+/** \file
  *
- *  \brief            Bindings/overloads for sending and receiving routines.
+ *  \brief            Overloads for MPI_Xsend() and MPI_Xrecv()
  *
  *  \date             Created:  Jul 15, 2014
  *  \date             Modified: $Date$

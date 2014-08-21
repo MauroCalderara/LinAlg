@@ -1,7 +1,6 @@
-/** \file             abstract.h
+/** \file
  *
- *  \brief            Convenience bindings that abstract away from the backend
- *                    calls and take Dense<T> or Sparse<T> arguments).
+ *  \brief            Convenience bindings like multiply(), inv() and solve()
  *
  *  Organization of the namespace:
  *
@@ -59,7 +58,7 @@ namespace LinAlg {
  *
  *  \param[in]        B
  *
- *  \param[in|out]    C
+ *  \param[in,out]    C
  */
 template <typename T>
 inline void multiply(const Dense<T>& A, const Dense<T>& B, Dense<T>& C) {
@@ -70,11 +69,15 @@ inline void multiply(const Dense<T>& A, const Dense<T>& B, Dense<T>& C) {
  *
  *  C = alpha * A * B + beta * C
  *
+ *  \param[in]        alpha
+ *
  *  \param[in]        A
  *
  *  \param[in]        B
  *
- *  \param[in|out]    C
+ *  \param[in]        beta
+ *
+ *  \param[in,out]    C
  */
 template <typename T>
 inline void multiply(const T alpha, const Dense<T>& A, const Dense<T>& B,
@@ -87,11 +90,11 @@ inline void multiply(const T alpha, const Dense<T>& A, const Dense<T>& B,
  *
  *  A * X = B     (B is overwritten with X, A with its own LU decomposition)
  *
- *  \param[in|out]    A
+ *  \param[in,out]    A
  *
- *  \param[in|out]    B
+ *  \param[in,out]    B
  *
- *  \param[in|out]    ipiv
+ *  \param[in,out]    ipiv
  *                    OPTIONAL: pivoting vector. If unspecified or empty, the
  *                    routine allocates one with suitable size.
  *
@@ -162,6 +165,10 @@ inline void solve(Dense<T>& A, Dense<T>& B, Dense<int>& ipiv) {
 
 };
 /** \overload
+ *
+ *  \param[in,out]    A
+ *
+ *  \param[in,out]    B
  */
 template <typename T>
 inline void solve(Dense<T>& A, Dense<T>& B) {
@@ -175,9 +182,9 @@ inline void solve(Dense<T>& A, Dense<T>& B) {
  *  A = A**-1 (in-place)
  *  C = A**-1 (out-of-place)
  *
- *  \param[in|out]    A
+ *  \param[in,out]    A
  *
- *  \param[in|out]    C
+ *  \param[in,out]    C
  *                    OPTIONAL: Storage for out-of-place inversion. If left
  *                    unspecified or empty, an in-place inversion is performed.
  */
@@ -192,6 +199,8 @@ inline void invert(Dense<T>& A, Dense<T>& C) {
 
 };
 /** \overload
+ *
+ *  \param[in,out]    A
  */
 template <typename T>
 inline void invert(Dense<T>& A) {

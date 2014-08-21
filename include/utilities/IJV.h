@@ -1,6 +1,6 @@
-/** \file             IJV.h
+/** \file
  *
- *  \brief            Routines to write IJV files
+ *  \brief            Reading/writing IJV files
  *
  *  \date             Created:  Jul 12, 2014
  *  \date             Modified: $Date$
@@ -173,9 +173,8 @@ void write_IJV_data(LinAlg::Sparse<T>& matrix, std::string filename) {
  *                      sorted in row major (basically the same as CSR but
  *                      without the header).
  */
-template <typename T, typename... Us>
-inline void write_IJV(LinAlg::Dense<T>& matrix, const char* formatstring,
-                      Us... formatargs) {
+template <typename T>
+inline void write_IJV(LinAlg::Dense<T>& matrix, std::string filename) {
 
   if (matrix._location != Location::host) {
 
@@ -183,7 +182,7 @@ inline void write_IJV(LinAlg::Dense<T>& matrix, const char* formatstring,
     Dense<T> temporary;
     temporary.clone_from(matrix);
     temporary.location(Location::host);
-    write_IJV(temporary, formatstring, formatargs...);
+    write_IJV(temporary, filename);
 
     return;
 
@@ -194,13 +193,11 @@ inline void write_IJV(LinAlg::Dense<T>& matrix, const char* formatstring,
     // Create a temporary matrix with the transposed contents and try again
     Dense<T> temporary(matrix.rows(), matrix.cols());
     temporary << matrix;
-    write_IJV(temporary, formatstring, formatargs...);
+    write_IJV(temporary, filename); 
 
     return;
 
   }
-
-  std::string filename = stringformat(formatstring, formatargs...);
 
   std::ofstream file_to_write(filename, std::ios_base::trunc);
 
@@ -235,12 +232,17 @@ inline void write_IJV(LinAlg::Dense<T>& matrix, const char* formatstring,
 
 };
 /** \overload
+ *
+ *  \param[in]          matrix
+ *                      Matrix to read data from.
+ *
+ *  \param[in]          filename
+ *                      Name of the file to write to (file is created if it
+ *                      doesn't exist and overwritten if it exists).
+ *
  */
-template <typename T, typename... Us>
-inline void write_IJV(LinAlg::Sparse<T>& matrix, const char* formatstring,
-                      Us... formatargs) {
-
-  std::string filename = stringformat(formatstring, formatargs...);
+template <typename T>
+inline void write_IJV(LinAlg::Sparse<T>& matrix, std::string filename) {
 
   std::ofstream file_to_write(filename, std::ios_base::trunc);
 
@@ -273,6 +275,76 @@ inline void write_IJV(LinAlg::Sparse<T>& matrix, const char* formatstring,
   }
 #endif
 
+};
+
+/** \overload
+ *
+ *  \param[in]          matrix
+ *                      Matrix to read data from.
+ *
+ *  \param[in]          formatstring
+ *                      Formatstring for the filename to write to (file is 
+ *                      created if it doesn't exist and overwritten if it 
+ *                      exists).
+ *
+ *  \param[in]          formatargs
+ *                      Formatargs for the file to write to.
+ */
+template <typename T, typename... Us>
+inline void write_IJV(LinAlg::Dense<T>& matrix, const char* formatstring,
+                      Us... formatargs) {
+  std::string filename_str = stringformat(formatstring, formatargs...);
+  write_IJV(matrix, filename_str);
+};
+
+/** \overload
+ *
+ *  \param[in]          matrix
+ *                      Matrix to read data from.
+ *
+ *  \param[in]          filename
+ *                      Name of the file to write to (file is created if it
+ *                      doesn't exist and overwritten if it exists).
+ */
+template <typename T>
+inline void write_IJV(LinAlg::Dense<T>& matrix, const char* filename) {
+  std::string filename_str = filename;
+  write_IJV(matrix, filename_str);
+};
+
+/** \overload
+ *
+ *  \param[in]          matrix
+ *                      Matrix to read data from.
+ *
+ *  \param[in]          formatstring
+ *                      Formatstring for the filename to write to (file is 
+ *                      created if it doesn't exist and overwritten if it 
+ *                      exists).
+ *
+ *  \param[in]          formatargs
+ *                      Formatargs for the file to write to.
+ */
+template <typename T, typename... Us>
+inline void write_IJV(LinAlg::Sparse<T>& matrix, const char* formatstring,
+                      Us... formatargs) {
+  std::string filename_str = stringformat(formatstring, formatargs...);
+  write_IJV(matrix, filename_str);
+};
+
+/** \overload
+ *
+ *  \param[in]          matrix
+ *                      Matrix to read data from.
+ *
+ *  \param[in]          filename
+ *                      Name of the file to write to (file is created if it
+ *                      doesn't exist and overwritten if it exists).
+ */
+template <typename T>
+inline void write_IJV(LinAlg::Sparse<T>& matrix, const char* filename) {
+  std::string filename_str = filename;
+  write_IJV(matrix, filename_str);
 };
 
 } /* namespace LinAlg::Utilities */

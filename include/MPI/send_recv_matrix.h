@@ -1,6 +1,6 @@
-/** \file             send_recv_matrix.h
+/** \file
  *
- *  \brief            Routines for sending matrices using MPI.
+ *  \brief            Sending/receiving matrices using MPI
  *
  *  \date             Created:  Jul 15, 2014
  *  \date             Modified: $Date$
@@ -140,13 +140,7 @@ void send_matrix(Dense<T>& matrix, MPI_Comm communicator, int receiving_rank,
  *                    Tag of the transfer (must match tag on receiver)
  *
  *  \param[in]        stream
- *                    OPTIONAL: stream to use. If none is specified, the
- *                    function returns one that can be used to synchronize on
- *                    the operation.
- *
- *  \returns          stream
- *                    OPTIONAL: If no stream is specified, the function
- *                    returns one to synchronize the operation.
+ *                    Stream to use
  */
 template <typename T>
 void send_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
@@ -229,6 +223,21 @@ void send_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
 
 };
 /** \overload
+ *
+ *  \param[in]        matrix
+ *                    Matrix to send
+ *
+ *  \param[in]        communicator
+ *                    MPI communicator for the transfer
+ *
+ *  \param[in]        receiving_rank
+ *                    MPI rank of the receiving party
+ *
+ *  \param[in]        tag
+ *                    Tag of the transfer (must match tag on receiver)
+ *
+ *  \returns          stream
+ *                    Stream to synchronize the operation
  */
 template <typename T>
 inline MPIStream send_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
@@ -246,7 +255,7 @@ inline MPIStream send_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
 
 /** \brief            Receive a remote matrix into a preallocated local matrix
  *
- *  \param[in|out]    matrix
+ *  \param[in,out]    matrix
  *                    Preallocated local matrix to store the remote matrix
  *
  *  \param[in]        communicator
@@ -327,7 +336,7 @@ void receive_matrix(Dense<T>& matrix, MPI_Comm communicator, int sending_rank,
 /** \brief            Receive a remote matrix into a preallocated local matrix
  *                    asynchronously
  *
- *  \param[in|out]    matrix
+ *  \param[in,out]    matrix
  *                    Preallocated local matrix to store the remote matrix
  *
  *  \param[in]        communicator
@@ -340,13 +349,9 @@ void receive_matrix(Dense<T>& matrix, MPI_Comm communicator, int sending_rank,
  *                    Tag of the transfer (must match tag on sender)
  *
  *  \param[in]        stream
- *                    OPTIONAL: MPI stream to use for asynchronous transfers.
- *                    If no stream or an MPIStream(0) is specified, the
- *                    operation is synchronous.
- *
- *  \returns          stream
- *                    OPTIONAL: If no stream is specified, the function
- *                    returns one to synchronize the operation.
+ *                    MPI stream to use for asynchronous transfers. If no 
+ *                    stream or an MPIStream(0) is specified, the operation is 
+ *                    synchronous
  */
 template <typename T>
 void receive_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
@@ -422,6 +427,20 @@ void receive_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
 
 };
 /** \overload
+ *
+ *  \param[in,out]    matrix
+ *                    Preallocated local matrix to store the remote matrix
+ *
+ *  \param[in]        communicator
+ *                    MPI communicator for the transfer
+ *
+ *  \param[in]        sending_rank
+ *                    MPI rank of the sending party
+ *
+ *  \param[in]        tag
+ *                    Tag of the transfer (must match tag on sender)
+ *
+ *  \returns          stream to synchronize the operation
  */
 template <typename T>
 inline MPIStream receive_matrix_async(Dense<T>& matrix, MPI_Comm communicator,

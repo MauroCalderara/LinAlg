@@ -1,6 +1,6 @@
-/** \file             cuda_cublas.h
+/** \file
  *
- *  \brief            Routines to check for CUDA/CUBLAS/CUSPARSE error messages
+ *  \brief            CUBLAS handles
  *
  *  \date             Created:  Jul 12, 2014
  *  \date             Modified: $Date$

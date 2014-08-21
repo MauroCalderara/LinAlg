@@ -1,7 +1,6 @@
-/** \file             stringformat.h
+/** \file
  *
- *  \brief            Contains a routine for string formatting and some regular
- *                    expressions.
+ *  \brief            Sprintf-like functionality for std::string
  *
  *  \date             Created:  Jul 17, 2014
  *  \date             Modified: $Date$

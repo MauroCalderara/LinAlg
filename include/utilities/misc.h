@@ -1,4 +1,4 @@
-/** \file             misc.h
+/** \file
  *
  *  \brief            Routines that don't fit elsewhere.
  *
@@ -21,12 +21,12 @@ namespace Utilities {
 
 /** \brief            A routine that jumps to a specific line in a fstream
  *
- *  \param[in|out]    stream
+ *  \param[in,out]    stream
  *                    The fstream on which to advance to the requested line.
  *
  *  \param[in]        line
  *                    The line to advance to. The next getline call on the
- *                    stream will return the contents of line number <line>.
+ *                    stream will return the contents of line number \<line\>.
  */
 inline void goto_line(std::ifstream& stream, unsigned int line) {
 

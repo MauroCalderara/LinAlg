@@ -1,6 +1,6 @@
-/** \file             lapack.h
+/** \file
  *
- *  \brief            Header to include all supported lapack routines
+ *  \brief            Inclusion of all lapack headers
  *
  * Organization of the namespace:
  *

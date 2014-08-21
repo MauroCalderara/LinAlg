@@ -1,6 +1,6 @@
-/** \file             CSR.h
+/** \file
  *
- *  \brief            Routines to read and write CSR files
+ *  \brief            Reading/writing CSR files
  *
  *  \date             Created:  Jul 12, 2014
  *  \date             Modified: $Date$
@@ -196,6 +196,12 @@ void read_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
 
 };
 /** \overload
+ *
+ *  \param[out]         matrix
+ *                      Matrix to read data into.
+ *
+ *  \param[in]          filename
+ *                      Name of the file to read from.
  */
 template <typename T, typename... Us>
 void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
@@ -344,6 +350,15 @@ void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
 
 };
 /** \overload
+ *
+ *  \param[out]         matrix
+ *                      Matrix to read data into.
+ *
+ *  \param[in]          formatstring
+ *                      Formatstring for the file to read from.
+ *
+ *  \param[in]          formatargs
+ *                      Formatargs for the file to read from.
  */
 template <typename T, typename... Us>
 inline void read_CSR(LinAlg::Dense<T>& matrix, const char* formatstring,
@@ -352,6 +367,15 @@ inline void read_CSR(LinAlg::Dense<T>& matrix, const char* formatstring,
   read_CSR(matrix, filename);
 };
 /** \overload
+ *
+ *  \param[out]         matrix
+ *                      Matrix to read data into.
+ *
+ *  \param[in]          formatstring
+ *                      Formatstring for the file to read from.
+ *
+ *  \param[in]          formatargs
+ *                      Formatargs for the file to read from.
  */
 template <typename T, typename... Us>
 inline void read_CSR(LinAlg::Sparse<T>& matrix, const char* formatstring,
@@ -360,6 +384,12 @@ inline void read_CSR(LinAlg::Sparse<T>& matrix, const char* formatstring,
   read_CSR(matrix, filename);
 };
 /** \overload
+ *
+ *  \param[out]         matrix
+ *                      Matrix to read data into.
+ *
+ *  \param[in]          filename
+ *                      Name of the file to read from.
  */
 template <typename T>
 inline void read_CSR(LinAlg::Dense<T>& matrix, const char* filename) {
@@ -367,6 +397,12 @@ inline void read_CSR(LinAlg::Dense<T>& matrix, const char* filename) {
   read_CSR(matrix, filename_str);
 };
 /** \overload
+ *
+ *  \param[out]         matrix
+ *                      Matrix to read data into.
+ *
+ *  \param[in]          filename
+ *                      Name of the file to read from.
  */
 template <typename T>
 inline void read_CSR(LinAlg::Sparse<T>& matrix, const char* filename) {
@@ -380,24 +416,22 @@ inline void read_CSR(LinAlg::Sparse<T>& matrix, const char* filename) {
  *                      Matrix to read data from.
  *
  *  \param[in]          filename
- *                      Name of the file to write to (file is created if it
- *                      doesn't exist and overwritten if it exists).
+ *                      Name of the file to write to.
  *
  *  \note               Dense matrices are written in C-style indexing with zero
  *                      values removed, Sparse matrices are written with the
  *                      indexing of the input matrix and in sparsity preserving
  *                      fashion (that is zero elements are written explicitly).
  */
-template <typename T, typename... Us>
-void write_CSR(LinAlg::Dense<T>& matrix, const char* formatstring,
-               Us... formatargs) {
+template <typename T>
+void write_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
 
   if (matrix._location != Location::host) {
 
     // Create a temporary matrix located in main memory and try again
     Dense<T> temporary = matrix;
     temporary.location(Location::host);
-    write_CSR(temporary, formatstring, formatargs...);
+    write_CSR(temporary, filename);
 
     return;
 
@@ -408,13 +442,11 @@ void write_CSR(LinAlg::Dense<T>& matrix, const char* formatstring,
     // Create a temporary matrix with the transposed contents and try again
     Dense<T> temporary(matrix.rows(), matrix.cols());
     temporary << matrix;
-    write_CSR(temporary, formatstring, formatargs...);
+    write_CSR(temporary, filename);
 
     return;
 
   }
-
-  std::string filename = stringformat(formatstring, formatargs...);
 
   std::ofstream file_to_write(filename, std::ios_base::trunc);
 
@@ -469,10 +501,15 @@ void write_CSR(LinAlg::Dense<T>& matrix, const char* formatstring,
 
 }
 /** \overload
+ *
+ *  \param[in]          matrix
+ *                      Matrix to write data from.
+ *
+ *  \param[in]          filename
+ *                      Name of the file to write to.
  */
-template <typename T, typename... Us>
-void write_CSR(LinAlg::Sparse<T>& matrix, const char* formatstring,
-               Us... formatargs) {
+template <typename T>
+void write_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
 
 #ifndef LINALG_NO_CHECKS
   if (matrix._location != Location::host) {
@@ -492,8 +529,6 @@ void write_CSR(LinAlg::Sparse<T>& matrix, const char* formatstring,
 
   }
 #endif
-
-  std::string filename = stringformat(formatstring, formatargs...);
 
   std::ofstream file_to_write(filename, std::ios_base::trunc);
 
@@ -534,6 +569,74 @@ void write_CSR(LinAlg::Sparse<T>& matrix, const char* formatstring,
   }
 #endif
 
+};
+
+/** \overload
+ *
+ *  \param[out]         matrix
+ *                      Matrix to read data into.
+ *
+ *  \param[in]          formatstring
+ *                      Formatstring for the filename to write to (file is 
+ *                      created if it doesn't exist and overwritten if it 
+ *                      exists).
+ *
+ *  \param[in]          formatargs
+ *                      Formatargs for the file to write to.
+ */
+template <typename T, typename... Us>
+inline void write_CSR(LinAlg::Dense<T>& matrix, const char* formatstring,
+                      Us... formatargs) {
+  std::string filename_str = stringformat(formatstring, formatargs...);
+  read_CSR(matrix, filename_str);
+};
+
+/** \overload
+ *
+ *  \param[out]         matrix
+ *                      Matrix to read data into.
+ *
+ *  \param[in]          filename
+ *                      Name of the file to read from.
+ */
+template <typename T>
+inline void write_CSR(LinAlg::Dense<T>& matrix, const char* filename) {
+  std::string filename_str = filename;
+  read_CSR(matrix, filename_str);
+};
+
+/** \overload
+ *
+ *  \param[out]         matrix
+ *                      Matrix to read data into.
+ *
+ *  \param[in]          formatstring
+ *                      Formatstring for the filename to write to (file is 
+ *                      created if it doesn't exist and overwritten if it 
+ *                      exists).
+ *
+ *  \param[in]          formatargs
+ *                      Formatargs for the file to write to.
+ */
+template <typename T, typename... Us>
+inline void write_CSR(LinAlg::Sparse<T>& matrix, const char* formatstring,
+                      Us... formatargs) {
+  std::string filename_str = stringformat(formatstring, formatargs...);
+  read_CSR(matrix, filename_str);
+};
+
+/** \overload
+ *
+ *  \param[out]         matrix
+ *                      Matrix to read data into.
+ *
+ *  \param[in]          filename
+ *                      Name of the file to read from.
+ */
+template <typename T>
+inline void write_CSR(LinAlg::Sparse<T>& matrix, const char* filename) {
+  std::string filename_str = filename;
+  read_CSR(matrix, filename_str);
 };
 
 } /* namespace LinAlg::Utilities */

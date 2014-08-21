@@ -1,4 +1,6 @@
-/** \file             gesv.h
+/** \file
+ *
+ *  \brief            xGESV
  *
  *  \date             Created:  Jul 16, 2014
  *  \date             Modified: $Date$
@@ -75,11 +77,11 @@ extern C {
  *
  *  \param[in]        ipiv
  *
- *  \param[in|out]    B
+ *  \param[in,out]    B
  *
  *  \param[in]        ldb
  *
- *  \param[in|out]    info
+ *  \param[in,out]    info
  *
  *  See [DGESV](http://www.mathkeisan.com/UsersGuide/man/dgesv.html)
  */

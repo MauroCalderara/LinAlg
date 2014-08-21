@@ -1,4 +1,6 @@
-/** \file             XYZ.h
+/** \file
+ *
+ *  \brief            xXYZ (BLAS-N)
  *
  *  \date             Created:  Jul 16, 2014
  *  \date             Modified: $Date$
@@ -51,7 +53,7 @@ extern "C" {
  *
  *  \param[in]        transx
  *
- *  \param[in|out]    Z
+ *  \param[in,out]    Z
  *
  *  See [DXYZ](http://www.mathkeisan.com/usersguide/man/dxyz.html)
  */
@@ -87,7 +89,7 @@ namespace CUBLAS {
  *
  *  \param[in]        transx
  *
- *  \param[in|out]    Z
+ *  \param[in,out]    Z
  *
  *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
@@ -126,7 +128,7 @@ using LinAlg::CUDA::CUBLAS::handles;
  *
  *  \param[in]        Y
  *
- *  \param[in|out]    Z
+ *  \param[in,out]    Z
  */
 template <typename T>
 inline void xXYZ(...) {

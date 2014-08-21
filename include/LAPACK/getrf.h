@@ -1,4 +1,6 @@
-/** \file             getrf.h
+/** \file
+ *
+ *  \brief            xGETRF
  *
  *  \date             Created:  Jul 16, 2014
  *  \date             Modified: $Date$
@@ -57,13 +59,13 @@ extern C {
  *
  *  \param[in]        n
  *
- *  \param[in|out]    A
+ *  \param[in,out]    A
  *
  *  \param[in]        lda
  *
- *  \param[in|out]    ipiv
+ *  \param[in,out]    ipiv
  *
- *  \param[in|out]    info
+ *  \param[in,out]    info
  *
  *  See
  *  [DGETRF](http://www.math.utah.edu/software/lapack/lapack-d/dgetrf.html)
@@ -101,13 +103,13 @@ namespace CUBLAS {
  *
  *  \param[in]        n
  *
- *  \param[in|out]    A
+ *  \param[in,out]    A
  *
  *  \param[in]        lda
  *
- *  \param[in|out]    ipiv
+ *  \param[in,out]    ipiv
  *
- *  \param[in|out]    info
+ *  \param[in,out]    info
  *
  *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
@@ -146,13 +148,13 @@ inline void xGETRF(cublasHandle_t handle, I_t n, Z_t* A, I_t lda, int* ipiv,
  *
  *  \param[in]        n
  *
- *  \param[in|out]    Aarray[]
+ *  \param[in,out]    Aarray[]
  *
  *  \param[in]        lda
  *
- *  \param[in|out]    PivotArray
+ *  \param[in,out]    PivotArray
  *
- *  \param[in|out]    infoArray
+ *  \param[in,out]    infoArray
  *
  *  \param[in]        batchSize
  */

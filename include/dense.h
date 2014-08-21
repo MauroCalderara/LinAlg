@@ -1,6 +1,6 @@
-/** \file             dense.h
+/** \file
  *
- *  \brief            Dense matrix struct
+ *  \brief            Dense matrix struct (Dense<T>)
  *
  *  \date             Created:  Jul 11, 2014
  *  \date             Modified: $Date$
@@ -35,12 +35,6 @@
 namespace LinAlg {
 
 /** \brief              Dense matrix struct
- *
- *  \note
- *
- *  \todo               Add these constructors
- *                         Dense from CSR
- *                         Dense from file
  */
 template <typename T>
 struct Dense : Matrix {
@@ -260,11 +254,11 @@ Dense<T>& Dense<T>::operator=(Dense<T> other) {
  *  \note               We can't use std::swap to swap to instances directly
  *                      as it uses the assignment operator internally itself.
  *
- *  \param[in|out]      first
+ *  \param[in,out]      first
  *                      Pointer to 'first', will later point to what was
  *                      'second' before the function call.
  *
- *  \param[in|out]      second
+ *  \param[in,out]      second
  *                      Pointer to 'second', will later point to what was
  *                      'first' before the function call.
  */
@@ -451,19 +445,21 @@ Dense<T>::Dense(Dense<T>& source, I_t first_row, I_t last_row, I_t first_col,
  *
  *  \param[in]        first_row
  *                    The first row of the source matrix which is part of
- *                    the submatrix (i.e. inclusive).
+ *                    the submatrix (i.e. inclusive)
  *
  *  \param[in]        last_row
  *                    The first row of the source matrix which is not part
- *                    of the submatrix (i.e. exclusive).
+ *                    of the submatrix (i.e. exclusive)
  *
  *  \param[in]        first_col
  *                    The first column of the source matrix which is part of
- *                    the submatrix (i.e. inclusive).
+ *                    the submatrix (i.e. inclusive)
  *
  *  \param[in]        last_col
  *                    The first column of the source matrix which is not
  *                    part of the submatrix (i.e. exclusive).
+ *
+ *  \returns          A submatrix with the given coordinates
  */
 template <typename T>
 Dense<T> Dense<T>::operator()(I_t first_row, I_t last_row, I_t first_col,
@@ -475,8 +471,8 @@ Dense<T> Dense<T>::operator()(I_t first_row, I_t last_row, I_t first_col,
 
 /** \brief              Cloning from an existing matrix
  *
- *  Creates another instance of Dense<T> with the exact same parameters. No
- *  memory is copied.
+ *  Applies the parameters of another instance \<source\> to the left hand 
+ *  instance. No memory is copied.
  *
  *  \param[in]          source
  *                      The matrix to clone from

@@ -1,4 +1,6 @@
-/** \file             gemm.h
+/** \file
+ *
+ *  \brief            xCOPY (BLAS-1)
  *
  *  \date             Created:  Jul 16, 2014
  *  \date             Modified: $Date$

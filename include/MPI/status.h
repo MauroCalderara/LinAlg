@@ -1,9 +1,6 @@
-/** \file             message_passing.h
+/** \file
  *
- *  \brief            Routines for MPI support.
- *
- *  \note             The name is chosen to avoid confusion with the system
- *                    mpi.h header
+ *  \brief            MPI_Status parsing
  *
  *  \date             Created:  Jul 15, 2014
  *  \date             Modified: $Date$

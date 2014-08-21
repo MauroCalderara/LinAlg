@@ -1,6 +1,6 @@
-/** \file             send_recv_meta.h
+/** \file
  *
- *  \brief            Routines to send and receive matrix metadata via MPI
+ *  \brief            Sending/receiving metadata using MPI
  *
  *  \date             Created:  Jul 15, 2014
  *  \date             Modified: $Date$
@@ -47,6 +47,20 @@ void send_meta(MetaData& meta, MPI_Comm communicator, int receiving_rank,
 void send_meta_async(MetaData meta, MPI_Comm communicator, int receiving_rank,
                      int tag, MPIStream& stream);
 /** \overload
+ *
+ *  \param[in]        meta
+ *                    The meta data to be sent.
+ *
+ *  \param[in]        communicator
+ *                    MPI communicator for the transfer
+ *
+ *  \param[in]        receiving_rank
+ *                    MPI rank of the receiving party
+ *
+ *  \param[in]        tag
+ *                    Tag of the transfer (must match tag on receiver)
+ *
+ *  \returns          Stream to synchronize the operation
  */
 inline MPIStream send_meta_async(MetaData meta, MPI_Comm communicator,
                                  int receiving_rank, int tag) {
@@ -98,13 +112,7 @@ inline void send_meta(Dense<T>& matrix, MPI_Comm communicator,
  *                    Tag of the transfer (must match tag on receiver)
  *
  *  \param[in]        stream
- *                    OPTIONAL: stream to use. If none is specified, the
- *                    function returns one that can be used to synchronize on
- *                    the operation.
- *
- *  \returns          stream
- *                    OPTIONAL: If no stream is specified, the function
- *                    returns one to synchronize the operation.
+ *                    Stream to use
  */
 template <typename T>
 inline void send_meta_async(Dense<T>& matrix, MPI_Comm communicator,
@@ -113,6 +121,20 @@ inline void send_meta_async(Dense<T>& matrix, MPI_Comm communicator,
   send_meta_async(meta, communicator, receiving_rank, tag, stream);
 }
 /** \overload
+ *
+ *  \param[in]        matrix
+ *                    The matrix whose meta data is to be sent.
+ *
+ *  \param[in]        communicator
+ *                    MPI communicator for the transfer
+ *
+ *  \param[in]        receiving_rank
+ *                    MPI rank of the receiving party
+ *
+ *  \param[in]        tag
+ *                    Tag of the transfer (must match tag on receiver)
+ *
+ *  \returns          Stream to synchronize the operation
  */
 template <typename T>
 inline MPIStream send_meta_async(Dense<T>& matrix, MPI_Comm communicator,
@@ -141,6 +163,20 @@ MetaData receive_meta(MPI_Comm communicator, int receiving_rank, int tag);
 void receive_meta_async(MetaData& meta, MPI_Comm communicator,
                         int sending_rank, int tag, MPIStream& stream);
 /** \overload
+ *
+ *  \param[in]        meta
+ *                    The instance of meta to contain the meta data received.
+ *
+ *  \param[in]        communicator
+ *                    MPI communicator for the transfer
+ *
+ *  \param[in]        sending_rank
+ *                    MPI rank of the sending arty
+ *
+ *  \param[in]        tag
+ *                    Tag of the transfer (must match tag on receiver)
+ *
+ *  \returns          Stream to synchronize the operation
  */
 inline MPIStream receive_meta_async(MetaData& meta, MPI_Comm communicator,
                                     int sending_rank, int tag) {
@@ -163,7 +199,7 @@ inline MPIStream receive_meta_async(MetaData& meta, MPI_Comm communicator,
  *  \param[in]        communicator
  *                    MPI communicator for the transfer
  *
- *  \param[in]        receiving_rank
+ *  \param[in]        sending_rank
  *                    MPI rank of the receiving party
  *
  *  \param[in]        tag

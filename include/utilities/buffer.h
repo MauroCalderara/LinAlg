@@ -1,4 +1,4 @@
-/** \file             buffer.h
+/** \file
  *
  *  \brief            A memory buffer
  *

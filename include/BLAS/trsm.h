@@ -1,4 +1,6 @@
-/** \file             gemm.h
+/** \file
+ *
+ *  \brief            xTRSM (BLAS-3)
  *
  *  \date             Created:  Jul 16, 2014
  *  \date             Modified: $Date$
@@ -73,7 +75,9 @@ extern C {
  *
  *  \param[in]        A
  *
- *  \param[in|out]    B
+ *  \param[in]        lda
+ *
+ *  \param[in,out]    B
  *
  *  \param[in]        ldb
  *
@@ -123,7 +127,7 @@ namespace CUBLAS {
  *
  *  \param[in]        uplo
  *
- *  \param[in]        transa
+ *  \param[in]        trans
  *
  *  \param[in]        diag
  *
@@ -135,7 +139,9 @@ namespace CUBLAS {
  *
  *  \param[in]        A
  *
- *  \param[in|out]    B
+ *  \param[in]        lda
+ *
+ *  \param[in,out]    B
  *
  *  \param[in]        ldb
  *

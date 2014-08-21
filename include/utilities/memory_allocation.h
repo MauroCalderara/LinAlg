@@ -1,6 +1,6 @@
-/** \file             memory_allocation.h
+/** \file
  *
- *  \brief            Routines to allocate memory
+ *  \brief            Memory allocation using smart pointers
  *
  *  \date             Created:  Jul 12, 2014
  *  \date             Modified: $Date$

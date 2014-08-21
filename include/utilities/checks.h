@@ -1,6 +1,6 @@
-/** \file             checks.h
+/** \file
  *
- *  \brief            Routines to facilitate argument checking.
+ *  \brief            Argument checking
  *
  *  \date             Created:  Jul 16, 2014
  *  \date             Modified: $Date$

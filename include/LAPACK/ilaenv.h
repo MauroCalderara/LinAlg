@@ -1,4 +1,6 @@
-/** \file             ilaenv.h
+/** \file
+ *
+ *  \brief            ILAENV
  *
  *  \date             Created:  Jul 16, 2014
  *  \date             Modified: $Date$
@@ -67,6 +69,8 @@ extern C {
  *  \param[in]        n3
  *
  *  \param[in]        n4
+ *
+ *  \returns          The result of the query
  *
  *  See [ILAENV](http://www.math.utah.edu/software/lapack/lapack-i.html#ilaenv)
  */

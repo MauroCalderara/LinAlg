@@ -1,6 +1,6 @@
-/** \file             copy_array.h
+/** \file
  *
- *  \brief            Routines for memory copies
+ *  \brief            General 1D and 2D array copy
  *
  *  \date             Created:  Jul 12, 2014
  *  \date             Modified: $Date$
@@ -66,7 +66,7 @@ inline void copy_1Darray_host(Z_t* src_array, I_t length, Z_t* dst_array){
  *  \param[in]          length
  *                      The length of the 1D array.
  *
- *  \param[in|out]      dst_array
+ *  \param[in,out]      dst_array
  *                      Destination array for the 1D copy.
  *
  *  \param[in]          src_location
@@ -205,7 +205,7 @@ void copy_1Darray(T* src_array, I_t length, T* dst_array,
  *  \param[in]          dst_format
  *                      The format of the output array.
  *
- *  \param[in|out]      dst_array
+ *  \param[in,out]      dst_array
  *                      Destination array for the 2D copy.
  *
  *  \param[in]          dst_ld

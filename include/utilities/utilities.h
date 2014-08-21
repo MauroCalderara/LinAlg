@@ -1,6 +1,6 @@
-/** \file             utilities.h
+/** \file
  *
- *  \brief            Includes all utilities
+ *  \brief            Inclusion of all utility function headers
  *
  *  \date             Created:  Jul 12, 2014
  *  \date             Modified: $Date$

@@ -1,6 +1,6 @@
-/** \file             sparse.cc
+/** \file
  *
- *  \brief            Specialized sparse struct members
+ *  \brief            Specialized members of Sparse<T>
  *
  *  \date             Created:  Jul 16, 2014
  *  \date             Modified: $Date$

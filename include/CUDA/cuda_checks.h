@@ -1,6 +1,6 @@
-/** \file             cuda_checks.h
+/** \file
  *
- *  \brief            Routines to check for CUDA/CUBLAS/CUSPARSE error messages
+ *  \brief            CUDA/CUBLAS/CUSPARSE error checking
  *
  *  \date             Created:  Jul 12, 2014
  *  \date             Modified: $Date$

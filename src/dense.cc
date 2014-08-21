@@ -1,6 +1,6 @@
-/** \file             dense.cc
+/** \file
  *
- *  \brief            Specialized sparse struct members
+ *  \brief            Specialized members of Dense<T>
  *
  *  \date             Created:  Jul 12, 2014
  *  \date             Modified: $Date$
