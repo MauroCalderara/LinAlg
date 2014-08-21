@@ -88,3 +88,8 @@ What it is *not*
   suit your needs. Doing so should be very simple, though.
 
 
+Documentation
+-------------
+
+The automatically generated documentation can be found
+[here](http://maurocalderara.github.io/LinAlg/doxygen/)
