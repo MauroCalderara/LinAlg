@@ -1,0 +1,168 @@
+/** \file             XYZ.h
+ *
+ *  \date             Created:  Jul 16, 2014
+ *  \date             Modified: $Date$
+ *
+ *  \authors          mauro <mcalderara@iis.ee.ethz.ch>
+ *
+ *  \version          $Revision$
+ */
+#ifndef LINALG_BLAS_XYZ_H_
+#define LINALG_BLAS_XYZ_H_
+
+/* Organization of the namespace:
+ *
+ *    LinAlg::BLAS
+ *        convenience bindings supporting different locations for Dense<T>
+ *
+ *    LinAlg::BLAS::<NAME>
+ *        bindings to the <NAME> BLAS backend
+ */
+
+#ifdef HAVE_CUDA
+#include <cuda_runtime.h>
+#include <cublas_v2.h>
+#include "cuda_helper.h"
+#endif
+
+#include "types.h"
+#include "exceptions.h"
+#include "dense.h"
+
+
+namespace LinAlg {
+
+namespace BLAS {
+
+namespace FORTRAN {
+
+#ifndef DOXYGEN_SKIP
+extern "C" {
+  void fortran_name(sxyz, SXYZ)(...);
+  void fortran_name(dxyz, DXYZ)(...);
+  void fortran_name(cxyz, CXYZ)(...);
+  void fortran_name(zxyz, ZXYZ)(...);
+}
+#endif
+
+/** \brief            General xyz
+ *
+ *  Z = X + Y
+ *
+ *  \param[in]        transx
+ *
+ *  \param[in|out]    Z
+ *
+ *  See [DXYZ](http://www.mathkeisan.com/usersguide/man/dxyz.html)
+ */
+inline void xXYZ(...) {
+  fortran_name(sxyz, SXYZ)(...);
+};
+/** \overload
+ */
+inline void xXYZ(...) {
+  fortran_name(dxyz, DXYZ)(...);
+};
+/** \overload
+ */
+inline void xXYZ(...) {
+  fortran_name(cxyz, CXYZ)(...);
+};
+/** \overload
+ */
+inline void xXYZ(...) {
+  fortran_name(zxyz, ZXYZ)(...);
+};
+
+} /* namespace FORTRAN */
+
+#ifdef HAVE_CUDA
+namespace CUBLAS {
+
+/** \brief            General xyz
+ *
+ *  Z = X + Y
+ *
+ *  \param[in]        handle
+ *
+ *  \param[in]        transx
+ *
+ *  \param[in|out]    Z
+ *
+ *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
+ */
+inline void xXYZ(...) {
+  checkCUBLAS(cublasSxyz(...));
+};
+/** \overload
+ */
+inline void xXYZ(...) {
+  checkCUBLAS(cublasDxyz(...));
+};
+/** \overload
+ */
+inline void xXYZ(...) {
+  checkCUBLAS(cublasCxyz(...));
+};
+/** \overload
+ */
+inline void xXYZ(...) {
+  checkCUBLAS(cublasZxyz(...));
+};
+
+} /* namespace CUBLAS */
+
+using LinAlg::Utilities::check_device;
+#ifdef HAVE_CUDA
+using LinAlg::CUDA::CUBLAS::handles;
+#endif
+
+// Convenience bindings (bindings for Dense<T>)
+/** \brief            General xyz
+ *
+ *  Z = X + Y
+ *
+ *  \param[in]        X
+ *
+ *  \param[in]        Y
+ *
+ *  \param[in|out]    Z
+ */
+template <typename T>
+inline void xXYZ(...) {
+
+#ifndef LINALG_NO_CHECKS
+  check_device(...)
+  ...
+#endif
+
+  auto location = ;
+  auto device_id = ;
+
+  if (location == Location::host) {
+    char transa = (A._transposed) ? 'T' : 'N';
+    char transb = (B._transposed) ? 'T' : 'N';
+    xXYZ(...);
+  }
+#ifdef HAVE_CUDA
+  else if (location == Location::GPU) {
+    cublasOperation_t transa = (A._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
+    cublasOperation_t transb = (B._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
+    BLAS::CUBLAS::xXYZ();
+  }
+#endif
+
+#ifndef LINALG_NO_CHECKS
+  else {
+    throw excUnimplemented("xXYZ(): BLAS-3 XYZ not supported on selected "
+                           "location");
+  }
+#endif
+
+}
+
+} /* namespace LinAlg::BLAS */
+
+} /* namespace LinAlg */
+
+#endif /* LINALG_BLAS_XYZ_H_ */

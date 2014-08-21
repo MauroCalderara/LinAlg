@@ -1,0 +1,24 @@
+# Compiler
+CXX = gcc
+CXX_FLAGS = -fPIC -pthread -std=c++11
+CXX_LINKER_FLAGS = -pthread -lstdc++
+
+# Flags to change behavior of the LinAlg library
+LINALG_FLAGS =
+
+# Cuda
+CUDA_FLAGS = -DHAVE_CUDA
+CUDA_INCLUDE = -I$(CUDATOOLKIT_HOME)/include
+CUDA_LIBS = -L$(CUDATOOLKIT_HOME)/lib64 -lcudart -lcublas -lcusparse
+
+# MKL
+MKL_FLAGS = -DHAVE_MKL
+MKL_ROOT = $(MKLROOT)
+MKL_INCLUDE = -I$(MKL_ROOT)/include
+MKL_LIBS = -L$(MKL_ROOT)/lib/intel64 -Wl,--start-group -lmkl_intel_ilp64 \
+		   -lmkl_core -lmkl_gnu_thread -Wl,--end-group -ldl -lpthread -lm
+
+# MPI
+MPI_FLAGS = -DHAVE_MPI
+
+# vim: filetype=make:

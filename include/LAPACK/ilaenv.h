@@ -1,0 +1,84 @@
+/** \file             ilaenv.h
+ *
+ *  \date             Created:  Jul 16, 2014
+ *  \date             Modified: $Date$
+ *
+ *  \authors          mauro <mcalderara@iis.ee.ethz.ch>
+ *
+ *  \version          $Revision$
+ */
+#ifndef LINALG_LAPACK_ILAENV_H_
+#define LINALG_LAPACK_ILAENV_H_
+
+/* Organization of the namespace:
+ *
+ *    LinAlg::LAPACK
+ *        convenience bindings supporting different locations for Dense<T>
+ *
+ *        'Abstract' functions like 'solve' and 'invert'
+ *
+ *    LinAlg::LAPACK::<NAME>
+ *        bindings to the <NAME> LAPACK backend
+ */
+
+#ifdef HAVE_CUDA
+
+#include <cuda_runtime.h>
+#include <cublas_v2.h>
+#include "cuda_helper.h"
+
+#ifdef HAVE_MAGMA
+#include <magma.h>
+#include <magma_lapack.h>
+#endif
+
+#endif
+
+
+#include "types.h"
+
+namespace LinAlg {
+
+namespace LAPACK {
+
+namespace FORTRAN {
+
+#ifndef DOXYGEN_SKIP
+extern C {
+  I_t fortran_name(ilaenv, ILAENV)(const I_t* ispec, const char* name,
+                                   const char* opts, const I_t* n1,
+                                   const I_t* n2, const I_t* n3, const I_t* n4);
+}
+#endif
+
+
+/** \brief            ILAENV
+ *
+ *  \param[in]        ispec
+ *
+ *  \param[in]        name
+ *
+ *  \param[in]        opts
+ *
+ *  \param[in]        n1
+ *
+ *  \param[in]        n2
+ *
+ *  \param[in]        n3
+ *
+ *  \param[in]        n4
+ *
+ *  See [ILAENV](http://www.math.utah.edu/software/lapack/lapack-i.html#ilaenv)
+ */
+inline I_t ILAENV(I_t ispec, const char* name, const char* opts, I_t n1, I_t n2,
+                  I_t n3, I_t n4) {
+  return fortran_name(ilaenv, ILAENV)(&ispec, name, opts, &n1, &n2, &n3, &n4);
+};
+
+} /* namespace LinAlg::LAPACK::FORTRAN */
+
+} /* namespace LinAlg::LAPACK */
+
+} /* namespace LinAlg */
+
+#endif /* LINALG_LAPACK_ILAENV_H_ */

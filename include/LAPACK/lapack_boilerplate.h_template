@@ -1,0 +1,181 @@
+/** \file             xyz.h
+ *
+ *  \date             Created:  Jul 16, 2014
+ *  \date             Modified: $Date$
+ *
+ *  \authors          mauro <mcalderara@iis.ee.ethz.ch>
+ *
+ *  \version          $Revision$
+ */
+#ifndef LINALG_LAPACK_XYZ_H_
+#define LINALG_LAPACK_XYZ_H_
+
+/* Organization of the namespace:
+ *
+ *    LinAlg::LAPACK
+ *        convenience bindings supporting different locations for Dense<T>
+ *
+ *        'Abstract' functions like 'solve' and 'invert'
+ *
+ *    LinAlg::LAPACK::<NAME>
+ *        bindings to the <NAME> LAPACK backend
+ */
+
+#ifdef HAVE_CUDA
+
+#include <cuda_runtime.h>
+#include <cublas_v2.h>
+#include "cuda_helper.h"
+
+#ifdef HAVE_MAGMA
+#include <magma.h>
+#include <magma_lapack.h>
+#endif
+
+#endif
+
+
+#include "types.h"
+#include "exceptions.h"
+#include "blas_checks.h"
+#include "dense.h"
+
+namespace LinAlg {
+
+namespace LAPACK {
+
+namespace FORTRAN {
+
+#ifndef DOXYGEN_SKIP
+extern C {
+  fortran_name(xyz, XYZ)(...);
+}
+#endif
+
+/** \brief            XYZ
+ *
+ *  Z <- X + Y
+ *
+ *  \param[in]        X
+ *
+ *  \param[in]        Y
+ *
+ *  \param[in|out]    Z
+ *
+ *  See [DXYZ](http://www.mathkeisan.com/usersguide/man/dxyz.html)
+ */
+inline void xXYZ(...) {
+  fortran_name(sxyz, SXYZ)(...);
+};
+/** \overload
+ */
+inline void xXYZ(...) {
+  fortran_name(dxyz, DXYZ)(...);
+};
+/** \overload
+ */
+inline void xXYZ(...) {
+  fortran_name(cxyz, CXYZ)(...);
+};
+/** \overload
+ */
+inline void xXYZ(...) {
+  fortran_name(zxyz, ZXYZ)(...);
+};
+
+} /* namespace FORTRAN */
+
+
+#ifdef HAVE_CUDA
+namespace CUBLAS {
+
+/** \brief            XYZ
+ *
+ *  Z <- X + Y
+ *
+ *  \param[in]        X
+ *
+ *  \param[in]        Y
+ *
+ *  \param[in|out]    Z
+ *
+ *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
+ */
+inline void xXYZ(...) {
+  checkCUBLAS(cublasSxyz(...));
+};
+/** \overload
+ */
+inline void xXYZ(...) {
+  checkCUBLAS(cublasDxyz(...));
+};
+/** \overload
+ */
+inline void xXYZ(...) {
+  checkCUBLAS(cublasCxyz(...));
+};
+/** \overload
+ */
+inline void xXYZ(...) {
+  checkCUBLAS(cublasZxyz(...));
+};
+
+} /* namespace LinAlg::LAPACK::CUBLAS */
+#endif
+
+using LinAlg::Utilities::check_device;
+using LinAlg::Utilities::check_input_transposed;
+
+/** \brief            XYZ
+ *
+ *  Z <- X + Y
+ *
+ *  \param[in]        X
+ *
+ *  \param[in]        Y
+ *
+ *  \param[in|out]    Z
+ *
+ *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
+ */
+template <typename T>
+inline void xXYZ(Dense<T>& X, Dense<int>& Y) {
+
+#ifndef LINALG_NO_CHECKS
+  check_device(X, Y, "xXYZ()");
+#endif /* LINALG_NO_CHECKS */
+
+  auto device_id = ;
+  auto n = ;
+
+  if (X._location == Location::host) {
+    FORTRAN::xXYZ(...);
+  }
+#ifdef HAVE_CUDA
+  else if (X._location == Location::GPU) {
+    using LinAlg::CUDA::CUBLAS::handles;
+    CUBLAS::xXYZ(handles[device_id], ...);
+  }
+#ifdef HAVE_MAGMA
+  // check if MAGMA's or CUBLAS' XYZ is faster and use that one.
+#endif
+#endif
+
+#ifndef LINALG_NO_CHECKS
+  else {
+    throw excUnimplemented("xXYZ(): LAPACK XYZ not supported on selected "
+                           "location");
+  }
+
+  if (info != 0) {
+    throw excMath("xXYZ(): error: info = %d", info);
+  }
+#endif
+
+};
+
+} /* namespace LinAlg::LAPACK */
+
+} /* namespace LinAlg */
+
+#endif /* LINALG_LAPACK_XYZ_H_ */
