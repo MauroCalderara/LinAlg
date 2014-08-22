@@ -14,6 +14,7 @@
 
 #include "../types.h"
 #include "../exceptions.h"
+#include "stringformat.h"
 
 namespace LinAlg {
 
@@ -41,7 +42,7 @@ inline void check_device(Dense<T>& A, Dense<U>& B, const char* caller_name) {
 
     std::string message = caller_name;
     message = message + ": argument matrices not on the same device";
-    throw excBadArgument(message.c_str());
+    throw excBadArgument(message);
 
   }
 
@@ -71,7 +72,7 @@ inline void check_device(const Dense<T>& A, const Dense<U>& B, Dense<V>& C,
 
     std::string message = caller_name;
     message = message + ": argument matrices not on the same device";
-    throw excBadArgument(message.c_str());
+    throw excBadArgument(message);
 
   }
 
@@ -95,7 +96,7 @@ inline void check_input_transposed(Dense<T>& A, const char* caller_name) {
 
     std::string message = caller_name;
     message = message + ": transposed matrices are not supported as input";
-    throw excBadArgument(message.c_str());
+    throw excBadArgument(message);
 
   }
 
@@ -117,7 +118,7 @@ inline void check_output_transposed(Dense<T>& A, const char* caller_name) {
 
     std::string message = caller_name;
     message = message + ": transposed matrices are not supported as output";
-    throw excBadArgument(message.c_str());
+    throw excBadArgument(message);
 
   }
 
@@ -144,9 +145,75 @@ inline void check_stream(Dense<T>& A, CUDAStream stream,
     std::string message = caller_name;
     message = message + ": stream and matrices are associated with different "
                         "devices";
-    throw excBadArgument(message.c_str());
+    throw excBadArgument(message);
 
   }
+};
+
+/*  \brief            Checks if a matrix is in a certain format. Raises an
+ *                    exception if it is not.
+ *
+ *  \param[in]        format
+ *                    Format to check for
+ *
+ *  \param[in]        A
+ *                    Matrix to check
+ *
+ *  \param[in]        caller_name
+ *                    Name of the calling routine
+ */
+template <typename T>
+inline void check_format(Format format, Dense<T>& A, const char* caller_name) {
+
+  if (A._format != format) {
+
+    std::string message = caller_name;
+
+    if (format == Format::ColMajor) {
+
+      message = message + ": input matrix not in ColMajor format.";
+
+    } else if (format == Format::RowMajor) {
+
+      message = message + ": input matrix not in ColMajor format.";
+
+    }
+
+    throw excBadArgument(message);
+
+  }
+
+};
+
+/*  \brief            Checks if a matrix has certain dimensions. Throws an
+ *                    exception if it does not.
+ *
+ *  \param[in]        rows
+ *                    Number of rows.
+ *
+ *  \param[in]        cols
+ *                    Number of columns.
+ *
+ *  \param[in]        A
+ *                    Matrix to check.
+ *
+ *  \param[in]        caller_name
+ *                    Name of the calling routine.
+ */
+template <typename T, typename U>
+inline void check_dimension(I_t rows, I_t columns, Dense<U>& A,
+                            const char* caller_name) {
+
+  if (A.rows() != rows || A.cols() != columns) {
+
+    auto message = stringformat("%s: matrix has wrong dimensions is %dx%d, "
+                                "should be %dx%d)", caller_name, A.rows(),
+                                A.cols(), rows, columns);
+
+    throw excBadArgument(message);
+
+  }
+
 };
 
 #endif /* LINALG_NO_CHECKS */
