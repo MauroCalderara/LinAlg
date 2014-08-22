@@ -20,6 +20,7 @@
 #include <string>     // std::string
 #include <sstream>    // std::stringstream
 #include <cstdio>     // std::printf
+#include <utility>    // std::move
 
 #include "types.h"
 #include "exceptions.h"

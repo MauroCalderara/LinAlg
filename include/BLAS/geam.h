@@ -27,6 +27,8 @@
 #include "cuda_helper.h"
 #endif
 
+#include <utility>    // std::move
+
 #include "types.h"
 #include "exceptions.h"
 #include "checks.h"

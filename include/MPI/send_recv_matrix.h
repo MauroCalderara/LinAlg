@@ -20,6 +20,7 @@
 #include <string>     // std::string
 #include <sstream>    // std::stringstream
 #include <cstdio>     // std::printf
+#include <utility>    // std::move
 
 #include "types.h"
 #include "exceptions.h"
@@ -349,8 +350,8 @@ void receive_matrix(Dense<T>& matrix, MPI_Comm communicator, int sending_rank,
  *                    Tag of the transfer (must match tag on sender)
  *
  *  \param[in]        stream
- *                    MPI stream to use for asynchronous transfers. If no 
- *                    stream or an MPIStream(0) is specified, the operation is 
+ *                    MPI stream to use for asynchronous transfers. If no
+ *                    stream or an MPIStream(0) is specified, the operation is
  *                    synchronous
  */
 template <typename T>

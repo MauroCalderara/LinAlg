@@ -13,6 +13,8 @@
 
 #include <mpi.h>      // all MPI stuff
 
+#include <utility>    // std::move
+
 #include "MPI/status.h"
 
 namespace LinAlg {
