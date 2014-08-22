@@ -147,6 +147,12 @@ inline D_t cast<D_t>(D_t real, D_t imag) { D_t tmp(real); return tmp; };
 
 
 /** \brief            Storage locations
+ *
+ *  \note             This enum only includes members for which there is
+ *                    compiled support. Thus, if you want to check for a 
+ *                    certain location in a portable code you either have to 
+ *                    use #ifdefs or use the .is_on_X() members of Dense<T> 
+ *                    and Sparse<T>
  */
 enum class Location {
     host,       //< Main memory
@@ -155,9 +161,6 @@ enum class Location {
 #endif
 #ifdef HAVE_MIC
     MIC,        //< Intel Xeon Phi / MIC
-#endif
-#ifdef HAVE_MPI
-    remote,     //< On a remote host
 #endif
 };
 
