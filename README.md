@@ -78,12 +78,12 @@ wait_time.toc();  // prints "Time waited for asynchronous calls: x sec"
 What it is *not*
 ----------------
 
-- An adaptation of MATLAB&reg; for C++:\n
+- An adaptation of MATLAB&reg; for C++:  
   as can be seen from the above code example, you still need to know your way
   with the above mentioned libraries, their use should just become less tedious
   and error prone
 
-- A turn key solution:\n
+- A turn key solution:  
   even for fairly mainstream codes, chances are you'll have to add to it to
   suit your needs. Doing so should be very simple, though.
 
