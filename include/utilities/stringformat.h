@@ -20,6 +20,8 @@
 
 namespace LinAlg {
 
+namespace Utilities {
+
 /** \brief              Format a std::string in sprintf-like fashion.
  *
  *  \param[in]          formatstring
@@ -49,6 +51,8 @@ inline std::string stringformat(const char* formatstring, Ts... formatargs) {
   return std::string(buffer.get());
 
 };
+
+} /* namespace LinAlg::Utilities */
 
 } /* namespace LinAlg */
 

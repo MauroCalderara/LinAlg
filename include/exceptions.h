@@ -65,7 +65,7 @@ class excLinAlg : public std::exception {
    */
   template <typename... Ts>
   excLinAlg(const char* userformatstring, Ts... userformatargs) {
-    usermsg = stringformat(userformatstring, userformatargs...);
+    usermsg = Utilities::stringformat(userformatstring, userformatargs...);
     get_stack();
   }
   /** \brief          Constructor from const char* string
