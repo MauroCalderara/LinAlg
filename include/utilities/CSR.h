@@ -240,10 +240,7 @@ void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
 
   if (matrix._size == 0) {
 
-    // Move constructor for the win
-    matrix = std::move(Sparse<T>(size, n_nonzeros, first_index,
-                                 matrix._location, matrix._device_id,
-                                 matrix._format));
+    matrix.reallocate(size, n_nonzeros, matrix._location, matrix._device_id);
 
   }
 
@@ -363,8 +360,8 @@ void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
 template <typename T, typename... Us>
 inline void read_CSR(LinAlg::Dense<T>& matrix, const char* formatstring,
                      Us... formatargs) {
-  std::string filename = stringformat(formatstring, formatargs...);
-  read_CSR(matrix, filename);
+  std::string filename_str = stringformat(formatstring, formatargs...);
+  read_CSR(matrix, filename_str);
 };
 /** \overload
  *
@@ -380,8 +377,8 @@ inline void read_CSR(LinAlg::Dense<T>& matrix, const char* formatstring,
 template <typename T, typename... Us>
 inline void read_CSR(LinAlg::Sparse<T>& matrix, const char* formatstring,
                      Us... formatargs) {
-  std::string filename = stringformat(formatstring, formatargs...);
-  read_CSR(matrix, filename);
+  std::string filename_str = stringformat(formatstring, formatargs...);
+  read_CSR(matrix, filename_str);
 };
 /** \overload
  *
