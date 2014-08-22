@@ -41,6 +41,7 @@
 #include "../exceptions.h"
 #include "../utilities/checks.h"
 #include "../dense.h"
+#include "ilaenv.h"
 
 namespace LinAlg {
 
@@ -49,7 +50,7 @@ namespace LAPACK {
 namespace FORTRAN {
 
 #ifndef DOXYGEN_SKIP
-extern C {
+extern "C" {
   void fortran_name(sgetri, SGETRI)(const I_t* n, S_t* A, const I_t* lda,
                                     const I_t* ipiv, S_t* work,
                                     const I_t* lwork, int* info);
@@ -243,16 +244,13 @@ using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_input_transposed;
 
 /** \brief            Compute the inverse using the LU decomposition of a
- *                    matrix in-place or out-of-place
+ *                    matrix in-place
  *
  *  Note that in-place inversion on GPU using CUBLAS matrices requires extra
  *  memory and an additional memory copy as the CUBLAS inversion function is
- *  out-of-place. An out-of-place inversion of matrices in main memory requires
- *  extra memory and an additional memory copy as the LAPACK inversion function
- *  is in-place.
+ *  out-of-place.
  *
  *  A = A**-1 (in-place)
- *  C = A**-1 (out-of-place)
  *
  *  \param[in]        A
  *                    Matrix in LU decomposition.
@@ -263,75 +261,50 @@ using LinAlg::Utilities::check_input_transposed;
  *                    the input is a non-pivoting LU decomposition (see xGETRF).
  *
  *  \param[in]        work
- *                    OPTIONAL: For the matrices in main memory work is a vector
- *                    of length at least A.rows(). The optimal length can be
- *                    determined using LAPACK's ILAENV. Some backends (e.g. the
- *                    CUBLAS backend) don't require a preallocated work in which
- *                    case the argument is ignored. If the backend does require
- *                    a preallocated work and none is specified, the routine
- *                    will allocate one of the optimal size.
- *
- *  \param[in]        C
- *                    OPTIONAL: if unspecified or empty, an in-place inversion
- *                    is performed, if specified, an out-of-place inversion is
- *                    performed.
- *
- *  \note             The return value of the routine is checked and a
- *                    corresponding exception is thrown if the matrix is
- *                    singular.
+ *                    For the matrices in main memory work is a vector of 
+ *                    length at least A.rows(). The optimal length can be 
+ *                    determined using LAPACK's ILAENV. Some backends (e.g.  
+ *                    the CUBLAS backend) don't require a preallocated work in 
+ *                    which case the supplied vector is ignored. If the 
+ *                    backend does require a preallocated work and none or an 
+ *                    empty one is specified, the routine will allocate one of 
+ *                    the optimal size.
  */
 template <typename T>
-inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work, Dense<T>& C) {
+inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
 
 #ifndef LINALG_NO_CHECKS
-  // Check the inputs
-  check_device(A, ipiv, "xGETRI()");
-  check_input_transposed(A, "xGETRI()");
-#ifndef HAVE_CUDA
-  check_input_transposed(ipiv, "xGETRI()");
-#else
-  bool ipiv_empty = (ipiv._rows == 0) ? true : false;
-  if (!ipiv_empty) {
-    check_input_transposed(ipiv, "xGETRI()");
-  }
-#endif
+  // Check A
+  check_input_transposed(A, "xGETRI(A, ipiv, work), A");
   if (A._rows != A._cols) {
-    throw excBadArgument("xGETRI(): matrix A must be a square matrix");
+    throw excBadArgument("xGETRI(A, ipiv, work), A: matrix must be square");
   }
 
-  // Check ipiv specifically
+  // Check if ipiv is empty _and_ we use the CUBLAS backend
+  bool ipiv_empty;
 #ifndef HAVE_CUDA
-  if (A.rows() != ipiv.rows()) {
-    throw excBadArgument("xGETRI(): argument matrix size mismatch: "
-                         "matrix.rows() != ipiv.rows() ");
-  }
+  ipiv_empty = false;
 #else
-  if (A.rows() != A.cols() && A._location == Location::GPU) {
-    throw excBadArgument("xGETRI(): matrix A must be a square matrix");
+  ipiv_empty = (ipiv._rows == 0) ? true : false;
+  if (ipiv_empty && A._location != Location::GPU) {
+    throw excBadArgument("xGETRI(A, ipiv, work), ipiv: empty ipiv is only "
+                         "allowed when inverting matrices on the GPU");
   }
+#endif
+
   if (!ipiv_empty) {
+
+    check_device(A, ipiv, "xGETRI()");
+    check_input_transposed(ipiv, "xGETRI(A, ipiv, work), ipiv");
     if (A.rows() != ipiv.rows()) {
-      throw excBadArgument("xGETRI(): argument matrix size mismatch: "
-                           "if ipiv is not empty, matrix.rows() must equal "
-                           "ipiv.rows()");
+      throw excBadArgument("xGETRI(A, ipiv, work), ipiv: argument matrix size "
+                           "mismatch: if ipiv is not empty, A.rows() = %d must "
+                           "equal ipiv.rows() = %d", A.rows(), ipiv.rows());
     }
+  
   }
-#endif
+
 #endif /* LINALG_NO_CHECKS */
-
-  // Check C
-  bool out_of_place = (C._rows == 0) ? false : true;
-#ifndef LINALG_NO_CHECKS
-  if (out_of_place) {
-    check_device(A, C, "xGETRI()");
-    check_output_transposed(C, "xGETRI()");
-    if (A._rows != C._rows || A._cols != C._cols) {
-      throw excBadArgument("xGETRI(): (out-of-place) dimensions of A and C "
-                           "don't match");
-    }
-  }
-#endif
-
 
   auto device_id = A._device_id;
   auto n = A.cols();
@@ -339,7 +312,6 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work, Dense<T>& C) {
   auto lda = A._leading_dimension;
   auto ipiv_ptr = ipiv._begin();
   int  info = 0;
-
 
   if (A._location == Location::host) {
 
@@ -349,19 +321,20 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work, Dense<T>& C) {
     if (lwork == 0) {
 
       using LinAlg::Type;
+      using LinAlg::LAPACK::FORTRAN::ILAENV;
 
       switch (type<T>()) {
         case Type::S:
-          lwork = LAPACK::ILAENV(1, "sgetri", "", n, -1, -1, -1);
+          lwork = ILAENV(1, "sgetri", "", n, -1, -1, -1);
           break;
         case Type::D:
-          lwork = LAPACK::ILAENV(1, "dgetri", "", n, -1, -1, -1);
+          lwork = ILAENV(1, "dgetri", "", n, -1, -1, -1);
           break;
         case Type::C:
-          lwork = LAPACK::ILAENV(1, "cgetri", "", n, -1, -1, -1);
+          lwork = ILAENV(1, "cgetri", "", n, -1, -1, -1);
           break;
         case Type::Z:
-          lwork = LAPACK::ILAENV(1, "zgetri", "", n, -1, -1, -1);
+          lwork = ILAENV(1, "zgetri", "", n, -1, -1, -1);
           break;
         default:
           throw excBadArgument("xGETRI(): unsupported data type");
@@ -370,54 +343,41 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work, Dense<T>& C) {
       work.reallocate(lwork, 1);
       lwork = work._rows;
 
-    }
-
-    // TODO: this would be faster using the swap-without-temporary trick but I
-    // don't yet have matrix addition and subtraction
-    Dense<T> A_tmp;
-
-    if (out_of_place) {
-      printf("LinAlg::LAPACK::xGETRI(): warning, out-of-place inversion for "
-             "matrices in main memory requires 3 times the memory of in-place "
-             "inversion and incurs three memory copies of the matrix\n");
-      A_tmp << A;
+    } else if (lwork < A._rows) {
+    
+      throw excBadArgument("xGETRI(A, ipiv, work), work: work must have at "
+                           "least A.rows() = %d rows (work.rows() = %d)",
+                           A._rows, lwork);
     }
 
     auto work_ptr = work._begin();
     FORTRAN::xGETRI(n, A_ptr, lda, ipiv_ptr, work_ptr, lwork, &info);
 
-    if (out_of_place) {
-      C << A;
-      A << A_tmp;
-    }
-
   }
 #ifdef HAVE_CUDA
+#ifndef USE_MAGMA_GETRI
   else if (A._location == Location::GPU) {
 
     // CUBLAS' getri is out-of-place so we need to allocate a C and then stream
     // it back into A after the operation
 
-    if (!out_of_place) {
-      C.reallocate(A._rows, A._cols, A._location, A._device_id);
-    }
+    Dense<T> C(A._rows, A._cols, A._location, A._device_id);
 
     auto C_ptr = C._begin();
     auto ldc = C._leading_dimension;
+    auto ipiv_ptr = (ipiv_empty) ? nullptr : ipiv._begin();
 
     using LinAlg::CUDA::CUBLAS::handles;
     CUBLAS::xGETRI(handles[device_id], n, A_ptr, lda, ipiv_ptr, C_ptr, ldc,
                    &info);
 
-    if (!out_of_place) {
-      A << C;
-    }
+    A << C;
 
   }
-#ifdef HAVE_MAGMA
+#else
   // check if MAGMA's or CUBLAS' GETRI is faster and use that one.
-#endif
-#endif
+#endif /* USE_MAGMA_GETRI */
+#endif /* HAVE_CUDA */
 
 #ifndef LINALG_NO_CHECKS
   else {
@@ -432,21 +392,228 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work, Dense<T>& C) {
 
 };
 /** \overload
- */
-template <typename T>
-inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
-  Dense<T> C;
-  xGETRI(A, ipiv, work, C);
-};
-/** \overload
+ *
+ *  \param[in]        A
+ *                    Matrix in LU decomposition.
+ *
+ *  \param[in]        ipiv
+ *                    ipiv is A.rows()*1 matrix (a vector). The CUBLAS backend
+ *                    allows specifying an empty matrix for ipiv, assuming that
+ *                    the input is a non-pivoting LU decomposition (see xGETRF).
  */
 template <typename T>
 inline void xGETRI(Dense<T>& A, Dense<int>& ipiv) {
   Dense<T> work;
-  Dense<T> C;
-  xGETRI(A, ipiv, work, C);
+  xGETRI(A, ipiv, work);
 };
 
+/** \brief            Compute the inverse using the LU decomposition of a
+ *                    matrix out-of-place
+ *
+ *  \note             This function is provided to suit the CUBLAS
+ *                    implementation of an out-of-place inversion. An 
+ *                    out-of-place inversion of matrices in main memory
+ *                    requires extra memory and an additional memory copy as 
+ *                    the LAPACK inversion function is in-place.
+ *
+ *  C = A**-1 (out-of-place)
+ *
+ *  \param[in]        A
+ *                    Matrix in LU decomposition.
+ *
+ *  \param[in]        ipiv
+ *                    ipiv is A.rows()*1 matrix (a vector). The CUBLAS backend
+ *                    allows specifying an empty matrix for ipiv, assuming that
+ *                    the input is a non-pivoting LU decomposition (see xGETRF).
+ *
+ *  \param[in]        work
+ *                    For the matrices in main memory \<work\> is a vector of 
+ *                    length at least A.rows(). The optimal length can be 
+ *                    determined using LAPACK's ILAENV. Some backends (e.g.  
+ *                    the CUBLAS backend) don't require a preallocated work in 
+ *                    which case the supplied vector is ignored. If the 
+ *                    backend does require a preallocated work and none or an 
+ *                    empty one is specified, the routine will allocate one of 
+ *                    the optimal size.
+ *
+ *  \param[in]        C
+ *                    The target of the out-of-place inversion. If an empty 
+ *                    matrix is given as argument, the routine allocates a 
+ *                    suitable one.
+ *
+ *  \note             The return value of the routine is checked and a
+ *                    corresponding exception is thrown if the matrix is
+ *                    singular.
+ *
+ *  \todo             The fastest way to swap two matrices on the CPU would
+ *                    probably be to swap them in reasonably sized blocks (8 
+ *                    or 16 elements vectorized) using a swap without 
+ *                    temporary (uses no extra memory and only reads/writes 
+ *                    each element once from RAM and twice in registers).
+ */
+template <typename T>
+inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
+                       Dense<T>& C) {
+
+  if (C._rows == 0) {
+    C.reallocate(A._rows, A._cols, A._location, A._device_id);
+  }
+
+#ifndef LINALG_NO_CHECKS
+  // Check A
+  check_input_transposed(A, "xGETRI(A, ipiv, work), A");
+  if (A._rows != A._cols) {
+    throw excBadArgument("xGETRI(A, ipiv, work), A: matrix must be square");
+  }
+
+  // Check if ipiv is empty _and_ we use the CUBLAS backend
+  bool ipiv_empty;
+#ifndef HAVE_CUDA
+  ipiv_empty = false;
+#else
+  ipiv_empty = (ipiv._rows == 0) ? true : false;
+  if (ipiv_empty && A._location != Location::GPU) {
+    throw excBadArgument("xGETRI(A, ipiv, work), ipiv: empty ipiv is only "
+                         "allowed when inverting matrices on the GPU");
+  }
+#endif
+
+  if (!ipiv_empty) {
+
+    check_device(A, ipiv, "xGETRI()");
+    check_input_transposed(ipiv, "xGETRI(A, ipiv, work), ipiv");
+    if (A.rows() != ipiv.rows()) {
+      throw excBadArgument("xGETRI(A, ipiv, work), ipiv: argument matrix size "
+                           "mismatch: if ipiv is not empty, A.rows() = %d must "
+                           "equal ipiv.rows() = %d", A.rows(), ipiv.rows());
+    }
+  
+  }
+
+  // Check C
+  check_device(A, C, "xGETRI()");
+  check_output_transposed(C, "xGETRI()");
+  if (A._rows != C._rows || A._cols != C._cols) {
+    throw excBadArgument("xGETRI(A, ipiv, work, C), C: dimensions of A (%dx%d) "
+                         "and C (%dx%d) don't match", A.rows(), A.cols(),
+                         C.rows(), C.cols());
+  }
+#endif
+
+  auto device_id = A._device_id;
+  auto n = A.cols();
+  auto A_ptr = A._begin();
+  auto lda = A._leading_dimension;
+  auto ipiv_ptr = ipiv._begin();
+
+  if (A._location == Location::host) {
+
+    auto lwork = work._rows;
+
+    // If work is empty, we have to allocate it optimally
+    if (lwork == 0) {
+
+      using LinAlg::Type;
+      using LinAlg::LAPACK::FORTRAN::ILAENV;
+
+      switch (type<T>()) {
+        case Type::S:
+          lwork = ILAENV(1, "sgetri", "", n, -1, -1, -1);
+          break;
+        case Type::D:
+          lwork = ILAENV(1, "dgetri", "", n, -1, -1, -1);
+          break;
+        case Type::C:
+          lwork = ILAENV(1, "cgetri", "", n, -1, -1, -1);
+          break;
+        case Type::Z:
+          lwork = ILAENV(1, "zgetri", "", n, -1, -1, -1);
+          break;
+        default:
+          throw excBadArgument("xGETRI(): unsupported data type");
+      }
+
+      work.reallocate(lwork, 1, Location::host, 0);
+      lwork = work._rows;
+
+    }
+
+    // At least the temporary could be omitted if we had a fast swap for 
+    // arrays
+    printf("LinAlg::LAPACK::xGETRI(): warning, out-of-place inversion for "
+           "matrices in main memory currently requires 3 times the memory of "
+           "an in-place inversion and incurs three memory copies of the "
+           "matrix\n");
+    Dense<T> A_tmp;
+    A_tmp << A;
+
+    auto work_ptr = work._begin();
+    int  info     = 0;
+
+    FORTRAN::xGETRI(n, A_ptr, lda, ipiv_ptr, work_ptr, lwork, &info);
+
+#ifndef LINALG_NO_CHECKS
+    if (info != 0) {
+      throw excMath("xGETRI(): error: info = %d", info);
+    }
+#endif
+
+    C << A;
+    A << A_tmp;
+
+  }
+#ifdef HAVE_CUDA
+  else if (A._location == Location::GPU) {
+
+    auto ipiv_ptr = (ipiv_empty) ? nullptr : ipiv._begin();
+    auto C_ptr    = C._begin();
+    auto ldc      = C._leading_dimension;
+    int  info     = 0;
+
+    CUBLAS::xGETRI(LinAlg::CUDA::CUBLAS::handles[device_id], n, A_ptr, lda,
+                   ipiv_ptr, C_ptr, ldc, &info);
+
+#ifndef LINALG_NO_CHECKS
+    if (info != 0) {
+      throw excMath("xGETRI(): error: info = %d", info);
+    }
+#endif
+
+  }
+#ifdef HAVE_MAGMA
+  // check if MAGMA's or CUBLAS' GETRI is faster and use that one.
+#endif
+#endif
+
+#ifndef LINALG_NO_CHECKS
+  else {
+    throw excUnimplemented("xGETRI(): LAPACK GETRF not supported on selected "
+                           "location");
+  }
+#endif
+
+};
+
+/** \overload
+ *
+ *  \param[in]        A
+ *                    Matrix in non-pivoted LU decomposition.
+ *
+ *  \param[in]        ipiv
+ *                    ipiv is A.rows()*1 matrix (a vector). The CUBLAS backend
+ *                    allows specifying an empty matrix for ipiv, assuming that
+ *                    the input is a non-pivoting LU decomposition (see xGETRF).
+ *
+ *  \param[in]        C
+ *                    The target of the out-of-place inversion. If an empty 
+ *                    matrix is given as argument, the routine allocates a 
+ *                    suitable one.
+ */
+template <typename T>
+inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& C) {
+  Dense<T>   work;
+  xGETRI(A, ipiv, work, C);
+};
 
 } /* namespace LinAlg::LAPACK */
 

@@ -49,7 +49,7 @@ namespace LAPACK {
 namespace FORTRAN {
 
 #ifndef DOXYGEN_SKIP
-extern C {
+extern "C" {
   fortran_name(xyz, XYZ)(...);
 }
 #endif
@@ -137,8 +137,6 @@ using LinAlg::Utilities::check_input_transposed;
  *  \param[in]        Y
  *
  *  \param[in,out]    Z
- *
- *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
 template <typename T>
 inline void xXYZ(Dense<T>& X, Dense<int>& Y) {

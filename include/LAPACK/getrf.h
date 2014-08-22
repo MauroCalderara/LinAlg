@@ -39,7 +39,7 @@ namespace LAPACK {
 namespace FORTRAN {
 
 #ifndef DOXYGEN_SKIP
-extern C {
+extern "C" {
   void fortran_name(sgetrf, SGETRF)(const I_t* m, const I_t* n, S_t* A,
                                     const I_t* lda, I_t* ipiv, int* info);
   void fortran_name(dgetrf, DGETRF)(const I_t* m, const I_t* n, D_t* A,
@@ -214,29 +214,31 @@ template <typename T>
 inline void xGETRF(Dense<T>& A, Dense<int>& ipiv) {
 
 #ifndef LINALG_NO_CHECKS
-  check_device(A, ipiv, "xGETRF()");
-  check_input_transposed(A, "xGETRF()");
+  check_device(A, ipiv, "xGETRF(A, ipiv)");
+  check_input_transposed(A, "xGETRF(A, ipiv), A:");
 #ifndef HAVE_CUDA
-  check_input_transposed(ipiv, "xGETRF()");
+  check_input_transposed(ipiv, "xGETRF(A, ipiv), ipiv:");
 #else
   bool ipiv_empty = (ipiv._rows == 0) ? true : false;
   if (!ipiv_empty) {
-    check_input_transposed(ipiv, "xGETRF()");
+    check_input_transposed(ipiv, "xGETRF(A, ipiv), ipiv:");
   }
 #endif
 
 #ifndef HAVE_CUDA
   if (A.rows() != ipiv.rows()) {
-    throw excBadArgument("xGETRF(): argument matrix size mismatch");
+    throw excBadArgument("xGETRF(A, ipiv), A, ipiv: must have same number of "
+                         "rows");
   }
 #else
   if (A.rows() != A.cols() && A._location == Location::GPU) {
-    throw excBadArgument("xGETRF(): matrix A must be a square matrix (CUBLAS "
-                         "restriction)");
+    throw excBadArgument("xGETRF(A, ipiv), A: matrix A must be a square matrix "
+                         "(CUBLAS restriction)");
   }
   if (!ipiv_empty) {
     if (A.rows() != ipiv.rows()) {
-      throw excBadArgument("xGETRF(): argument matrix size mismatch");
+      throw excBadArgument("xGETRF(A, ipiv): A, ipiv: must have same number "
+                           "of rows");
     }
   }
 #endif

@@ -94,120 +94,84 @@ inline void multiply(const T alpha, const Dense<T>& A, const Dense<T>& B,
  *
  *  \param[in,out]    B
  *
- *  \param[in,out]    ipiv
- *                    OPTIONAL: pivoting vector. If unspecified or empty, the
- *                    routine allocates one with suitable size.
- *
- *  \todo             Actually one should check if B is a vector and call xTRSV
- *                    instead of xTRSM in the CUDA code.
- */
-template <typename T>
-inline void solve(Dense<T>& A, Dense<T>& B, Dense<int>& ipiv) {
-
-  auto location = A._location;
-  auto n        = A.rows();
-
-  if (location == Location::host) {
-
-    if (ipiv._rows == 0) {
-
-      ipiv.reallocate(n, 1);
-
-    }
-
-    LAPACK::xGESV(A, ipiv, B);
-
-  }
-#ifdef HAVE_CUDA
-  else if (location == Location::GPU) {
-
-#ifndef USE_MAGMA_GESV
-    // This is basically xGESV done by hand. We use the 'expert' interface
-    // in LAPACK::CUBLAS::xGETRF directly instead of LAPACK::xGETRF
-
-#ifndef LINALG_NO_CHECKS
-    BLAS::check_input_transposed(A, "solve() (even though A^T could be "
-                                 "implemented)");
-    BLAS::check_input_transposed(B, "solve()");
-#endif
-
-    auto handle = CUDA::CUBLAS::handles[A._device_id];
-    auto A_ptr = A._begin();
-    auto lda = A._leading_dimension;
-    auto B_ptr = B._begin();
-    auto ldb = B._leading_dimension;
-    auto ipiv_override = nullptr;
-    int  info = 0;
-
-    // LU decompose using xGETRF without pivoting (use ipiv_override == empty
-    // vector to enforce no pivoting. cudaXtrsm doesn't support pivoting)
-    LAPACK::CUBLAS::xGETRF(handle, n, A_ptr, lda, ipiv_override, &info);
-#ifndef LINALG_NO_CHECKS
-    if (info != 0) {
-      throw excMath("solve(): unable to LU decompose A (xGETRF(): error = %d)",
-                    info);
-    }
-#endif
-
-    // Directly solve using xTRSM (no xLASWP since we didn't pivot):
-    // 1: y = L\b
-    auto nrhs = B.cols();
-    BLAS::CUBLAS::xTRSM(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
-                        CUBLAS_OP_N, CUBLAS_DIAG_UNIT, n, nrhs, T(1.0), A_ptr,
-                        lda, B_ptr, ldb);
-    // 2: x = U\y
-    BLAS::CUBLAS::xTRSM(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_UPPER,
-                        CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, n, nrhs, T(1.0),
-                        A_ptr, lda, B_ptr, ldb);
-#endif /* not USE_MAGMA_GESV */
-  }
-#endif /* HAVE_CUDA */
-
-};
-/** \overload
- *
- *  \param[in,out]    A
- *
- *  \param[in,out]    B
+ *  \note             This function is provided as a convenience for one-off
+ *                    linear system solving. When calling solve() multiple 
+ *                    times it is generally more efficient to avoid the 
+ *                    internal allocation/deallocation of the pivoting vector 
+ *                    by allocating it separately and directly calling xGESV() 
+ *                    multiple times, reusing the same pivot vector.
  */
 template <typename T>
 inline void solve(Dense<T>& A, Dense<T>& B) {
-  Dense<int> ipiv;
-  solve(A, B, ipiv);
+
+  Dense<int> ipiv(A._rows, 1, A._location, A._device_id);
+  LAPACK::xGESV(A, ipiv, B);
+
 }
 
 
-/** \brief            Invert a matrix in-place or out-of-place
+/** \brief            Invert a matrix in-place
  *
  *  A = A**-1 (in-place)
- *  C = A**-1 (out-of-place)
  *
  *  \param[in,out]    A
  *
+ *  \note             - This function is provided as a convenience for one-off
+ *                      inversions. When performing multiple inversions it is 
+ *                      generally more efficient to avoid the internal 
+ *                      allocation and deallocation of the pivot and work 
+ *                      vectors by allocating them separately and directly 
+ *                      calling xGETRF+xGETRI multiple times, reusing the same 
+ *                      the vectors.
+ *                    - In-place inversions are generally fast compared to
+ *                      out-of-place inversion. The exception are inversions 
+ *                      on the GPU, which are slightly slower than their 
+ *                      in-place counterparts.
+ */
+template <typename T>
+inline void invert(Dense<T>& A) {
+
+  Dense<int> ipiv(A._rows, 1, A._location, A._device_id);
+  Dense<T>   work;
+
+  // We assume that pivoting factorization is faster for all backends 
+  // (including those that support non-pivoting factorization like CUBLAS)
+  LAPACK::xGETRF(A, ipiv);
+  LAPACK::xGETRI(A, ipiv, work);
+
+};
+
+/** \brief            Invert a matrix out-of-place
+ *
+ *  C = A**-1 (out-of-place)
+ *
+ *  \param[in,out]    A
+ *                    On return, A is replaced by its LU decomposition.
+ *
  *  \param[in,out]    C
- *                    OPTIONAL: Storage for out-of-place inversion. If left
- *                    unspecified or empty, an in-place inversion is performed.
+ *                    Target for out-of-place inversion. If empty, the routine 
+ *                    allocates suitable memory.
+ *
+ *  \note             - This function is provided as a convenience for one-off
+ *                      inversions. When performing multiple inversions it is 
+ *                      generally more efficient to avoid the internal 
+ *                      allocation and deallocation of the pivot and work 
+ *                      vectors by allocating them separately and directly 
+ *                      calling xGETRF+xGETRI multiple times, reusing the same 
+ *                      the vectors.
+ *                    - Out-of-place inversions are fast on the GPU and
+ *                      generally slow otherwise.
  */
 template <typename T>
 inline void invert(Dense<T>& A, Dense<T>& C) {
 
   Dense<int> ipiv(A._rows, 1, A._location, A._device_id);
-  Dense<T> work;
+  Dense<T>   work;
 
   LAPACK::xGETRF(A, ipiv);
   LAPACK::xGETRI(A, ipiv, work, C);
 
 };
-/** \overload
- *
- *  \param[in,out]    A
- */
-template <typename T>
-inline void invert(Dense<T>& A) {
-  Dense<T> C;
-  invert(A, C);
-}
-
 
 } /* namespace LinAlg */
 

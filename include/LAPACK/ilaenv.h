@@ -46,7 +46,7 @@ namespace LAPACK {
 namespace FORTRAN {
 
 #ifndef DOXYGEN_SKIP
-extern C {
+extern "C" {
   I_t fortran_name(ilaenv, ILAENV)(const I_t* ispec, const char* name,
                                    const char* opts, const I_t* n1,
                                    const I_t* n2, const I_t* n3, const I_t* n4);
