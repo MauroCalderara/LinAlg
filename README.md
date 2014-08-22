@@ -18,7 +18,7 @@ What it tries to be
 - Small and easy to extend/adapt for your specific needs
 - Suitable for use on top of the software ecosystem typically found on a
   supercomputer
-- Expressive and clear instead of elegant and obscure
+- Expressive and clear instead of elegant but obscure
 
 Example
 -------
