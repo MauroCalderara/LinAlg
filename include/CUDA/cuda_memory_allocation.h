@@ -20,7 +20,7 @@
 #include <cublas_v2.h>
 #include <cusparse_v2.h>
 
-#include "types.h"
+#include "../types.h"
 #include "cuda_checks.h"
 
 namespace LinAlg {

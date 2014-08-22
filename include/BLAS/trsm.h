@@ -26,10 +26,11 @@
 #ifdef HAVE_CUDA
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
-#include "cuda_helper.h"
+#include "../CUDA/cuda_checks.h"
+#include "../CUDA/cuda_cublas.h"
 #endif
 
-#include "types.h"
+#include "../types.h"
 
 namespace LinAlg {
 

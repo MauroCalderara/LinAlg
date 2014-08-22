@@ -7,7 +7,7 @@
 #ifndef LINALG_BLAS_FORWARD_H_
 #define LINALG_BLAS_FORWARD_H_
 
-#include "types.h"
+#include "../types.h"
 
 #ifdef HAVE_CUDA
 #include <vector>

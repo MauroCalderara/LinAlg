@@ -12,11 +12,11 @@
 #ifndef LINALG_UTILITIES_FORMAT_CONVERT_H_
 #define LINALG_UTILITIES_FORMAT_CONVERT_H_
 
-#include "types.h"
-#include "exceptions.h"
-#include "dense.h"
-#include "sparse.h"
-#include "fills.h"
+#include "../types.h"
+#include "../exceptions.h"
+#include "../dense.h"
+#include "../sparse.h"
+#include "../fills.h"
 
 namespace LinAlg {
 

@@ -18,7 +18,7 @@
 #include <cuda_runtime.h> // various CUDA routines
 #include <cublas_v2.h>
 
-#include "types.h"
+#include "../types.h"
 #include "cuda_checks.h"
 
 namespace LinAlg {

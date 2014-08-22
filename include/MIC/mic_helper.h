@@ -14,7 +14,7 @@
 
 #ifdef HAVE_MIC
 
-#include "exceptions.h"   // LinAlg::excLinAlg
+#include "../exceptions.h"   // LinAlg::excLinAlg
 
 namespace LinAlg {
 

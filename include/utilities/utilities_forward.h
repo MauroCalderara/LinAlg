@@ -10,7 +10,7 @@
 #include <string>
 #include <tuple>
 
-#include "types.h"
+#include "../types.h"
 #include <memory>
 
 namespace LinAlg {

@@ -23,7 +23,7 @@
 
 #ifdef HAVE_MKL
 
-#include "types.h"      // need LinAlg::size_t before MKL header
+#include "../types.h"      // need LinAlg::size_t before MKL header
 
 #include <mkl.h>
 

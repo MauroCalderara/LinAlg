@@ -16,14 +16,14 @@
 
 #ifdef HAVE_CUDA
 #include <cuda_runtime.h> // various CUDA routines
-#include "CUDA/cuda_checks.h"  // checkCUDA, checkCUBLAS, checkCUSPARSE
+#include "../CUDA/cuda_checks.h"  // checkCUDA, checkCUBLAS, checkCUSPARSE
 #endif
 
 #ifdef HAVE_MIC
-#include "mic_helper.h"
+#include "../MIC/mic_helper.h"
 #endif
 
-#include "types.h"
+#include "../types.h"
 
 namespace LinAlg {
 

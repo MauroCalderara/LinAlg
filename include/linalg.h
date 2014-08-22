@@ -23,7 +23,7 @@
 #include "metadata.h"
 
 #ifdef HAVE_CUDA
-#include "CUDA/cuda_helper.h"
+#include "CUDA/cuda.h"
 #endif
 
 #ifdef HAVE_MPI

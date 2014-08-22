@@ -16,9 +16,9 @@
 #include <functional> // std::function
 #include <future>     // std::future
 
-#include "types.h"
-#include "exceptions.h"
-#include "streams.h"
+#include "../types.h"
+#include "../exceptions.h"
+#include "../streams.h"
 
 #ifndef DOXYGEN_SKIP
 // If BUFFER_DISPLAY is defined, the buffer will print it's status during

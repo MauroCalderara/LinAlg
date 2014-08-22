@@ -24,13 +24,13 @@
 #ifdef HAVE_CUDA
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
-#include "cuda_helper.h"
+#include "../CUDA/cuda_checks.h"
 #endif
 
-#include "types.h"
-#include "exceptions.h"
-#include "checks.h"
-#include "dense.h"
+#include "../types.h"
+#include "../exceptions.h"
+#include "../utilities/checks.h"
+#include "../dense.h"
 
 namespace LinAlg {
 

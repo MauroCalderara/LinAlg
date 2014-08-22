@@ -20,15 +20,15 @@
 #include <complex>    // std::real, std::imag
 #include <utility>    // std::move
 
-#include "types.h"
-#include "exceptions.h"
-#include "utilities/stringformat.h"
-#include "utilities/misc.h"           // Utilities::goto_line
-#include "dense.h"
-#include "sparse.h"
-#include "fills.h"
+#include "../types.h"
+#include "../exceptions.h"
+#include "stringformat.h"
+#include "misc.h"           // Utilities::goto_line
+#include "../dense.h"
+#include "../sparse.h"
+#include "../fills.h"
 
-#include "utilities/IJV.h"
+#include "IJV.h"
 
 namespace LinAlg {
 

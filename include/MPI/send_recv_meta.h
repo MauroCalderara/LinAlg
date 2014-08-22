@@ -22,13 +22,13 @@
 #include <cstdio>     // std::printf
 #include <utility>    // std::move
 
-#include "types.h"
-#include "exceptions.h"
-#include "streams.h"
-#include "metadata.h"   // LinAlg::MetaData
-#include "MPI/send_recv.h"
+#include "../types.h"
+#include "../exceptions.h"
+#include "../streams.h"
+#include "../metadata.h"   // LinAlg::MetaData
+#include "send_recv.h"
 
-#include "dense.h"
+#include "../dense.h"
 
 namespace LinAlg {
 

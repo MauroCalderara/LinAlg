@@ -22,14 +22,14 @@
 #include <cstdio>     // std::printf
 #include <utility>    // std::move
 
-#include "types.h"
-#include "exceptions.h"
-#include "streams.h"
-#include "utilities.h"  // LinAlg::Utilities::timer
-#include "metadata.h"   // LinAlg::MetaData
-#include "MPI/send_recv.h"
+#include "../types.h"
+#include "../exceptions.h"
+#include "../streams.h"
+#include "../utilities/timer.h"  // LinAlg::Utilities::timer
+#include "../metadata.h"   // LinAlg::MetaData
+#include "send_recv.h"
 
-#include "dense.h"
+#include "../dense.h"
 
 namespace LinAlg {
 

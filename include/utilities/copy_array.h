@@ -14,13 +14,13 @@
 
 #ifdef HAVE_CUDA
 #include <cuda_runtime.h> // various CUDA routines
-#include "CUDA/cuda_helper.h"  // checkCUDA, checkCUBLAS, checkCUSPARSE
+#include "../CUDA/cuda_checks.h"  // checkCUDA, checkCUBLAS, checkCUSPARSE
 #endif
 
-#include "types.h"
-#include "exceptions.h"
-#include "streams.h"
-#include "BLAS/blas.h"
+#include "../types.h"
+#include "../exceptions.h"
+#include "../streams.h"
+#include "../BLAS/blas.h"
 
 namespace LinAlg {
 

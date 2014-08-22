@@ -20,8 +20,8 @@
 #include <cublas_v2.h>
 #include <cusparse_v2.h>
 
-#include "types.h"
-#include "exceptions.h"   // LinAlg::excLinAlg
+#include "../types.h"
+#include "../exceptions.h"   // LinAlg::excLinAlg
 
 #ifndef LINALG_NO_CHECKS
 

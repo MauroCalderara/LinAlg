@@ -24,13 +24,14 @@
 #ifdef HAVE_CUDA
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
-#include "cuda_helper.h"
+#include "../CUDA/cuda_checks.h"
+#include "../CUDA/cuda_cublas.h"
 #endif
 
-#include "types.h"
-#include "exceptions.h"
-#include "checks.h"
-#include "dense.h"
+#include "../types.h"
+#include "../exceptions.h"
+#include "../utilities/checks.h"
+#include "../dense.h"
 
 
 namespace LinAlg {
@@ -200,6 +201,7 @@ inline void xGEMM(cublasHandle_t handle, cublasOperation_t transa,
 };
 
 } /* namespace CUBLAS */
+#endif /* HAVE_CUDA */
 
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_output_transposed;

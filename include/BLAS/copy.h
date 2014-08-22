@@ -21,10 +21,10 @@
  *        bindings to the <NAME> BLAS backend
  */
 
-#include "types.h"      // need LinAlg::size_t before MKL header
+#include "../types.h"      // need LinAlg::size_t before MKL header
 
-#include "utilities/checks.h"
-#include "dense.h"
+#include "../utilities/checks.h"
+#include "../dense.h"
 
 namespace LinAlg {
 

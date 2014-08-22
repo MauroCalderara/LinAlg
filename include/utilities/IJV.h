@@ -17,12 +17,12 @@
 #include <sstream>    // std::istringstream
 #include <complex>    // std::real, std::imag
 
-#include "types.h"
-#include "exceptions.h"
+#include "../types.h"
+#include "../exceptions.h"
 #include "stringformat.h"
-#include "dense.h"
-#include "sparse.h"
-#include "fills.h"
+#include "../dense.h"
+#include "../sparse.h"
+#include "../fills.h"
 
 namespace LinAlg {
 

@@ -12,8 +12,8 @@
 #ifndef LINALG_UTILITIES_CHECKS_H_
 #define LINALG_UTILITIES_CHECKS_H_
 
-#include "types.h"
-#include "exceptions.h"
+#include "../types.h"
+#include "../exceptions.h"
 
 namespace LinAlg {
 
