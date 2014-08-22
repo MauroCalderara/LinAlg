@@ -28,6 +28,7 @@
 #include "../utilities/timer.h"  // LinAlg::Utilities::timer
 #include "../metadata.h"   // LinAlg::MetaData
 #include "send_recv.h"
+#include "status.h"
 
 #include "../dense.h"
 
