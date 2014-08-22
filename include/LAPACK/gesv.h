@@ -39,6 +39,7 @@
 #include "../exceptions.h"
 #include "../utilities/checks.h"
 #include "../dense.h"
+#include "getrf.h"
 
 namespace LinAlg {
 
@@ -115,6 +116,7 @@ inline void xGESV(I_t n, I_t nrhs, Z_t* A, I_t lda, int* ipiv, Z_t* B, int ldb,
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_format;
 using LinAlg::Utilities::check_input_transposed;
+using LinAlg::Utilities::check_dimensions;
 
 /** \brief            xGESV
  *
@@ -154,7 +156,7 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
 
   if (A._location == Location::host) {
 
-    FORTRAN::xGESV(n, nrhs, A_ptr, lda, ipiv_ptr, B_ptr, ldb, info);
+    FORTRAN::xGESV(n, nrhs, A_ptr, lda, ipiv_ptr, B_ptr, ldb, &info);
 #ifndef LINALG_NO_CHECKS
     if (info != 0) {
       throw excMath("xGESV(): error = %d)", info);

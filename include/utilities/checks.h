@@ -200,9 +200,9 @@ inline void check_format(Format format, Dense<T>& A, const char* caller_name) {
  *  \param[in]        caller_name
  *                    Name of the calling routine.
  */
-template <typename T, typename U>
-inline void check_dimension(I_t rows, I_t columns, Dense<U>& A,
-                            const char* caller_name) {
+template <typename T>
+inline void check_dimensions(I_t rows, I_t columns, Dense<T>& A,
+                             const char* caller_name) {
 
   if (A.rows() != rows || A.cols() != columns) {
 
