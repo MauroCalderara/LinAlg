@@ -104,14 +104,22 @@ struct Dense : Matrix {
   /// Return the storage format
   inline Format format() const { return _format; };
 
-  /// Print the matrix contents
+  // Print the matrix contents
   inline void print() const;
 
+  // Return true if matrix is on host
+  inline bool is_on_host() const;
+  // Return true if matrix is on GPU
+  inline bool is_on_GPU() const;
+  // Return true if matrix is on MIC
+  inline bool is_on_MIC() const;
 
+
+#ifndef DOXYGEN_SKIP
   ///////////////////////////////////////////////////////////////////////////
   // Not private: but the _ indicates that the idea is to not mess with these
   // directly unless neccessary.
-#ifndef DOXYGEN_SKIP
+
   // Shared pointer used for the memory containing the matrix
   std::shared_ptr<T> _memory;
 
@@ -509,6 +517,76 @@ inline void Dense<T>::move_to(Dense<T>& destination) {
 
 };
 
+/** \brief            Allocates new empty memory for an already constructed
+ *                    matrix.
+ *
+ *  \param[in]        rows
+ *                    Number of rows.
+ *
+ *  \param[in]        cols
+ *                    Number of columns.
+ *
+ *  \param[in]        location
+ *                    OPTIONAL: Memory / device on which to allocate the
+ *                    memory. Default: Location::host.
+ *
+ *  \param[in]        device_id
+ *                    OPTIONAL: The number of the device on which to
+ *                    allocate the memory. Ignored for Location::host.
+ *                    Default: 0.
+ *
+ */
+template <typename T>
+inline void Dense<T>::reallocate(I_t rows, I_t cols, Location location,
+                                  int device_id) {
+
+#ifndef LINALG_NO_CHECKS
+  if (rows == 0 || cols == 0) {
+    throw excBadArgument("Dense.reallocate(): rows or cols must not be zero.");
+  }
+#endif
+
+  // Allocation for main memory
+  if (location == Location::host) {
+
+    _memory = Utilities::host_make_shared<T>(rows * cols);
+
+  }
+
+#ifdef HAVE_CUDA
+  // Custom allocator and destructor for GPU memory. Even if cuda_allocate
+  // throws we won't leak memory.
+  else if (location == Location::GPU) {
+
+    using CUDA::cuda_make_shared;
+    _memory = cuda_make_shared<T>(_rows * _cols, device_id);
+
+  }
+#endif
+
+#ifdef HAVE_MIC
+  else if (location == Location::MIC) {
+
+    using Utilities::MIC::mic_make_shared;
+
+    // NOTE: the MIC seems not to support 'MIC only' memory such that there must
+    // always be a corresponding block of memory on the host itself.
+    _memory = mic_make_shared<T>(_rows * _cols, device_id);
+
+  }
+#endif
+
+  _offset = 0;
+  _leading_dimension = (_format == Format::ColMajor) ? rows : cols;
+  _device_id = 0;
+  _location = location;
+  _cols = cols;
+  _rows = rows;
+
+}
+
+
+
 /** \brief              Data copy operator, copies values from one (sub)matrix
  *                      to another (sub)matrix.
  *
@@ -701,75 +779,40 @@ inline void Dense<T>::print() const {
 
 };
 
-
-/** \brief            Allocates new empty memory for an already constructed
- *                    matrix.
- *
- *  \param[in]        rows
- *                    Number of rows.
- *
- *  \param[in]        cols
- *                    Number of columns.
- *
- *  \param[in]        location
- *                    OPTIONAL: Memory / device on which to allocate the
- *                    memory. Default: Location::host.
- *
- *  \param[in]        device_id
- *                    OPTIONAL: The number of the device on which to
- *                    allocate the memory. Ignored for Location::host.
- *                    Default: 0.
- *
- */
+/** \brief            Return true if matrix is on host
+  */
 template <typename T>
-inline void Dense<T>::reallocate(I_t rows, I_t cols, Location location,
-                                  int device_id) {
+inline bool Dense<T>::is_on_host() const {
 
-#ifndef LINALG_NO_CHECKS
-  if (rows == 0 || cols == 0) {
-    throw excBadArgument("Dense.reallocate(): rows or cols must not be zero.");
-  }
-#endif
+  return _location == Location::host;
 
-  // Allocation for main memory
-  if (location == Location::host) {
+};
 
-    _memory = Utilities::host_make_shared<T>(rows * cols);
-
-  }
+/** \brief            Return true if matrix is on GPU
+  */
+template <typename T>
+inline bool Dense<T>::is_on_GPU() const {
 
 #ifdef HAVE_CUDA
-  // Custom allocator and destructor for GPU memory. Even if cuda_allocate
-  // throws we won't leak memory.
-  else if (location == Location::GPU) {
-
-    using CUDA::cuda_make_shared;
-    _memory = cuda_make_shared<T>(_rows * _cols, device_id);
-
-  }
+  return _location == Location::GPU;
+#else
+  return false;
 #endif
+
+};
+
+/** \brief            Return true if matrix is on MIC
+  */
+template <typename T>
+inline bool Dense<T>::is_on_MIC() const {
 
 #ifdef HAVE_MIC
-  else if (location == Location::MIC) {
-
-    using Utilities::MIC::mic_make_shared;
-
-    // NOTE: the MIC seems not to support 'MIC only' memory such that there must
-    // always be a corresponding block of memory on the host itself.
-    _memory = mic_make_shared<T>(_rows * _cols, device_id);
-
-  }
+  return _location == Location::MIC;
+#else
+  return false;
 #endif
 
-  _offset = 0;
-  _leading_dimension = (_format == Format::ColMajor) ? rows : cols;
-  _device_id = 0;
-  _location = location;
-  _cols = cols;
-  _rows = rows;
-
-}
-
+};
 
 } /* namespace LinAlg */
 

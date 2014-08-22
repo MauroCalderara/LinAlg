@@ -75,6 +75,10 @@ struct Sparse : Matrix {
   // Explicitly move
   inline void move_to(Sparse<T>& destination);
 
+  // Allocate new memory (no memory is copied)
+  inline void reallocate(I_t size, I_t n_nonzeros,
+                         Location location = Location::host, int device_id = 0);
+
   /// Transpose the matrix (but retain the format)
   inline void transpose() { _transposed = !_transposed; };
 
@@ -94,6 +98,12 @@ struct Sparse : Matrix {
   /// Get format
   inline Format format() const { return _format; };
 
+  // Return true if matrix is on host
+  inline bool is_on_host() const;
+  // Return true if matrix is on GPU
+  inline bool is_on_GPU() const;
+  // Return true if matrix is on MIC
+  inline bool is_on_MIC() const;
 
 
 #ifndef DOXYGEN_SKIP
@@ -281,27 +291,8 @@ Sparse<T>::Sparse(I_t size, I_t n_nonzeros, int first_index, Location location,
   }
 #endif
 
-  // Allocate new memory
-  if (_location == Location::host) {
-
-    using Utilities::host_make_shared;
-    _values  = host_make_shared<T>(_n_nonzeros);
-    _indices = host_make_shared<I_t>(_n_nonzeros);
-    _edges   = host_make_shared<I_t>(_size + 1);
-
-  }
 #ifdef HAVE_CUDA
-  else if (_location == Location::GPU) {
-
-    int prev_device;
-    checkCUDA(cudaGetDevice(&prev_device));
-
-    using CUDA::cuda_make_shared;
-    checkCUDA(cudaSetDevice(_device_id));
-    _values  = cuda_make_shared<T>(_n_nonzeros, _device_id);
-    _indices = cuda_make_shared<I_t>(_n_nonzeros, _device_id);
-    _edges   = cuda_make_shared<I_t>(_size + 1, _device_id);
-    checkCUDA(cudaSetDevice(prev_device));
+  if (_location == Location::GPU) {
 
     checkCUSPARSE(cusparseCreateMatDescr(&_cusparse_descriptor));
     if (_first_index == 1) {
@@ -311,16 +302,9 @@ Sparse<T>::Sparse(I_t size, I_t n_nonzeros, int first_index, Location location,
 
   }
 #endif
-#ifdef HAVE_MIC
-  else if (_location == Location::MIC) {
 
-    using Utilities::MIC::mic_make_shared;
-    _values  = mic_make_shared<T>(_n_nonzeros, _device_id);
-    _indices = mic_make_shared<I_t>(_n_nonzeros, _device_id);
-    _edges   = mic_make_shared<I_t>(_size + 1, _device_id);
+  reallocate(_size, _n_nonzeros, _location, _device_id);
 
-  }
-#endif
 #ifdef HAVE_MPI
   _row_offset = 0;
 #endif
@@ -464,6 +448,87 @@ inline void Sparse<T>::move_to(Sparse<T>& destination) {
 
   destination.clone_from(*this);
   unlink();
+
+};
+
+/** \brief            Allocates new empty memory for an already constructed
+ *                    matrix.
+ *
+ *  \param[in]        size
+ *                    Number of rows (for CSR) or columns (for CSC).
+ *
+ *  \param[in]        n_nonzeros
+ *                    Number of non-zero elements.
+ *
+ *  \param[in]        location
+ *                    OPTIONAL: Memory / device on which to allocate the
+ *                    memory. Default: Location::host.
+ *
+ *  \param[in]        device_id
+ *                    OPTIONAL: The number of the device on which to
+ *                    allocate the memory. Ignored for Location::host.
+ *                    Default: 0.
+ *
+ */
+template <typename T>
+inline void Sparse<T>::reallocate(I_t size, I_t n_nonzeros, Location location,
+                                  int device_id) {
+
+#ifndef LINALG_NO_CHECKS
+  if (size < 0 || n_nonzeros < 0) {
+  
+    throw excBadArgument("Sparse.reallocate(): size and n_nonzeros must be "
+                         "non-negative.");
+  
+  }
+#endif
+
+  // Allocate new memory
+  if (location == Location::host) {
+
+    using Utilities::host_make_shared;
+    _values  = host_make_shared<T>(_n_nonzeros);
+    _indices = host_make_shared<I_t>(_n_nonzeros);
+    _edges   = host_make_shared<I_t>(_size + 1);
+
+  }
+#ifdef HAVE_CUDA
+  else if (location == Location::GPU) {
+
+    int prev_device;
+    checkCUDA(cudaGetDevice(&prev_device));
+
+    using CUDA::cuda_make_shared;
+    checkCUDA(cudaSetDevice(_device_id));
+    _values  = cuda_make_shared<T>(_n_nonzeros, _device_id);
+    _indices = cuda_make_shared<I_t>(_n_nonzeros, _device_id);
+    _edges   = cuda_make_shared<I_t>(_size + 1, _device_id);
+    checkCUDA(cudaSetDevice(prev_device));
+
+    if (_location != Location::GPU) {
+
+      checkCUSPARSE(cusparseCreateMatDescr(&_cusparse_descriptor));
+      if (_first_index == 1) {
+        checkCUSPARSE(cusparseSetMatIndexBase(_cusparse_descriptor, \
+                                              CUSPARSE_INDEX_BASE_ONE));
+      }
+
+    }
+
+  }
+#endif
+#ifdef HAVE_MIC
+  else if (location == Location::MIC) {
+
+    using Utilities::MIC::mic_make_shared;
+    _values  = mic_make_shared<T>(_n_nonzeros, _device_id);
+    _indices = mic_make_shared<I_t>(_n_nonzeros, _device_id);
+    _edges   = mic_make_shared<I_t>(_size + 1, _device_id);
+
+  }
+#endif
+
+  _location = location;
 
 };
 
@@ -702,6 +767,41 @@ inline void Sparse<T>::unlink() {
   _values = nullptr;
   _indices = nullptr;
   _edges = nullptr;
+
+};
+
+/** \brief            Return true if matrix is on host
+  */
+template <typename T>
+inline bool Sparse<T>::is_on_host() const {
+
+  return _location == Location::host;
+
+};
+
+/** \brief            Return true if matrix is on GPU
+  */
+template <typename T>
+inline bool Sparse<T>::is_on_GPU() const {
+
+#ifdef HAVE_CUDA
+  return _location == Location::GPU;
+#else
+  return false;
+#endif
+
+};
+
+/** \brief            Return true if matrix is on MIC
+  */
+template <typename T>
+inline bool Sparse<T>::is_on_MIC() const {
+
+#ifdef HAVE_MIC
+  return _location == Location::MIC;
+#else
+  return false;
+#endif
 
 };
 
