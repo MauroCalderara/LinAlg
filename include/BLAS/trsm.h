@@ -39,7 +39,7 @@ namespace BLAS {
 namespace FORTRAN {
 
 #ifndef DOXYGEN_SKIP
-extern C {
+extern "C" {
   void fortran_name(strsm, STRSM)(char* side, char* uplo, char* transa,
                                   char* diag, I_t* m, I_t* n, S_t* alpha,
                                   S_t* A, I_t* lda, S_t* B, I_t* ldb);
