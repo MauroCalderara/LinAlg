@@ -252,15 +252,16 @@ inline void xGEMM(const T alpha, const Dense<T>& A, const Dense<T>& B,
   if (location == Location::host) {
     char transa = (A._transposed) ? 'T' : 'N';
     char transb = (B._transposed) ? 'T' : 'N';
-    xGEMM(transa, transb, m, n, k, alpha, A_ptr, lda, B_ptr, ldb, beta, C_ptr,
+    FORTRAN::xGEMM(transa, transb, m, n, k, alpha, A_ptr, lda, B_ptr, ldb, beta,
+                   C_ptr,
           ldc);
   }
 #ifdef HAVE_CUDA
   else if (location == Location::GPU) {
     cublasOperation_t transa = (A._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
     cublasOperation_t transb = (B._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
-    BLAS::CUBLAS::xGEMM(handles[device_id], transa, transb, m, n, k, &alpha,
-                        A_ptr, lda,  B_ptr, ldb, &beta, C_ptr, ldc);
+    CUBLAS::xGEMM(handles[device_id], transa, transb, m, n, k, &alpha, A_ptr,
+                  lda,  B_ptr, ldb, &beta, C_ptr, ldc);
   }
 #endif
 
