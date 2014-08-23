@@ -49,9 +49,19 @@ class excLinAlg : public std::exception {
 #ifndef DOXYGEN_SKIP
   virtual const char* prefix() const = 0;
   virtual const char* suffix() const { return ""; }
+
   std::string usermsg;
   std::string stack_trace;
-#endif
+  void get_stack();
+
+  // Concatenate the exception's prefix and the user supplied string and an
+  // optionally overridden suffix()
+  const char* what() const throw() {
+    std::string error_msg = std::string(prefix()) + usermsg +
+                            std::string(suffix()) + stack_trace;
+    return error_msg.c_str();
+  };
+#endif /* DOXYGEN_SKIP */
 
   /** \brief          Constructor from formatstring
    *
@@ -68,17 +78,7 @@ class excLinAlg : public std::exception {
     usermsg = Utilities::stringformat(userformatstring, userformatargs...);
     get_stack();
   }
-  /** \brief          Constructor from const char* string
-   *
-   *  The resulting string will be returned from what().
-   *
-   *  \param[in]      string
-   *                  Suffix that is appended to a string describing the type
-   *                  of exception.
-   */
-  excLinAlg(const char* string) {
-    usermsg = string;
-  }
+
   /** \brief          Constructor from std::string
    *
    *  The resulting string will be returned from what().
@@ -89,74 +89,67 @@ class excLinAlg : public std::exception {
    */
   excLinAlg(std::string string) {
     usermsg = string;
+    get_stack();
   }
 
   ~excLinAlg() throw() {};
 
-#ifndef DOXYGEN_SKIP
-#ifdef EXCEPTION_STACK_TRACE
-  // A function that gets the current stack trace
-  void get_stack() {
+};
 
-    // Create a buffer and fill it with pointers to stack frames
-    void* stack_pointers[MAX_STACK];
-    auto stack_size = backtrace(stack_pointers, MAX_STACK);
+inline void excLinAlg::get_stack() {
 
-    // Convert to C strings (requires debug symbols (-g when compiling) and
-    // will result in mangled names due to C++ name mangling)
-    char** mangled_function_names;
-    mangled_function_names = backtrace_symbols(stack_pointers, stack_size);
-
-    // Unmangle the C++ names
-    std::vector<char*> function_names(stack_size);
-    std::vector<int> statuses;
-    for (int i = 0; i < stack_size; ++i) {
-
-      function_names[i] = abi::__cxa_demangle(mangled_function_names[i], 0, 0,
-                                              &statuses[i]);
-
-    }
-    free(mangled_function_names);
-
-    // Construct the final string
-    std::stringstream stack_trace_stream;
-    stack_trace_stream << "\nStack when exception was thrown:\n";
-
-    for (int i = 0; i < stack_size; ++i) {
-
-      if (statuses[i] == 0) {
-
-        stack_trace_stream << "\t" << function_names[i] << "\n";
-
-        free(function_names[i]);
-
-      } else {
-
-        stack_trace_stream << "\t" << mangled_function_names[i]
-                           << "  (unable to demangle)\n";
-
-      }
-
-    }
-
-    stack_trace = stack_trace_stream.str();
-
-  };
+#ifndef EXCEPTION_STACK_TRACE
+  // A function that does nothing
 #else
-  void get_stack() {};
-#endif /* EXCEPTION_STACK_TRACE */
+  // A function that gets a stack trace at the time of the construction of the 
+  // exception.
 
-  // Concatenate the exception's prefix and the user supplied string and an
-  // optionally overridden suffix()
-  const char* what() const throw() {
-    std::string error_msg = std::string(prefix()) + usermsg +
-                            std::string(suffix()) + stack_trace;
-    return error_msg.c_str();
-  };
+  // Create a buffer and fill it with pointers to stack frames
+  void* stack_pointers[MAX_STACK];
+  auto stack_size = backtrace(stack_pointers, MAX_STACK);
 
-#endif /* DOXYGEN_SKIP */
+  // Convert to C strings (requires debug symbols (-g when compiling) and
+  // will result in mangled names due to C++ name mangling)
+  char** mangled_function_names;
+  mangled_function_names = backtrace_symbols(stack_pointers, stack_size);
+
+  // Unmangle the C++ names
+  std::vector<char*> function_names(stack_size);
+  std::vector<int> statuses;
+  for (int i = 0; i < stack_size; ++i) {
+
+    function_names[i] = abi::__cxa_demangle(mangled_function_names[i], 0, 0,
+                                            &statuses[i]);
+
+  }
+  free(mangled_function_names);
+
+  // Construct the final string
+  std::stringstream stack_trace_stream;
+  stack_trace_stream << "\nStack when exception was thrown:\n";
+
+  for (int i = 0; i < stack_size; ++i) {
+
+    if (statuses[i] == 0) {
+
+      stack_trace_stream << "\t" << function_names[i] << "\n";
+
+      free(function_names[i]);
+
+    } else {
+
+      stack_trace_stream << "\t" << mangled_function_names[i]
+                         << "  (unable to demangle)\n";
+
+    }
+
+  }
+
+  stack_trace = stack_trace_stream.str();
+#endif /* not EXCEPTION_STACK_TRACE */
 
 };
+
 
 /** \exception        excUnimplemented
  *
@@ -169,6 +162,7 @@ class excUnimplemented : public excLinAlg {
   template <typename... Ts>
   excUnimplemented(const char* userfmtstr, Ts... args)
                  : excLinAlg(userfmtstr, args...) {};
+  excUnimplemented(std::string string) : excLinAlg(string) {};
   const char* prefix() const { return "LinAlg unimplemented - "; };
 #endif
 };
@@ -184,6 +178,7 @@ class excBadArgument : public excLinAlg {
   template <typename... Ts>
   excBadArgument(const char* userfmtstr, Ts... args)
                : excLinAlg(userfmtstr, args...) {};
+  excBadArgument(std::string string) : excLinAlg(string) {};
   const char* prefix() const { return "LinAlg bad argument - "; };
 #endif
 };
@@ -199,6 +194,7 @@ class excMallocError : public excLinAlg {
   template <typename... Ts>
   excMallocError(const char* userfmtstr, Ts... args)
                : excLinAlg(userfmtstr, args...) {};
+  excMallocError(std::string string) : excLinAlg(string) {};
   const char* prefix() const { return "LinAlg malloc error - "; };
 #endif
 };
@@ -213,6 +209,7 @@ class excBadFile : public excLinAlg {
   template <typename... Ts>
   excBadFile(const char* userfmtstr, Ts... args)
            : excLinAlg(userfmtstr, args...) {};
+  excBadFile(std::string string) : excLinAlg(string) {};
   const char* prefix() const { return "LinAlg bad file - "; };
 #endif
 };
@@ -227,6 +224,7 @@ class excBufferHelper : public excLinAlg {
   template <typename... Ts>
   excBufferHelper(const char* userfmtstr, Ts... args)
            : excLinAlg(userfmtstr, args...) {};
+  excBufferHelper(std::string string) : excLinAlg(string) {};
   const char* prefix() const { return "LinAlg buffer - "; };
 #endif
 };
@@ -241,6 +239,7 @@ class excMath : public excLinAlg {
   template <typename... Ts>
   excMath(const char* userfmtstr, Ts... args)
            : excLinAlg(userfmtstr, args...) {};
+  excMath(std::string string) : excLinAlg(string) {};
   const char* prefix() const { return "LinAlg math - "; };
 #endif
 };
@@ -259,6 +258,7 @@ class excCUDAError : public excLinAlg {
   template <typename... Ts>
   excCUDAError(const char* userfmtstr, Ts... args)
              : excLinAlg(userfmtstr, args...) {};
+  excCUDAError(std::string string) : excLinAlg(string) {};
   const char* prefix() const { return "LinAlg CUDA error - "; };
 #endif
 };
@@ -274,6 +274,7 @@ class excCUBLASError : public excLinAlg {
   template <typename... Ts>
   excCUBLASError(const char* userfmtstr, Ts... args)
                : excLinAlg(userfmtstr, args...) {};
+  excCUBLASError(std::string string) : excLinAlg(string) {};
   const char* prefix() const { return "LinAlg CUBLAS error - "; };
 #endif
 };
@@ -289,6 +290,7 @@ class excCUSPARSEError : public excLinAlg {
   template <typename... Ts>
   excCUSPARSEError(const char* userfmtstr, Ts... args)
                  : excLinAlg(userfmtstr, args...) {};
+  excCUSPARSEError(std::string string) : excLinAlg(string) {};
   const char* prefix() const { return "LinAlg CUSPARSE error - "; };
 #endif
 };
@@ -310,6 +312,7 @@ class excMPIError : public excLinAlg {
   template <typename... Ts>
   excMPIError(const char* userfmtstr, Ts... args)
              : excLinAlg(userfmtstr, args...) {};
+  excMPIError(std::string string) : excLinAlg(string) {};
   const char* prefix() const { return "LinAlg MPI error - "; };
   const char* suffix() const { return suffix_string.c_str(); };
 
