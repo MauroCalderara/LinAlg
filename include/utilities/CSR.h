@@ -283,8 +283,8 @@ void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
 
       I_t i, j;
       I_t last_i = first_index;
-      bool fmt_real_ok = true;
-      bool fmt_cmpx_ok = true;
+      bool format_real_ok = true;
+      bool format_cmpx_ok = true;
 
       double real;
       double imag = 0;
@@ -296,11 +296,11 @@ void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
       edges[0] = first_index;
       for (element = 0; element < n_nonzeros; ++element) {
 
-        fmt_real_ok = file_to_read >> i >> j >> real;
-        if (file_is_complex) { fmt_cmpx_ok = file_to_read >> imag; }
+        format_real_ok = file_to_read >> i >> j >> real;
+        if (file_is_complex) { format_cmpx_ok = file_to_read >> imag; }
 
 #ifndef LINALG_NO_CHECKS
-        if (fmt_real_ok == false || fmt_cmpx_ok == false) {
+        if (format_real_ok == false || format_cmpx_ok == false) {
           throw excBadFile("read_CSR(): Input file (%s:%d): invalid "
                            "formatting.", filename.c_str(), element + 4);
         }
