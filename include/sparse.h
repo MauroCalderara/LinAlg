@@ -487,9 +487,9 @@ inline void Sparse<T>::reallocate(I_t size, I_t n_nonzeros, Location location,
   if (location == Location::host) {
 
     using Utilities::host_make_shared;
-    _values  = host_make_shared<T>(_n_nonzeros);
-    _indices = host_make_shared<I_t>(_n_nonzeros);
-    _edges   = host_make_shared<I_t>(_size + 1);
+    _values  = host_make_shared<T>(n_nonzeros);
+    _indices = host_make_shared<I_t>(n_nonzeros);
+    _edges   = host_make_shared<I_t>(size + 1);
 
   }
 #ifdef HAVE_CUDA
@@ -500,9 +500,9 @@ inline void Sparse<T>::reallocate(I_t size, I_t n_nonzeros, Location location,
 
     using CUDA::cuda_make_shared;
     checkCUDA(cudaSetDevice(_device_id));
-    _values  = cuda_make_shared<T>(_n_nonzeros, _device_id);
-    _indices = cuda_make_shared<I_t>(_n_nonzeros, _device_id);
-    _edges   = cuda_make_shared<I_t>(_size + 1, _device_id);
+    _values  = cuda_make_shared<T>(n_nonzeros, _device_id);
+    _indices = cuda_make_shared<I_t>(n_nonzeros, _device_id);
+    _edges   = cuda_make_shared<I_t>(size + 1, _device_id);
     checkCUDA(cudaSetDevice(prev_device));
 
     if (_location != Location::GPU) {
@@ -521,14 +521,18 @@ inline void Sparse<T>::reallocate(I_t size, I_t n_nonzeros, Location location,
   else if (location == Location::MIC) {
 
     using Utilities::MIC::mic_make_shared;
-    _values  = mic_make_shared<T>(_n_nonzeros, _device_id);
-    _indices = mic_make_shared<I_t>(_n_nonzeros, _device_id);
-    _edges   = mic_make_shared<I_t>(_size + 1, _device_id);
+    _values  = mic_make_shared<T>(n_nonzeros, _device_id);
+    _indices = mic_make_shared<I_t>(n_nonzeros, _device_id);
+    _edges   = mic_make_shared<I_t>(size + 1, _device_id);
 
   }
 #endif
 
   _location = location;
+  _n_nonzeros = n_nonzeros;
+  // "Atomization point"
+  _size = size;
+
 
 };
 
