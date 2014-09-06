@@ -63,6 +63,12 @@ inline void cuda_deallocate(T* device_ptr, int device_id) {
 template <typename T>
 inline std::shared_ptr<T> cuda_make_shared(I_t size, int device_id) {
 
+#ifndef LINALG_NO_CHECKS
+  if (size < 1) {
+    throw excBadArgument("cuda_make_shared(): size must be larger than 0");
+  }
+#endif
+
   T* device_ptr;
 
   auto prev_device = device_id;

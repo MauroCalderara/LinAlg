@@ -63,6 +63,12 @@ inline void mic_deallocate(T* device_ptr, int device_id) {
 template <typename T>
 inline std::shared_ptr<T> mic_make_shared(I_t size, int device_id) {
 
+#ifndef LINALG_NO_CHECKS
+  if (size < 1) {
+    throw excBadArgument("mic_make_shared(): size must be larger than 0");
+  }
+#endif
+
   std::shared_ptr<T> device_ptr = host_make_shared<T>(size);
   #pragma offload_transfer target (mic:device_id) \
                            nocopy (device_ptr.get() : length(size) \

@@ -34,6 +34,12 @@ namespace Utilities {
 template <typename T>
 inline std::shared_ptr<T> host_make_shared(I_t size) {
 
+#ifndef LINALG_NO_CHECKS
+  if (size < 1) {
+    throw excBadArgument("host_make_shared(): size must be larger than 0");
+  }
+#endif
+
 #ifdef HAVE_CUDA
   T* host_ptr;
   checkCUDA(cudaMallocHost(&host_ptr, size * sizeof(T)));
