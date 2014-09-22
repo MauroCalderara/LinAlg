@@ -53,9 +53,6 @@ std::tuple<I_t, I_t, bool> parse_CSR_body(std::string filename);
  *  \param[in]          filename
  *                      Name of the file to read from.
  *
- *  \todo               Check whether my assumption about the move constructor
- *                      really works as intended when doing the reallocation.
- *
  *  \note               1 - The CSR format is not very convenient to load into
  *                          dense matrices as the whole file needs to be parsed
  *                          twice.
@@ -79,6 +76,9 @@ void read_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
                            "memory.");
 
   }
+
+  // TODO: check for empty file
+
 #endif
 
   I_t rows, columns;
@@ -213,6 +213,9 @@ void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
                            "memory.");
 
   }
+
+  // TODO: check for empty file
+
 #endif
 
   I_t size, n_nonzeros, first_index;
@@ -332,6 +335,8 @@ void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
     }
 #endif
 
+    matrix._first_index = first_index;
+
     file_to_read.close();
 
   }
@@ -424,7 +429,7 @@ inline void read_CSR(LinAlg::Sparse<T>& matrix, const char* filename) {
  *                      Name of the file to write to.
  *
  *  \note               Dense matrices are written in C-style indexing with zero
- *                      values removed, Sparse matrices are written with the
+ *                      values removed, sparse matrices are written with the
  *                      indexing of the input matrix and in sparsity preserving
  *                      fashion (that is zero elements are written explicitly).
  */
