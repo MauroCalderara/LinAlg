@@ -345,6 +345,14 @@ void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
   }
 #endif
 
+  /* DEBUG
+  auto indices = matrix._indices.get();
+  printf("index %i: j=%i\n", 10, indices[10]);
+  printf("index %i: j=%i\n", 11, indices[11]);
+  printf("index %i: j=%i\n", 998, indices[998]);
+  */
+
+
 };
 /** \overload
  *
@@ -585,7 +593,7 @@ template <typename T, typename... Us>
 inline void write_CSR(LinAlg::Dense<T>& matrix, const char* formatstring,
                       Us... formatargs) {
   std::string filename_str = stringformat(formatstring, formatargs...);
-  read_CSR(matrix, filename_str);
+  write_CSR(matrix, filename_str);
 };
 
 /** \overload
@@ -599,7 +607,7 @@ inline void write_CSR(LinAlg::Dense<T>& matrix, const char* formatstring,
 template <typename T>
 inline void write_CSR(LinAlg::Dense<T>& matrix, const char* filename) {
   std::string filename_str = filename;
-  read_CSR(matrix, filename_str);
+  write_CSR(matrix, filename_str);
 };
 
 /** \overload
@@ -619,7 +627,7 @@ template <typename T, typename... Us>
 inline void write_CSR(LinAlg::Sparse<T>& matrix, const char* formatstring,
                       Us... formatargs) {
   std::string filename_str = stringformat(formatstring, formatargs...);
-  read_CSR(matrix, filename_str);
+  write_CSR(matrix, filename_str);
 };
 
 /** \overload
@@ -633,7 +641,7 @@ inline void write_CSR(LinAlg::Sparse<T>& matrix, const char* formatstring,
 template <typename T>
 inline void write_CSR(LinAlg::Sparse<T>& matrix, const char* filename) {
   std::string filename_str = filename;
-  read_CSR(matrix, filename_str);
+  write_CSR(matrix, filename_str);
 };
 
 } /* namespace LinAlg::Utilities */
