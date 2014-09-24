@@ -12,7 +12,12 @@
 #ifndef LINALG_TYPES_H_
 #define LINALG_TYPES_H_
 
+// For an explanation, see below under "TYPE DISCUSSION"
+#ifdef HAVE_MAGMA
+#include <magma_types.h>
+#else
 #include <complex>
+#endif /* HAVE_MAGMA */
 
 /** \def              fortran_name(x,y)
  *
@@ -31,24 +36,106 @@
 
 namespace LinAlg {
 
-/// Index type used in LinAlg::. Also update the MPI macro accordingly
-typedef int I_t;
-/// The integer type to use for MPI. Set to 'MPI_UNSIGNED' when using
-/// 'unsigned int' or 'size_t' for LinAlg::I_t.
-#define LINALG_MPI_INT MPI_INT
+/* TYPE DISCUSSION
+ *
+ * Getting the types right for the various combinations of libraries turns out 
+ * to be a somewhat subtle and messy issue. The approach used in LinAlg is 
+ * this:
+ *
+ * If support for MAGMA is enabled (-DHAVE_MAGMA), we use MAGMA's complex 
+ * types for our complex types. MAGMA in turn either uses what CUDA or MKL 
+ * uses.
+ * Otherwise we use the C++ complex types from <complex>.
+ *
+ * For either case functions like real() and imag() are provided in the LinAlg 
+ * namespace.
+ */
+#ifdef MAGMA_TYPES_H
 
-/// Definition of LAPACK single precision floating point, real
-typedef float S_t;
-/// Definition of LAPACK double precision floating point, real
-typedef double D_t;
-/// Definition of LAPACK single precision floating point, complex
-typedef std::complex<float> C_t;
-/// Definition of LAPACK double precision floating point, complex
-typedef std::complex<double> Z_t;
+  /// Index type used in LinAlg::. Also update the MPI macro accordingly when 
+  /// changing it.
+  typedef magma_int_t I_t;
+
+  // Here we try to replicate what's in magma_types.h:
+  #if defined(MAGMA_ILP64) || defined(MKL_ILP64)
+    /// The integer type to use for MPI.
+    #define LINALG_MPI_INT MPI_LONG_LONG
+  #else
+    /// The integer type to use for MPI.
+    #define LINALG_MPI_INT MPI_INT
+  #endif
+
+  /// Definition of LAPACK single precision floating point, real
+  typedef float S_t;
+  /// Definition of LAPACK double precision floating point, real
+  typedef double D_t;
+  /// Definition of LAPACK single precision floating point, complex
+  typedef magmaFloatComplex C_t;
+  /// Definition of LAPACK double precision floating point, complex
+  typedef magmaDoubleComplex Z_t;
+
+  /** \brief          Return real part of complex number
+   *
+   *  \param          z
+   *                  Complex number.
+   *
+   *  \returns        real part.
+   */
+  template <>
+  inline S_t real<C_t>(C_t z) { return MAGMA_C_REAL(z); };
+  /** \overload */
+  template <>
+  inline S_t imag<C_t>(C_t z) { return MAGMA_C_IMAG(z); };
+  /** \overload */
+  template <>
+  inline D_t real<Z_t>(Z_t z) { return MAGMA_Z_REAL(z); };
+  /** \overload */
+  template <>
+  inline D_t imag<Z_t>(Z_t z) { return MAGMA_Z_IMAG(z); };
+
+#else /* MAGMA_TYPES_H is not defined */
+
+  /// Index type used in LinAlg::. Also update the MPI macro accordingly when 
+  /// changing it.
+  typedef int I_t;
+
+  /// The integer type to use for MPI. Set to 'MPI_UNSIGNED' when using
+  /// 'unsigned int' or 'size_t' for LinAlg::I_t.
+  #define LINALG_MPI_INT MPI_INT
+
+  /// Definition of LAPACK single precision floating point, real
+  typedef float S_t;
+  /// Definition of LAPACK double precision floating point, real
+  typedef double D_t;
+  /// Definition of LAPACK single precision floating point, complex
+  typedef std::complex<float> C_t;
+  /// Definition of LAPACK double precision floating point, complex
+  typedef std::complex<double> Z_t;
+
+  /** \brief          Return real part of complex number
+   *
+   *  \param          z
+   *                  Complex number.
+   *
+   *  \returns        real part.
+   */
+  template <>
+  inline S_t real<C_t>(C_t z) { return std::real(z); };
+  /** \overload */
+  template <>
+  inline S_t imag<C_t>(C_t z) { return std::imag(z); };
+  /** \overload */
+  template <>
+  inline D_t real<Z_t>(Z_t z) { return std::real(z); };
+  /** \overload */
+  template <>
+  inline D_t imag<Z_t>(Z_t z) { return std::imag(z); };
+
+#endif /* MAGMA_TYPES_H */
 
 /// Enum of datatypes
 enum class Type {
-  U,      //< Unknown type
+  O,      //< Other type
   S,      //< Single precision floating point, real
   D,      //< Double precision floating point, real
   C,      //< Single precision floating point, complex
@@ -59,9 +146,9 @@ enum class Type {
 /** \brief            Return the LinAlg::Type member corresponding to the
  *                    template instanciation
  *
- *  \returns          Type::U
+ *  \returns          Type::O
  */
-template <typename T> inline Type type()      { return Type::U; };
+template <typename T> inline Type type()      { return Type::O; };
 /** \overload
  *
  *  \returns          Type::S

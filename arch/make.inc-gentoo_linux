@@ -7,18 +7,16 @@ CXX_LINKER_FLAGS = -pthread -lstdc++
 # Flags to change behavior of the LinAlg library
 LINALG_FLAGS = -DLINALG_NO_CHECKS
 
-# MPI
-MPI_FLAGS = -DHAVE_MPI
-MPI_INCLUDE = -I/usr/lib64/mpi/mpi-openmpi/usr/include
-MPI_LIBS = -L/usr/lib64/mpi/mpi-openmpi/usr/lib64 -lmpi_cxx -lmpi \
-		   -ldl -lhwloc -Wl,--export-dynamic -lrt -lnsl -lutil -lm \
-		   -lhwloc -ldl
-
 # Cuda
 CUDA_FLAGS = -DHAVE_CUDA
 CUDATOOLKIT_HOME = /opt/cuda
 CUDA_INCLUDE = -I$(CUDATOOLKIT_HOME)/include
 CUDA_LIBS = -L$(CUDATOOLKIT_HOME)/lib64 -lcudart -lcusparse
+
+# MAGMA
+MAGMA_FLAGS = -DHAVE_MAGMA
+MAGMA_INCLUDE =
+MAGMA_LIBS = -lmagma
 
 # MKL
 MKL_FLAGS = -DHAVE_MKL
@@ -26,6 +24,13 @@ MKL_ROOT = /opt/intel/mkl
 MKL_INCLUDE = -I$(MKL_ROOT)/include
 MKL_LIBS = -L$(MKL_ROOT)/lib/intel64 -Wl,--start-group -lmkl_intel_ilp64 \
 		   -lmkl_core -lmkl_gnu_thread -Wl,--end-group -ldl -lpthread -lm
+
+# MPI
+MPI_FLAGS = -DHAVE_MPI
+MPI_INCLUDE = -I/usr/lib64/mpi/mpi-openmpi/usr/include
+MPI_LIBS = -L/usr/lib64/mpi/mpi-openmpi/usr/lib64 -lmpi_cxx -lmpi \
+		   -ldl -lhwloc -Wl,--export-dynamic -lrt -lnsl -lutil -lm \
+		   -lhwloc -ldl
 
 
 # vim: filetype=make:

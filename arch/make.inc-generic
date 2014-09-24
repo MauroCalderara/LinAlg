@@ -18,6 +18,11 @@ MKL_INCLUDE = -I$(MKL_ROOT)/include
 MKL_LIBS = -L$(MKL_ROOT)/lib/intel64 -Wl,--start-group -lmkl_intel_ilp64 \
 		   -lmkl_core -lmkl_gnu_thread -Wl,--end-group -ldl -lpthread -lm
 
+# MAGMA
+MAGMA_FLAGS = -DHAVE_MAGMA
+MAGMA_INCLUDE = -I$(MAGMA_HOME)/include
+MAGMA_LIBS = -L$(MAGMA_HOME)/lib -lmagma
+
 # MPI
 MPI_FLAGS = -DHAVE_MPI
 

@@ -15,7 +15,6 @@
 #include <string>     // std::string
 #include <fstream>    // std::fstream
 #include <sstream>    // std::istringstream
-#include <complex>    // std::real, std::imag
 
 #include "../types.h"
 #include "../exceptions.h"
@@ -57,6 +56,9 @@ void write_IJV_data(LinAlg::Dense<T>& matrix, std::string filename) {
 
   if (file_to_write.is_open()) {
 
+    using LinAlg::real;
+    using LinAlg::imag;
+
     file_to_write.precision(15);
 
     // Write the values in row major. Exceptions are caugth by the calling
@@ -69,7 +71,7 @@ void write_IJV_data(LinAlg::Dense<T>& matrix, std::string filename) {
           if (value != T(0)) {
             file_to_write << row + 1 << " " << col + 1 << " ";
             if (matrix_is_complex) {
-              file_to_write << std::real(value) << std::imag(value) << "\n";
+              file_to_write << real(value) << imag(value) << "\n";
             } else {
               file_to_write << value << "\n";
             }
@@ -85,7 +87,7 @@ void write_IJV_data(LinAlg::Dense<T>& matrix, std::string filename) {
           if (value != T(0)) {
             file_to_write << col + 1 << " " << row + 1 << " ";
             if (matrix_is_complex) {
-              file_to_write << std::real(value) << std::imag(value) << "\n";
+              file_to_write << real(value) << imag(value) << "\n";
             } else {
               file_to_write << value << "\n";
             }
@@ -109,6 +111,8 @@ void write_IJV_data(LinAlg::Dense<T>& matrix, std::string filename) {
 template <typename T>
 void write_IJV_data(LinAlg::Sparse<T>& matrix, std::string filename) {
 
+  printf("write_IJV_data(): entered\n");
+
   auto size              = matrix._size;
   auto first_index       = matrix._first_index;
   auto values            = matrix._values.get();
@@ -119,6 +123,9 @@ void write_IJV_data(LinAlg::Sparse<T>& matrix, std::string filename) {
   std::ofstream file_to_write(filename, std::ios_base::app);
 
   if (file_to_write.is_open()) {
+
+    using LinAlg::real;
+    using LinAlg::imag;
 
     file_to_write.precision(15);
 
@@ -135,7 +142,7 @@ void write_IJV_data(LinAlg::Sparse<T>& matrix, std::string filename) {
         file_to_write << row + first_index << " " << col << " ";
 
         if (matrix_is_complex) {
-          file_to_write << std::real(value) << std::imag(value) << "\n";
+          file_to_write << real(value) << imag(value) << "\n";
         } else {
           file_to_write << value << "\n";
         }
