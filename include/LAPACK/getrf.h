@@ -25,7 +25,14 @@
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 #include "../CUDA/cuda_checks.h"
-#endif
+
+#ifdef HAVE_MAGMA
+#include <magma.h>
+#include <magma_lapack.h>
+#endif /* HAVE_MAGMA */
+
+#endif /* HAVE_CUDA */
+
 
 #include "../types.h"
 #include "../exceptions.h"
@@ -115,18 +122,23 @@ namespace CUBLAS {
  */
 inline void xGETRF(cublasHandle_t handle, I_t n, S_t* A, I_t lda, int* ipiv,
                    int* info) {
+  throw excUnimplemented("CUBLAS xGETRF not properly implemented");
   checkCUBLAS(cublasSgetrfBatched(handle, n, &A, lda, ipiv, info, 1));
 };
 /** \overload
  */
 inline void xGETRF(cublasHandle_t handle, I_t n, D_t* A, I_t lda, int* ipiv,
                    int* info) {
+  throw excUnimplemented("CUBLAS xGETRF not properly implemented");
+  //D_t* Aarray[] = { A };
+  //checkCUBLAS(cublasDgetrfBatched(handle, n, Aarray, lda, ipiv, info, 1));
   checkCUBLAS(cublasDgetrfBatched(handle, n, &A, lda, ipiv, info, 1));
 };
 /** \overload
  */
 inline void xGETRF(cublasHandle_t handle, I_t n, C_t* A, I_t lda, int* ipiv,
                    int* info) {
+  throw excUnimplemented("CUBLAS xGETRF not properly implemented");
   checkCUBLAS(cublasCgetrfBatched(handle, n, \
                                   reinterpret_cast<cuComplex**>(&A),lda, ipiv, \
                                   info, 1));
@@ -135,6 +147,7 @@ inline void xGETRF(cublasHandle_t handle, I_t n, C_t* A, I_t lda, int* ipiv,
  */
 inline void xGETRF(cublasHandle_t handle, I_t n, Z_t* A, I_t lda, int* ipiv,
                    int* info) {
+  throw excUnimplemented("CUBLAS xGETRF not properly implemented");
   checkCUBLAS(cublasZgetrfBatched(handle, n, \
                                   reinterpret_cast<cuDoubleComplex**>(&A), \
                                   lda, ipiv, info, 1));
@@ -188,7 +201,54 @@ inline void xGETRF_batched(cublasHandle_t handle, I_t n, Z_t* Aarray[], I_t lda,
 };
 
 } /* namespace LinAlg::LAPACK::CUBLAS */
-#endif
+
+#ifdef HAVE_MAGMA
+namespace MAGMA {
+
+/** \brief            Compute LU factorization
+ *
+ *  A <- P * L * U
+ *
+ *  \param[in]        m
+ *
+ *  \param[in]        n
+ *
+ *  \param[in,out]    A
+ *
+ *  \param[in]        lda
+ *
+ *  \param[in,out]    ipiv
+ *
+ *  \param[in,out]    info
+ *
+ *  See
+ *  [DGETRF](http://www.math.utah.edu/software/lapack/lapack-d/dgetrf.html) or 
+ *  the MAGMA sources
+ */
+inline void xGETRF(I_t m, I_t n, S_t* A, I_t lda, I_t* ipiv, int* info) {
+  magma_sgetrf_gpu(&m, &n, A, &lda, ipiv, info);
+};
+/** \overload
+ */
+inline void xGETRF(I_t m, I_t n, D_t* A, I_t lda, I_t* ipiv, int* info) {
+  magma_dgetrf_gpu(&m, &n, A, &lda, ipiv, info);
+};
+/** \overload
+ */
+inline void xGETRF(I_t m, I_t n, C_t* A, I_t lda, I_t* ipiv, int* info) {
+  magma_cgetrf_gpu(&m, &n, (magmaFloatComplex*) A, &lda, ipiv, info);
+};
+/** \overload
+ */
+inline void xGETRF(I_t m, I_t n, Z_t* A, I_t lda, I_t* ipiv, int* info) {
+  magma_zgetrf_gpu(&m, &n, (magmaDoubleComplex*) A, &lda, ipiv, info);
+};
+
+} /* namespace LinAlg::LAPACK::MAGMA */
+#endif /* HAVE_MAGMA */
+
+#endif /* HAVE_CUDA */
+
 
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_input_transposed;
@@ -257,12 +317,15 @@ inline void xGETRF(Dense<T>& A, Dense<int>& ipiv) {
   }
 #ifdef HAVE_CUDA
   else if (A._location == Location::GPU) {
+
+#ifndef USE_MAGMA_GETRF
     using LinAlg::CUDA::CUBLAS::handles;
     CUBLAS::xGETRF(handles[device_id], n, A_ptr, lda, ipiv_ptr, &info);
+#else /* USE_MAGMA_GETRF */
+    MAGMA::xGETRF(m, n, A_ptr, lda, ipiv_ptr, &info);
+#endif /* not USE_MAGMA_GETRF */
+
   }
-#ifdef HAVE_MAGMA
-  // check if MAGMA's or CUBLAS' GETRF is faster and use that one.
-#endif
 #endif
 
 #ifndef LINALG_NO_CHECKS

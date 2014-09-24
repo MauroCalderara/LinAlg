@@ -34,10 +34,14 @@ namespace FORTRAN {
 
 #ifndef DOXYGEN_SKIP
 extern "C" {
-  void fortran_name(scopy, SCOPY)(I_t* n, S_t* x, I_t* incx, S_t* y, I_t* incy);
-  void fortran_name(dcopy, DCOPY)(I_t* n, D_t* x, I_t* incx, D_t* y, I_t* incy);
-  void fortran_name(ccopy, CCOPY)(I_t* n, C_t* x, I_t* incx, C_t* y, I_t* incy);
-  void fortran_name(zcopy, ZCOPY)(I_t* n, Z_t* x, I_t* incx, Z_t* y, I_t* incy);
+  void fortran_name(scopy, SCOPY)(const I_t* n, const S_t* x, const I_t* incx,
+                                  S_t* y, const I_t* incy);
+  void fortran_name(dcopy, DCOPY)(const I_t* n, const D_t* x, const I_t* incx,
+                                  D_t* y, const I_t* incy);
+  void fortran_name(ccopy, CCOPY)(const I_t* n, const C_t* x, const I_t* incx,
+                                  C_t* y, const I_t* incy);
+  void fortran_name(zcopy, ZCOPY)(const I_t* n, const Z_t* x, const I_t* incx,
+                                  Z_t* y, const I_t* incy);
 }
 #endif
 

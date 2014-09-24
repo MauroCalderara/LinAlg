@@ -32,9 +32,9 @@
 #ifdef HAVE_MAGMA
 #include <magma.h>
 #include <magma_lapack.h>
-#endif
+#endif /* HAVE_MAGMA */
 
-#endif
+#endif /* HAVE_CUDA */
 
 
 #include "../types.h"
@@ -232,13 +232,72 @@ inline void xGETRI_batched(cublasHandle_t handle, I_t n, Z_t* Aarray[], I_t lda,
 };
 
 } /* namespace LinAlg::LAPACK::CUBLAS */
-#endif
 
 #ifdef HAVE_MAGMA
 namespace MAGMA {
 
+/** \brief            GETRI
+ *
+ *  P * L * U <- A^{-1}
+ *
+ *  \param[in]        n
+ *
+ *  \param[in,out]    A
+ *
+ *  \param[in]        lda
+ *
+ *  \param[in,out]    ipiv
+ *
+ *  \param[in]        work
+ *
+ *  \param[in]        lwork
+ *
+ *  \param[in,out]    info
+ *
+ * See [DGETRI](http://www.math.utah.edu/software/lapack/lapack-d/dgetri.html) 
+ * or the MAGMA sources
+ */
+inline void xGETRI(I_t n, S_t* A, I_t lda, int* ipiv, S_t* work, int lwork,
+                   int* info) {
+  magma_sgetri_gpu(&n, A, &lda, ipiv, work, &lwork, info);
+};
+/** \overload
+ */
+inline void xGETRI(I_t n, D_t* A, I_t lda, int* ipiv, D_t* work, int lwork,
+                   int* info) {
+  magma_dgetri_gpu(&n, A, &lda, ipiv, work, &lwork, info);
+};
+/** \overload
+ */
+inline void xGETRI(I_t n, C_t* A, I_t lda, int* ipiv, C_t* work, int lwork,
+                   int* info) {
+  magma_cgetri_gpu(&n, (magmaFloatComplex*) A, &lda, ipiv,
+                   (magmaFloatComplex*) work, &lwork, info);
+};
+/** \overload
+ */
+inline void xGETRI(I_t n, Z_t* A, I_t lda, int* ipiv, Z_t* work, int lwork,
+                   int* info) {
+  magma_zgetri_gpu(&n, (magmaDoubleComplex*) A, &lda, ipiv,
+                   (magmaDoubleComplex*) work, &lwork, info);
+};
+
+#ifndef DOXYGEN_SKIP
+/*  Utility routines to determine the right size of lwork for xGETRI */
+template <>
+inline I_t get_xgetri_nb<S_t>(I_t n) { return magma_get_sgetri_nb(n); };
+template <>
+inline I_t get_xgetri_nb<D_t>(I_t n) { return magma_get_dgetri_nb(n); };
+template <>
+inline I_t get_xgetri_nb<C_t>(I_t n) { return magma_get_cgetri_nb(n); };
+template <>
+inline I_t get_xgetri_nb<Z_t>(I_t n) { return magma_get_zgetri_nb(n); };
+#endif /* DOXYGEN_SKIP */
+
 } /* namespace LinAlg::LAPACK::MAGMA */
 #endif /* HAVE_MAGMA */
+
+#endif /* HAVE_CUDA */
 
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_input_transposed;
@@ -337,27 +396,32 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
           lwork = ILAENV(1, "zgetri", "", n, -1, -1, -1);
           break;
         default:
+#ifndef LINALG_NO_CHECKS
           throw excBadArgument("xGETRI(): unsupported data type");
+#endif /* LINALG_NO_CHECKS */
+          break;
       }
 
       work.reallocate(lwork, 1);
-      lwork = work._rows;
 
-    } else if (lwork < A._rows) {
+    } 
+#ifndef LINALG_NO_CHECKS
+    else if (lwork < A._rows) {
     
       throw excBadArgument("xGETRI(A, ipiv, work), work: work must have at "
                            "least A.rows() = %d rows (work.rows() = %d)",
                            A._rows, lwork);
     }
+#endif /* LINALG_NO_CHECKS */
 
     auto work_ptr = work._begin();
     FORTRAN::xGETRI(n, A_ptr, lda, ipiv_ptr, work_ptr, lwork, &info);
 
   }
 #ifdef HAVE_CUDA
-#ifndef USE_MAGMA_GETRI
   else if (A._location == Location::GPU) {
 
+#ifndef USE_MAGMA_GETRI
     // CUBLAS' getri is out-of-place so we need to allocate a C and then stream
     // it back into A after the operation
 
@@ -373,10 +437,36 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
 
     A << C;
 
+#else /* USE_MAGMA_GETRI */
+
+    auto lwork = work._rows;
+
+    // If work is empty, we have to allocate it optimally
+    if (lwork == 0) {
+
+      using LinAlg::Type;
+      using LinAlg::LAPACK::FORTRAN::ILAENV;
+
+      lwork = MAGMA::get_xgetri_nb<T>(n) * n;
+
+      work.reallocate(lwork, 1);
+
+    } 
+#ifndef LINALG_NO_CHECKS 
+    else if (lwork < A._rows) {
+    
+      throw excBadArgument("xGETRI(A, ipiv, work), work: work must have at "
+                           "least A.rows() = %d rows (work.rows() = %d)",
+                           A._rows, lwork);
+    }
+#endif /* LINALG_NO_CHECKS */
+
+    auto work_ptr = work._begin();
+    MAGMA::xGETRI(n, A_ptr, lda, ipiv_ptr, work_ptr, lwork, &info);
+
+#endif /* not USE_MAGMA_GETRI */
+
   }
-#else
-  // check if MAGMA's or CUBLAS' GETRI is faster and use that one.
-#endif /* USE_MAGMA_GETRI */
 #endif /* HAVE_CUDA */
 
 #ifndef LINALG_NO_CHECKS
@@ -413,8 +503,9 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv) {
  *  \note             This function is provided to suit the CUBLAS
  *                    implementation of an out-of-place inversion. An 
  *                    out-of-place inversion of matrices in main memory
- *                    requires extra memory and an additional memory copy as 
- *                    the LAPACK inversion function is in-place.
+ *                    or using the MAGMA getri() implementation requires extra 
+ *                    memory and an additional memory copy as the standard 
+ *                    LAPACK inversion function is in-place.
  *
  *  C = A**-1 (out-of-place)
  *
@@ -565,6 +656,7 @@ inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
 #ifdef HAVE_CUDA
   else if (A._location == Location::GPU) {
 
+#ifndef USE_MAGMA_GETRI
     auto ipiv_ptr = (ipiv_empty) ? nullptr : ipiv._begin();
     auto C_ptr    = C._begin();
     auto ldc      = C._leading_dimension;
@@ -572,6 +664,47 @@ inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
 
     CUBLAS::xGETRI(LinAlg::CUDA::CUBLAS::handles[device_id], n, A_ptr, lda,
                    ipiv_ptr, C_ptr, ldc, &info);
+
+#else /* USE_MAGMA_GETRI */
+
+    auto lwork = work._rows;
+
+    // If work is empty, we have to allocate it optimally
+    if (lwork == 0) {
+
+      using LinAlg::Type;
+      using LinAlg::LAPACK::FORTRAN::ILAENV;
+
+      lwork = MAGMA::get_xgetri_nb<T>(n) * n;
+
+      work.reallocate(lwork, 1);
+
+    } 
+
+    // At least the temporary could be omitted if we had a fast swap for 
+    // arrays
+    printf("LinAlg::LAPACK::xGETRI(): warning, using magma_xgetri(), "
+           "out-of-place inversion for matrices in requires 3 times the "
+           "memory of an in-place inversion and incurs three memory copies "
+           "of the matrix\n");
+    Dense<T> A_tmp;
+    A_tmp << A;
+
+    auto work_ptr = work._begin();
+    int  info     = 0;
+
+    MAGMA::xGETRI(n, A_ptr, lda, ipiv_ptr, work_ptr, lwork, &info);
+
+#ifndef LINALG_NO_CHECKS
+    if (info != 0) {
+      throw excMath("xGETRI(): error: info = %d", info);
+    }
+#endif
+
+    C << A;
+    A << A_tmp;
+
+#endif /* not USE_MAGMA_GETRI */
 
 #ifndef LINALG_NO_CHECKS
     if (info != 0) {

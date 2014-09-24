@@ -42,18 +42,26 @@ namespace FORTRAN {
 
 #ifndef DOXYGEN_SKIP
 extern "C" {
-  void fortran_name(sgemm, SGEMM)(char* transa, char* transb, I_t* m, I_t* n,
-                                  I_t* k, S_t* alpha, S_t* A, I_t* lda, S_t* B,
-                                  I_t* ldb, S_t* beta, S_t* C, I_t* ldc);
-  void fortran_name(dgemm, DGEMM)(char* transa, char* transb, I_t* m, I_t* n,
-                                  I_t* k, D_t* alpha, D_t* A, I_t* lda, D_t* B,
-                                  I_t* ldb, D_t* beta, D_t* C, I_t* ldc);
-  void fortran_name(cgemm, CGEMM)(char* transa, char* transb, I_t* m, I_t* n,
-                                  I_t* k, C_t* alpha, C_t* A, I_t* lda, C_t* B,
-                                  I_t* ldb, C_t* beta, C_t* C, I_t* ldc);
-  void fortran_name(zgemm, ZGEMM)(char* transa, char* transb, I_t* m, I_t* n,
-                                  I_t* k, Z_t* alpha, Z_t* A, I_t* lda, Z_t* B,
-                                  I_t* ldb, Z_t* beta, Z_t* C, I_t* ldc);
+  void fortran_name(sgemm, SGEMM)(const char* transa, const char* transb, 
+                                  const I_t* m, const I_t* n, const I_t* k, 
+                                  const S_t* alpha, const S_t* A, 
+                                  const I_t* lda, const S_t* B, const I_t* ldb, 
+                                  const S_t* beta, S_t* C, const I_t* ldc);
+  void fortran_name(dgemm, DGEMM)(const char* transa, const char* transb, 
+                                  const I_t* m, const I_t* n, const I_t* k, 
+                                  const D_t* alpha, const D_t* A, 
+                                  const I_t* lda, const D_t* B, const I_t* ldb, 
+                                  const D_t* beta, D_t* C, const I_t* ldc);
+  void fortran_name(cgemm, CGEMM)(const char* transa, const char* transb, 
+                                  const I_t* m, const I_t* n, const I_t* k, 
+                                  const C_t* alpha, const C_t* A, 
+                                  const I_t* lda, const C_t* B, const I_t* ldb, 
+                                  const C_t* beta, C_t* C, const I_t* ldc);
+  void fortran_name(zgemm, ZGEMM)(const char* transa, const char* transb, 
+                                  const I_t* m, const I_t* n, const I_t* k, 
+                                  const Z_t* alpha, const Z_t* A, 
+                                  const I_t* lda, const Z_t* B, const I_t* ldb, 
+                                  const Z_t* beta, Z_t* C, const I_t* ldc);
 }
 #endif
 

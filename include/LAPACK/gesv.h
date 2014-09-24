@@ -30,9 +30,9 @@
 #ifdef HAVE_MAGMA
 #include <magma.h>
 #include <magma_lapack.h>
-#endif
+#endif /* HAVE_MAGMA */
 
-#endif
+#endif /* HAVE_CUDA */
 
 
 #include "../types.h"
@@ -112,6 +112,64 @@ inline void xGESV(I_t n, I_t nrhs, Z_t* A, I_t lda, int* ipiv, Z_t* B, int ldb,
 } /* namespace LinAlg::LAPACK::FORTRAN */
 
 
+#ifdef HAVE_CUDA
+
+#ifdef HAVE_MAGMA
+namespace MAGMA {
+
+/** \brief            GESV
+ *
+ *  X = A^(-1) * B
+ *
+ *  \param[in]        n
+ *
+ *  \param[in]        nrhs
+ *
+ *  \param[in]        A
+ *
+ *  \param[in]        lda
+ *
+ *  \param[in]        ipiv
+ *
+ *  \param[in,out]    B
+ *
+ *  \param[in]        ldb
+ *
+ *  \param[in,out]    info
+ *
+ *  See [DGESV](http://www.mathkeisan.com/UsersGuide/man/dgesv.html) or the 
+ *  MAGMA sources.
+ */
+inline void xGESV(I_t n, I_t nrhs, S_t* A, I_t lda, int* ipiv, S_t* B, int ldb,
+                  int* info) {
+  magma_sgesv_gpu(&n, &nrhs, A, &lda, ipiv, B, &ldb, info);
+};
+/** \overload
+ */
+inline void xGESV(I_t n, I_t nrhs, D_t* A, I_t lda, int* ipiv, D_t* B, int ldb,
+                  int* info) {
+  magma_dgesv_gpu(&n, &nrhs, A, &lda, ipiv, B, &ldb, info);
+};
+/** \overload
+ */
+inline void xGESV(I_t n, I_t nrhs, C_t* A, I_t lda, int* ipiv, C_t* B, int ldb,
+                  int* info) {
+  magma_cgesv_gpu(&n, &nrhs, (magmaFloatComplex*) A, &lda, ipiv,
+                  (magmaFloatComplex*) B, &ldb, info);
+};
+/** \overload
+ */
+inline void xGESV(I_t n, I_t nrhs, Z_t* A, I_t lda, int* ipiv, Z_t* B, int ldb,
+                  int* info) {
+  magma_zgesv_gpu(&n, &nrhs, (magmaDoubleComplex*) A, &lda, ipiv, 
+                  (magmaDoubleComplex*) B, &ldb, info);
+};
+
+} /* namespace LinAlg::LAPACK::MAGMA */
+#endif /* HAVE_MAGMA */
+
+#endif /* HAVE_CUDA */
+
 
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_format;
@@ -175,7 +233,8 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
 #ifndef LINALG_NO_CHECKS
     // Note that the MAGMA GETRF would support non-square matrices
     if (A._rows != A._cols) {
-      throw excBadArgument("xGETRF(A, ipiv, B), A: matrix must be square");
+      throw excBadArgument("xGETRF(A, ipiv, B), A: matrix must be square (when "
+                           "using cublasXgetrfBatched)");
     }
 #endif
 
@@ -185,6 +244,8 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
     // LU decompose using xGETRF without pivoting (use ipiv_override == empty
     // vector to enforce no pivoting. cudaXtrsm doesn't support pivoting, 
     // there is no xLASWP in CUBLAS, respectively)
+
+    // TODO: this call here doesn't work
     LAPACK::CUBLAS::xGETRF(handle, n, A_ptr, lda, ipiv_override, &info);
 
 #ifndef LINALG_NO_CHECKS
@@ -203,6 +264,15 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
     BLAS::CUBLAS::xTRSM(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_UPPER,
                         CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, n, nrhs, T(1.0),
                         A_ptr, lda, B_ptr, ldb);
+
+#else /* USE_MAGMA_GESV */
+
+    MAGMA::xGESV(n, nrhs, A_ptr, lda, ipiv_ptr, B_ptr, ldb, &info);
+#ifndef LINALG_NO_CHECKS
+    if (info != 0) {
+      throw excMath("xGESV(): error = %d)", info);
+    }
+#endif
 
 #endif /* not USE_MAGMA_GESV */
 
