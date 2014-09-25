@@ -17,7 +17,6 @@
 #include <tuple>      // std::tuple, std::tie
 #include <fstream>    // std::fstream
 #include <sstream>    // std::istringstream
-#include <complex>    // std::real, std::imag
 #include <utility>    // std::move
 
 #include "../types.h"
@@ -349,14 +348,6 @@ void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
 
   }
 #endif
-
-  /* DEBUG
-  auto indices = matrix._indices.get();
-  printf("index %i: j=%i\n", 10, indices[10]);
-  printf("index %i: j=%i\n", 11, indices[11]);
-  printf("index %i: j=%i\n", 998, indices[998]);
-  */
-
 
 };
 /** \overload
