@@ -13,6 +13,7 @@
 #define LINALG_METADATA_H_
 
 #include <vector>     // std::vector
+#include <string>     // std::string
 
 #include "types.h"
 #include "dense.h"
@@ -57,8 +58,13 @@ struct MetaData {
   // Helper routines for the first 3 fields
   inline I_t format2int(Format format);
   inline Format int2format(I_t i);
+
   template <typename T> inline I_t type2int();
   inline Type int2type(I_t i);
+
+  template <typename T> inline std::string type2str();
+  inline std::string int2str(I_t i);
+
   inline I_t trans2int(bool trans);
   inline bool int2trans(I_t i);
 
@@ -167,6 +173,7 @@ template <>           inline I_t MetaData::type2int<Z_t>() { return 4; };
  */
 template <>           inline I_t MetaData::type2int<I_t>() { return 5; };
 
+
 /** \brief            Convert I_t to Type
  *
  *  \param[in]        i
@@ -188,10 +195,82 @@ inline Type MetaData::int2type(I_t i) {
     case 5:
       return Type::I;
     default:
-      return Type::U;
+      return Type::O;
   }
 
 };
+
+
+/** \brief            Convert Type to string
+ *
+ *  \returns          Corresponding integer.
+ */
+template <typename T> inline std::string MetaData::type2str() { 
+  return std::string("other");
+};
+/** \overload
+ *
+ *  \returns          Corresponding string.
+ */
+template <>           inline std::string MetaData::type2str<S_t>() {
+  return std::string("S_t");
+};
+/** \overload
+ *
+ *  \returns          Corresponding string.
+ */
+template <>           inline std::string MetaData::type2str<D_t>() {
+  return std::string("D_t");
+};
+/** \overload
+ *
+ *  \returns          Corresponding string.
+ */
+template <>           inline std::string MetaData::type2str<C_t>() {
+  return std::string("C_t");
+};
+/** \overload
+ *
+ *  \returns          Corresponding string.
+ */
+template <>           inline std::string MetaData::type2str<Z_t>() {
+  return std::string("Z_t");
+};
+/** \overload
+ *
+ *  \returns          Corresponding string.
+ */
+template <>           inline std::string MetaData::type2str<I_t>() {
+  return std::string("I_t");
+};
+
+
+/** \brief            Convert I_t to std::string
+ *
+ *  \param[in]        i
+ *                    Integer to convert
+ *
+ *  \returns          Corresponding string
+ */
+inline std::string MetaData::int2str(I_t i) {
+
+  switch (i) {
+    case 1:
+      return std::string("S_t");
+    case 2:
+      return std::string("D_t");
+    case 3:
+      return std::string("C_t");
+    case 4:
+      return std::string("Z_t");
+    case 5:
+      return std::string("I_t");
+    default:
+      return std::string("other");
+  }
+
+};
+
 
 /** \brief            Convert transposition status to I_t
  *
@@ -269,7 +348,7 @@ inline void MetaData::set_rows(I_t rows) {
  */
 inline void MetaData::set_cols(I_t cols) {
 
-  container[N] = cols;
+  container[N + 1] = cols;
 
 };
 
@@ -303,8 +382,8 @@ void MetaData::extract(const Dense<T>& matrix) {
   container[1] = type2int<T>();
   container[2] = trans2int(matrix._transposed);
 
-  container[META_TYPE_LENGTH] = matrix._rows;
-  container[META_TYPE_LENGTH + 1] = matrix._cols;
+  container[N] = matrix._rows;
+  container[N + 1] = matrix._cols;
 
 };
 
@@ -316,19 +395,22 @@ void MetaData::extract(const Dense<T>& matrix) {
 template <typename T>
 void MetaData::apply(Dense<T>& matrix) {
 
-  auto matrix_type = type2int<T>();
+  I_t matrix_type = type2int<T>();
 
 #ifndef LINALG_NO_CHECKS
   if (container[1] != matrix_type) {
 
-    throw excBadArgument("MetaData.apply(): stored data type (%d) doesn't "
-                         "agree with type of provided matrix (%d)",
-                         container[1], matrix_type);
+    // TODO: doesn't display 4th argument properly
+    throw excBadArgument("MetaData.apply(): data type stored in meta data "
+                         "(%d -> %s) doesn't agree with type of matrix to "
+                         "which it is to be applied (%d -> %s)", container[1], 
+                         int2str(container[1]).c_str(), matrix_type,
+                         type2str<T>().c_str());
 
   } else if (container[0] != 0 && container[0] != 1) {
 
-    throw excBadArgument("MetaData.apply(): storing meta data of a dense "
-                         "matrix, can only apply to a Dense<T> matrix");
+    throw excBadArgument("MetaData.apply(): meta data is for a dense matrix, "
+                         "can only apply to a Dense<T> matrix");
 
   }
 #endif
@@ -336,8 +418,8 @@ void MetaData::apply(Dense<T>& matrix) {
   matrix._format = (container[0] == 0) ? Format::ColMajor : Format::RowMajor;
   matrix._transposed = int2trans(container[2]);
 
-  auto rows = container[META_TYPE_LENGTH];
-  auto cols = container[META_TYPE_LENGTH + 1];
+  auto rows = container[N];
+  auto cols = container[N + 1];
   matrix.reallocate(rows, cols, matrix._location, matrix._device_id);
 
 };
