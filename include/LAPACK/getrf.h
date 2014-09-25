@@ -226,22 +226,22 @@ namespace MAGMA {
  *  the MAGMA sources
  */
 inline void xGETRF(I_t m, I_t n, S_t* A, I_t lda, I_t* ipiv, int* info) {
-  magma_sgetrf_gpu(&m, &n, A, &lda, ipiv, info);
+  magma_sgetrf_gpu(m, n, A, lda, ipiv, info);
 };
 /** \overload
  */
 inline void xGETRF(I_t m, I_t n, D_t* A, I_t lda, I_t* ipiv, int* info) {
-  magma_dgetrf_gpu(&m, &n, A, &lda, ipiv, info);
+  magma_dgetrf_gpu(m, n, A, lda, ipiv, info);
 };
 /** \overload
  */
 inline void xGETRF(I_t m, I_t n, C_t* A, I_t lda, I_t* ipiv, int* info) {
-  magma_cgetrf_gpu(&m, &n, (magmaFloatComplex*) A, &lda, ipiv, info);
+  magma_cgetrf_gpu(m, n, A, lda, ipiv, info);
 };
 /** \overload
  */
 inline void xGETRF(I_t m, I_t n, Z_t* A, I_t lda, I_t* ipiv, int* info) {
-  magma_zgetrf_gpu(&m, &n, (magmaDoubleComplex*) A, &lda, ipiv, info);
+  magma_zgetrf_gpu(m, n, A, lda, ipiv, info);
 };
 
 } /* namespace LinAlg::LAPACK::MAGMA */
@@ -304,7 +304,6 @@ inline void xGETRF(Dense<T>& A, Dense<int>& ipiv) {
 #endif
 #endif /* LINALG_NO_CHECKS */
 
-  auto device_id = A._device_id;
   auto n = A.cols();
   auto A_ptr = A._begin();
   auto lda = A._leading_dimension;
@@ -320,8 +319,10 @@ inline void xGETRF(Dense<T>& A, Dense<int>& ipiv) {
 
 #ifndef USE_MAGMA_GETRF
     using LinAlg::CUDA::CUBLAS::handles;
+    auto device_id = A._device_id;
     CUBLAS::xGETRF(handles[device_id], n, A_ptr, lda, ipiv_ptr, &info);
 #else /* USE_MAGMA_GETRF */
+    auto m = A.cols();
     MAGMA::xGETRF(m, n, A_ptr, lda, ipiv_ptr, &info);
 #endif /* not USE_MAGMA_GETRF */
 

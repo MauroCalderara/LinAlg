@@ -74,24 +74,35 @@ namespace LinAlg {
   /// Definition of LAPACK double precision floating point, complex
   typedef magmaDoubleComplex Z_t;
 
-  /** \brief          Return real part of complex number
+  /** \brief          Return real part of a number
    *
    *  \param          z
-   *                  Complex number.
+   *                  Number.
    *
-   *  \returns        real part.
+   *  \returns        Real part.
    */
-  template <>
-  inline S_t real<C_t>(C_t z) { return MAGMA_C_REAL(z); };
+  inline S_t real(S_t z) { return z; };
   /** \overload */
-  template <>
-  inline S_t imag<C_t>(C_t z) { return MAGMA_C_IMAG(z); };
+  inline D_t real(D_t z) { return z; };
   /** \overload */
-  template <>
-  inline D_t real<Z_t>(Z_t z) { return MAGMA_Z_REAL(z); };
+  inline S_t real(C_t z) { return MAGMA_C_REAL(z); };
   /** \overload */
-  template <>
-  inline D_t imag<Z_t>(Z_t z) { return MAGMA_Z_IMAG(z); };
+  inline D_t real(Z_t z) { return MAGMA_Z_REAL(z); };
+
+  /** \brief          Return imaginary part of a number
+   *
+   *  \param          z
+   *                  Number.
+   *
+   *  \returns        Imaginary part.
+   */
+  inline S_t imag(S_t z) { return 0.0; };
+  /** \overload */
+  inline D_t imag(D_t z) { return 0.0; };
+  /** \overload */
+  inline S_t imag(C_t z) { return MAGMA_C_IMAG(z); };
+  /** \overload */
+  inline D_t imag(Z_t z) { return MAGMA_Z_IMAG(z); };
 
 #else /* MAGMA_TYPES_H is not defined */
 
@@ -112,24 +123,35 @@ namespace LinAlg {
   /// Definition of LAPACK double precision floating point, complex
   typedef std::complex<double> Z_t;
 
-  /** \brief          Return real part of complex number
+  /** \brief          Return real part of a number
    *
    *  \param          z
-   *                  Complex number.
+   *                  Number.
    *
-   *  \returns        real part.
+   *  \returns        Real part.
    */
-  template <>
-  inline S_t real<C_t>(C_t z) { return std::real(z); };
+  inline S_t real(S_t z) { return z; };
   /** \overload */
-  template <>
-  inline S_t imag<C_t>(C_t z) { return std::imag(z); };
+  inline D_t real(D_t z) { return z; };
   /** \overload */
-  template <>
-  inline D_t real<Z_t>(Z_t z) { return std::real(z); };
+  inline S_t real(C_t z) { return std::real(z); };
   /** \overload */
-  template <>
-  inline D_t imag<Z_t>(Z_t z) { return std::imag(z); };
+  inline D_t real(Z_t z) { return std::real(z); };
+
+  /** \brief          Return imaginary part of a number
+   *
+   *  \param          z
+   *                  Number.
+   *
+   *  \returns        Imaginary part.
+   */
+  inline S_t imag(S_t z) { return 0.0; };
+  /** \overload */
+  inline D_t imag(D_t z) { return 0.0; };
+  /** \overload */
+  inline S_t imag(C_t z) { return std::imag(z); };
+  /** \overload */
+  inline D_t imag(Z_t z) { return std::imag(z); };
 
 #endif /* MAGMA_TYPES_H */
 

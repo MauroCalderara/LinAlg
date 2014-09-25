@@ -142,27 +142,25 @@ namespace MAGMA {
  */
 inline void xGESV(I_t n, I_t nrhs, S_t* A, I_t lda, int* ipiv, S_t* B, int ldb,
                   int* info) {
-  magma_sgesv_gpu(&n, &nrhs, A, &lda, ipiv, B, &ldb, info);
+  magma_sgesv_gpu(n, nrhs, A, lda, ipiv, B, ldb, info);
 };
 /** \overload
  */
 inline void xGESV(I_t n, I_t nrhs, D_t* A, I_t lda, int* ipiv, D_t* B, int ldb,
                   int* info) {
-  magma_dgesv_gpu(&n, &nrhs, A, &lda, ipiv, B, &ldb, info);
+  magma_dgesv_gpu(n, nrhs, A, lda, ipiv, B, ldb, info);
 };
 /** \overload
  */
 inline void xGESV(I_t n, I_t nrhs, C_t* A, I_t lda, int* ipiv, C_t* B, int ldb,
                   int* info) {
-  magma_cgesv_gpu(&n, &nrhs, (magmaFloatComplex*) A, &lda, ipiv,
-                  (magmaFloatComplex*) B, &ldb, info);
+  magma_cgesv_gpu(n, nrhs, A, lda, ipiv, B, ldb, info);
 };
 /** \overload
  */
 inline void xGESV(I_t n, I_t nrhs, Z_t* A, I_t lda, int* ipiv, Z_t* B, int ldb,
                   int* info) {
-  magma_zgesv_gpu(&n, &nrhs, (magmaDoubleComplex*) A, &lda, ipiv, 
-                  (magmaDoubleComplex*) B, &ldb, info);
+  magma_zgesv_gpu(n, nrhs, A, lda, ipiv, B, ldb, info);
 };
 
 } /* namespace LinAlg::LAPACK::MAGMA */

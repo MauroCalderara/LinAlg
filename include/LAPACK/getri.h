@@ -259,31 +259,35 @@ namespace MAGMA {
  */
 inline void xGETRI(I_t n, S_t* A, I_t lda, int* ipiv, S_t* work, int lwork,
                    int* info) {
-  magma_sgetri_gpu(&n, A, &lda, ipiv, work, &lwork, info);
+  magma_sgetri_gpu(n, A, lda, ipiv, work, lwork, info);
 };
 /** \overload
  */
 inline void xGETRI(I_t n, D_t* A, I_t lda, int* ipiv, D_t* work, int lwork,
                    int* info) {
-  magma_dgetri_gpu(&n, A, &lda, ipiv, work, &lwork, info);
+  magma_dgetri_gpu(n, A, lda, ipiv, work, lwork, info);
 };
 /** \overload
  */
 inline void xGETRI(I_t n, C_t* A, I_t lda, int* ipiv, C_t* work, int lwork,
                    int* info) {
-  magma_cgetri_gpu(&n, (magmaFloatComplex*) A, &lda, ipiv,
-                   (magmaFloatComplex*) work, &lwork, info);
+  magma_cgetri_gpu(n, A, lda, ipiv, work, lwork, info);
 };
 /** \overload
  */
 inline void xGETRI(I_t n, Z_t* A, I_t lda, int* ipiv, Z_t* work, int lwork,
                    int* info) {
-  magma_zgetri_gpu(&n, (magmaDoubleComplex*) A, &lda, ipiv,
-                   (magmaDoubleComplex*) work, &lwork, info);
+  magma_zgetri_gpu(n, A, lda, ipiv, work, lwork, info);
 };
 
 #ifndef DOXYGEN_SKIP
 /*  Utility routines to determine the right size of lwork for xGETRI */
+template <typename T>
+inline I_t get_xgetri_nb(I_t n) { 
+  throw excBadArgument("get_xgetri_nb: must explicitly state the template to "
+                       "use (e.g. get_xgetri_nb<D_t>(n))");
+  return 0;
+}
 template <>
 inline I_t get_xgetri_nb<S_t>(I_t n) { return magma_get_sgetri_nb(n); };
 template <>

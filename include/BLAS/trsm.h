@@ -40,18 +40,26 @@ namespace FORTRAN {
 
 #ifndef DOXYGEN_SKIP
 extern "C" {
-  void fortran_name(strsm, STRSM)(char* side, char* uplo, char* transa,
-                                  char* diag, I_t* m, I_t* n, S_t* alpha,
-                                  S_t* A, I_t* lda, S_t* B, I_t* ldb);
-  void fortran_name(dtrsm, DTRSM)(char* side, char* uplo, char* transa,
-                                  char* diag, I_t* m, I_t* n, D_t* alpha,
-                                  D_t* A, I_t* lda, D_t* B, I_t* ldb);
-  void fortran_name(ctrsm, CTRSM)(char* side, char* uplo, char* transa,
-                                  char* diag, I_t* m, I_t* n, C_t* alpha,
-                                  C_t* A, I_t* lda, C_t* B, I_t* ldb);
-  void fortran_name(ztrsm, ZTRSM)(char* side, char* uplo, char* transa,
-                                  char* diag, I_t* m, I_t* n, Z_t* alpha,
-                                  Z_t* A, I_t* lda, Z_t* B, I_t* ldb);
+  void fortran_name(strsm, STRSM)(const char* side, const char* uplo,
+                                  const char* transa, const char* diag,
+                                  const I_t* m, const I_t* n, const S_t* alpha,
+                                  const S_t* A, const I_t* lda, S_t* B,
+                                  const I_t* ldb);
+  void fortran_name(dtrsm, DTRSM)(const char* side, const char* uplo,
+                                  const char* transa, const char* diag,
+                                  const I_t* m, const I_t* n, const D_t* alpha,
+                                  const D_t* A, const I_t* lda, D_t* B,
+                                  const I_t* ldb);
+  void fortran_name(ctrsm, CTRSM)(const char* side, const char* uplo,
+                                  const char* transa, const char* diag,
+                                  const I_t* m, const I_t* n, const C_t* alpha,
+                                  const C_t* A, const I_t* lda, C_t* B,
+                                  const I_t* ldb);
+  void fortran_name(ztrsm, ZTRSM)(const char* side, const char* uplo,
+                                  const char* transa, const char* diag,
+                                  const I_t* m, const I_t* n, const Z_t* alpha,
+                                  const Z_t* A, const I_t* lda, Z_t* B,
+                                  const I_t* ldb);
 }
 #endif
 
