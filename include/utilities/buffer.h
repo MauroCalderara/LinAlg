@@ -23,7 +23,7 @@
 #ifndef DOXYGEN_SKIP
 // If BUFFER_DISPLAY is defined, the buffer will print it's status during
 // operations
-#define BUFFER_DISPLAY 0
+//#define BUFFER_DISPLAY
 #ifdef BUFFER_DISPLAY
 #include <iostream>     // std::cout
 #endif

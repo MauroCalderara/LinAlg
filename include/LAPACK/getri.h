@@ -283,7 +283,7 @@ inline void xGETRI(I_t n, Z_t* A, I_t lda, int* ipiv, Z_t* work, int lwork,
 #ifndef DOXYGEN_SKIP
 /*  Utility routines to determine the right size of lwork for xGETRI */
 template <typename T>
-inline I_t get_xgetri_nb(I_t n) { 
+inline I_t get_xgetri_nb(I_t n) {
   throw excBadArgument("get_xgetri_nb: must explicitly state the template to "
                        "use (e.g. get_xgetri_nb<D_t>(n))");
   return 0;

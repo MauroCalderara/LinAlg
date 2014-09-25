@@ -285,8 +285,9 @@ void BufferHelper::wait(I_t n) {
 
 #ifdef BUFFER_DISPLAY
   // Visualization
-  for (const auto& e : _buffer_status) { std::cout << e; }
-  std::cout << "\n";
+  std::cout << "Buffer status: [|";
+  for (const auto& e : _buffer_status) { std::cout << e << "|"; }
+  std::cout << "]\n";
 #endif
 
 };

@@ -100,6 +100,9 @@ inline void multiply(const T alpha, const Dense<T>& A, const Dense<T>& B,
  *                    internal allocation/deallocation of the pivoting vector 
  *                    by allocating it separately and directly calling xGESV() 
  *                    multiple times, reusing the same pivot vector.
+ *
+ *  \todo             This routine fails when using the GPU because somehow
+ *                    the destructor of ipiv crashes.
  */
 template <typename T>
 inline void solve(Dense<T>& A, Dense<T>& B) {

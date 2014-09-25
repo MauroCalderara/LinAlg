@@ -178,6 +178,8 @@ void receive_meta_async(MetaData& meta, MPI_Comm communicator,
  *                    Tag of the transfer (must match tag on receiver)
  *
  *  \returns          Stream to synchronize the operation
+ *
+ *  \todo             Test this
  */
 inline MPIStream receive_meta_async(MetaData& meta, MPI_Comm communicator,
                                     int sending_rank, int tag) {
