@@ -559,7 +559,7 @@ inline void Dense<T>::reallocate(I_t rows, I_t cols, Location location,
   else if (location == Location::GPU) {
 
     using CUDA::cuda_make_shared;
-    _memory = cuda_make_shared<T>(_rows * _cols, device_id);
+    _memory = cuda_make_shared<T>(rows * cols, device_id);
 
   }
 #endif
@@ -571,7 +571,7 @@ inline void Dense<T>::reallocate(I_t rows, I_t cols, Location location,
 
     // NOTE: the MIC seems not to support 'MIC only' memory such that there must
     // always be a corresponding block of memory on the host itself.
-    _memory = mic_make_shared<T>(_rows * _cols, device_id);
+    _memory = mic_make_shared<T>(rows * cols, device_id);
 
   }
 #endif
