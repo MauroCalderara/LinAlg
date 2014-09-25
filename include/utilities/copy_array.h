@@ -218,13 +218,13 @@ void copy_1Darray(T* src_array, I_t length, T* dst_array,
  *  \param[in]          dst_device_id
  *                      Device id of the output array.
  *
- *  \note               Each call involving cudaMemcpy or xGEAM creates its own
- *                      stream such that if there are multiple threads calling
+ *  \note               While calls to copy_2Darray are synchronous, each call
+ *                      involving cudaMemcpy or xGEAM creates its own stream 
+ *                      such that if there are multiple threads calling
  *                      functions on the GPU there is some parallelism (i.e.
  *                      another thread calling a cuBLAS routine will execute in
  *                      parallel, while other transfers in the same direction
- *                      are scheduled by the CUDA runtime). The calls to
- *                      copy_2Darray themselves are synchronous.
+ *                      are scheduled by the CUDA runtime). 
  */
 template <typename T>
 void copy_2Darray(bool transpose, Format src_format, const T* src_array,
@@ -388,8 +388,10 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
 
       using LinAlg::BLAS::CUBLAS::xGEAM;
 
+      // Since xGEAM doesn't support B = nullptr, we use B = A and beta = 0.0;
       xGEAM(my_stream.cublas_handle, CUBLAS_OP_T, CUBLAS_OP_T, line_length,
-            lines, 1.0, src_array, src_ld, 0.0, nullptr, 1, dst_array, dst_ld);
+            lines, 1.0, src_array, src_ld, 0.0, src_array, src_ld, dst_array,
+            dst_ld);
 
     }
 
