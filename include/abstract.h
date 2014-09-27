@@ -50,9 +50,101 @@ namespace LinAlg {
 // These are the bindings for Dense<T> matrices, optionally with streams.
 // Argument and error checking is done on lower levels.
 
+/** \brief            Matrix-matrix addition with prefactor
+ *
+ *  B <- alpha * A + B
+ * 
+ *  \param[in]        alpha
+ *
+ *  \param[in]        A
+ *
+ *  \param[in,out]    B
+ */
+template <typename T>
+inline void add(T alpha, Dense<T>& A, Dense<T>& B) {
+
+#ifndef LINALG_NO_CHECKS
+  // Currently only ColMajor is supported
+  check_format(Format::ColMajor, A, "add(alpha, A, B), A [only ColMajor is "
+               "supported]");
+  check_format(Format::ColMajor, B, "add(alpha, A, B), B [only ColMajor is "
+               "supported]");
+  check_input_transposed(A, "add(alpha, A, B), A");
+  check_output_transposed(B, "add(alpha, A, B), B");
+  check_same_dimensions(A, B, "add(alpha, A, B), A, B");
+  check_location(A, B, "add(alpha, A, B), A, B");
+#endif
+
+  if (A._location == Location::host) {
+
+    using BLAS::FORTRAN::xAXPY;
+
+    auto x_ptr = A._begin();
+    auto incx = 1;
+    auto y_ptr = B._begin();
+    auto incy = 1;
+  
+    if (A._rows == A._leading_dimension && B._rows == B._leading_dimension) {
+
+      // Matrices continuous in memory, use one xAXPY call:
+      auto n = A._rows * A._cols;
+      xAXPY(n, alpha, x_ptr, incx, y_ptr, incy);
+
+    } else {
+
+      // At least one matrix not continuous in memory, make one call per 
+      // column
+      auto rows = A._rows;
+      auto lda = A._leading_dimension;
+      auto ldb = B._leading_dimension;
+
+      for (I_t col = 0; col < A._cols; ++col) {
+
+        xAXPY(rows, alpha, x_ptr + col * lda, incx, y_ptr + col * ldb, incy);
+
+      }
+    
+    }
+  
+  }
+
+#ifdef HAVE_CUDA
+  else if (A._location == Location::GPU) {
+  
+    // B = alpha * A + 1.0 * B (see CUBLAS GEAM documentation under 'in-place 
+    // mode')
+    BLAS::xGEAM(alpha, A, T(1.0), B, B);
+  
+  }
+#endif /* HAVE_CUDA */
+
+#ifndef LINALG_NO_CHECKS
+  else {
+    throw excUnimplemented("add(): matrix addition on engine not "
+                           "implemented");
+  }
+#endif
+
+};
+
+/** \brief            Matrix-matrix addition
+ *
+ *  B <- A + B
+ * 
+ *  \param[in]        A
+ *
+ *  \param[in,out]    B
+ */
+template <typename T>
+inline void add(Dense<T>& A, Dense<T>& B) {
+
+  add(T(1.0), A, B);
+
+};
+
 /** \brief            Matrix-matrix multiply
  *
- *  C = A * B
+ *  C <- A * B
  *
  *  \param[in]        A
  *
@@ -63,11 +155,11 @@ namespace LinAlg {
 template <typename T>
 inline void multiply(const Dense<T>& A, const Dense<T>& B, Dense<T>& C) {
   BLAS::xGEMM(cast<T>(1.0), A, B, cast<T>(0.0), C);
-}
+};
 
 /** \brief            Matrix-matrix multiply with prefactors
  *
- *  C = alpha * A * B + beta * C
+ *  C <- alpha * A * B + beta * C
  *
  *  \param[in]        alpha
  *
@@ -83,7 +175,7 @@ template <typename T>
 inline void multiply(const T alpha, const Dense<T>& A, const Dense<T>& B,
                      const T beta, Dense<T>& C) {
   BLAS::xGEMM(alpha, A, B, beta, C);
-}
+};
 
 
 /** \brief            Solve a linear system
@@ -102,20 +194,48 @@ inline void multiply(const T alpha, const Dense<T>& A, const Dense<T>& B,
  *                    multiple times, reusing the same pivot vector.
  *
  *  \todo             This routine fails when using the GPU because somehow
- *                    the destructor of ipiv crashes.
+ *                    the destructor of pivot crashes.
  */
 template <typename T>
 inline void solve(Dense<T>& A, Dense<T>& B) {
 
-  Dense<int> ipiv(A._rows, 1, A._location, A._device_id);
-  LAPACK::xGESV(A, ipiv, B);
+  // Note:
+  //  - for the LAPACK and MAGMA GESV backends we need a pivot vector that is
+  //    allocated on the CPU
+  //  - for the CUBLAS (GETRF + 2*TRSM) implementation the pivot vector is
+  //    ignored
+  Dense<int> pivot(A._rows, 1, Location::host, 0);
+  LAPACK::xGESV(A, pivot, B);
 
-}
+};
+
+/** \brief            Solve a linear system
+ *
+ *  A * X = B     (B is overwritten with X, A with its own LU decomposition)
+ *
+ *  \param[in,out]    A
+ *
+ *  \param[in]        pivot
+ *                    The pivoting vector (not needed anymore after the 
+ *                    function call)
+ *
+ *  \param[in,out]    B
+ *
+ *  \note             This function is more efficient than the one without the
+ *                    pivoting argument when being invoked multiple times as 
+ *                    the pivot vector is only allocated and deallocated once.
+ */
+template <typename T>
+inline void solve(Dense<T>& A, Dense<I_t>& pivot, Dense<T>& B) {
+
+  LAPACK::xGESV(A, pivot, B);
+
+};
 
 
 /** \brief            Invert a matrix in-place
  *
- *  A = A**-1 (in-place)
+ *  A <- A**-1 (in-place)
  *
  *  \param[in,out]    A
  *
@@ -134,19 +254,50 @@ inline void solve(Dense<T>& A, Dense<T>& B) {
 template <typename T>
 inline void invert(Dense<T>& A) {
 
-  Dense<int> ipiv(A._rows, 1, A._location, A._device_id);
+  // Note: MAGMA needs ipiv to be on the host
+#ifdef USE_MAGMA_GETRF
+  Dense<int> pivot(A._rows, 1, Location::host, 0);
+#else
+  Dense<int> pivot(A._rows, 1, A._location, A._device_id);
+#endif
   Dense<T>   work;
 
   // We assume that pivoting factorization is faster for all backends 
   // (including those that support non-pivoting factorization like CUBLAS)
-  LAPACK::xGETRF(A, ipiv);
-  LAPACK::xGETRI(A, ipiv, work);
+  LAPACK::xGETRF(A, pivot);
+  LAPACK::xGETRI(A, pivot, work);
+
+};
+
+/** \brief            Invert a matrix in-place
+ *
+ *  A <- A**-1 (in-place)
+ *
+ *  \param[in,out]    A
+ *
+ *  \param[in]        pivot
+ *                    The pivoting vector (not needed anymore after the 
+ *                    function call)
+ *
+ *  \note             This function is more efficient than the one without the
+ *                    pivoting argument when being invoked multiple times as 
+ *                    the pivot vector is only allocated and deallocated once.
+ */
+template <typename T>
+inline void invert(Dense<T>& A, Dense<int>& pivot) {
+
+  Dense<T>   work;
+
+  // We assume that pivoting factorization is faster for all backends 
+  // (including those that support non-pivoting factorization like CUBLAS)
+  LAPACK::xGETRF(A, pivot);
+  LAPACK::xGETRI(A, pivot, work);
 
 };
 
 /** \brief            Invert a matrix out-of-place
  *
- *  C = A**-1 (out-of-place)
+ *  C <- A**-1 (out-of-place)
  *
  *  \param[in,out]    A
  *                    On return, A is replaced by its LU decomposition.
@@ -168,11 +319,47 @@ inline void invert(Dense<T>& A) {
 template <typename T>
 inline void invert(Dense<T>& A, Dense<T>& C) {
 
-  Dense<int> ipiv(A._rows, 1, A._location, A._device_id);
+  // Note: MAGMA needs ipiv to be on the host
+#ifdef USE_MAGMA_GETRF
+  Dense<int> pivot(A._rows, 1, Location::host, 0);
+#else
+  Dense<int> pivot(A._rows, 1, A._location, A._device_id);
+#endif
   Dense<T>   work;
 
-  LAPACK::xGETRF(A, ipiv);
-  LAPACK::xGETRI(A, ipiv, work, C);
+  LAPACK::xGETRF(A, pivot);
+  LAPACK::xGETRI(A, pivot, work, C);
+
+};
+
+/** \brief            Invert a matrix out-of-place
+ *
+ *  C <- A**-1 (out-of-place)
+ *
+ *  \param[in,out]    A
+ *                    On return, A is replaced by its LU decomposition.
+ *
+ *  \param[in]        pivot
+ *                    The pivoting vector (not needed anymore after the 
+ *                    function call)
+ *
+ *  \param[in,out]    C
+ *                    Target for out-of-place inversion. If empty, the routine 
+ *                    allocates suitable memory.
+ *
+ *  \note             This function is more efficient than the one without the
+ *                    pivoting argument when being invoked multiple times as 
+ *                    the pivot vector is only allocated and deallocated once.
+ *                    Out-of-place inversions are fast when using the CUBLAS 
+ *                    backend and generally slow otherwise.
+ */
+template <typename T>
+inline void invert(Dense<T>& A, Dense<int>& pivot, Dense<T>& C) {
+
+  Dense<T>   work;
+
+  LAPACK::xGETRF(A, pivot);
+  LAPACK::xGETRI(A, pivot, work, C);
 
 };
 
