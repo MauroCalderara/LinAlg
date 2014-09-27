@@ -14,6 +14,7 @@
 
 #include "../types.h"
 #include "../exceptions.h"
+#include "../streams.h"
 #include "stringformat.h"
 
 namespace LinAlg {
@@ -124,7 +125,8 @@ inline void check_output_transposed(Dense<T>& A, const char* caller_name) {
 
 }
 
-/*  \brief            Checks if a stream has the same device id as a matrix.
+#ifdef HAVE_CUDA
+/*  \brief            Checks if a CUDAstream has the same device id as a matrix.
  *                    Raises an exception if the devices are different.
  *
  *  \param[in]        A
@@ -149,6 +151,7 @@ inline void check_stream(Dense<T>& A, CUDAStream stream,
 
   }
 };
+#endif /* HAVE_CUDA */
 
 /*  \brief            Checks if a matrix is in a certain format. Raises an
  *                    exception if it is not.
@@ -175,7 +178,7 @@ inline void check_format(Format format, Dense<T>& A, const char* caller_name) {
 
     } else if (format == Format::RowMajor) {
 
-      message = message + ": input matrix not in ColMajor format.";
+      message = message + ": input matrix not in RowMajor format.";
 
     }
 
@@ -209,6 +212,34 @@ inline void check_dimensions(I_t rows, I_t columns, Dense<T>& A,
     auto message = stringformat("%s: matrix has wrong dimensions is %dx%d, "
                                 "should be %dx%d)", caller_name, A.rows(),
                                 A.cols(), rows, columns);
+
+    throw excBadArgument(message);
+
+  }
+
+};
+
+/*  \brief            Checks two matrices have the same dimensions. Throws an
+ *                    exception if they do not.
+ *
+ *  \param[in]        A
+ *                    Matrix to check.
+ *
+ *  \param[in]        B
+ *                    Matrix to check.
+ *
+ *  \param[in]        caller_name
+ *                    Name of the calling routine.
+ */
+template <typename T, typename U>
+inline void check_same_dimensions(Dense<T>& A, Dense<U>& B,
+                                  const char* caller_name) {
+
+  if (A.rows() != B.rows() || A.cols() != B.cols()) {
+
+    auto message = stringformat("%s: matrices have different dimensions (%dx%d "
+                                "and %dx%d)", caller_name, A.rows(), A.cols(), 
+                                B.rows(), B.cols());
 
     throw excBadArgument(message);
 
