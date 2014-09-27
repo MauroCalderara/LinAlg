@@ -77,6 +77,9 @@ struct Dense : Matrix {
 
   // Explicitly clone
   inline void clone_from(const Dense<T>& source);
+  // Explicit cloning as submatrix
+  inline void clone_from(const Dense<T>& source, I_t first_row, I_t last_row,
+                         I_t first_col, I_t last_col);
 
   // Explicitly move
   inline void move_to(Dense<T>& destination);
@@ -84,6 +87,13 @@ struct Dense : Matrix {
   // Allocate new memory (no memory is copied)
   inline void reallocate(I_t rows, I_t cols, Location location = Location::host,
                          int device_id = 0);
+  // Allocate new memory according to the size of another matrix (no memory is 
+  // copied)
+  template <typename U>
+  inline void reallocate_like(Dense<U>& other);
+  template <typename U>
+  inline void reallocate_like(Dense<U>& other, Location location,
+                              int device_id);
 
   // Data copy from one (sub)matrix to another
   void operator<<(const Dense<T>& source);
@@ -500,6 +510,31 @@ inline void Dense<T>::clone_from(const Dense<T>& source) {
 
 };
 
+/** \brief              Cloning from an existing matrix
+ *
+ *  Applies the parameters of another instance \<source\> to the left hand 
+ *  instance. No memory is copied.
+ *
+ *  \param[in]          source
+ *                      The matrix to clone from
+ */
+template <typename T>
+inline void Dense<T>::clone_from(const Dense<T>& source, I_t first_row, 
+                                 I_t last_row, I_t first_col, I_t last_col) {
+
+  clone_from(source);
+
+  if (_format == Format::ColMajor) {
+    _offset = source._offset + first_col * _leading_dimension + first_row;
+  } else {
+    _offset = source._offset + first_row * _leading_dimension + first_col;
+  }
+
+  _rows = last_row - first_row;
+  _cols = last_col - first_col;
+
+}
+
 /** \brief              Move matrix to another matrix
  *
  *  'Moves' an instance of Dense<T> to another instance. No memory is copied,
@@ -586,6 +621,42 @@ inline void Dense<T>::reallocate(I_t rows, I_t cols, Location location,
 }
 
 
+/** \brief            Allocates new empty memory with the same dimensions,
+ *                    transposition status and optionally the same location as 
+ *                    a given matrix
+ *
+ *  \param[in]        matrix
+ *                    Other matrix whose size and transposition status will be 
+ *                    used for this allocation.
+ *
+ *  \param[in]        location
+ *                    OPTIONAL: Memory / device on which to allocate the
+ *                    memory. Default: Location::host.
+ *
+ *  \param[in]        device_id
+ *                    OPTIONAL: The number of the device on which to
+ *                    allocate the memory. Ignored for Location::host.
+ *                    Default: 0.
+ */
+template <typename T>
+template <typename U>
+inline void Dense<T>::reallocate_like(Dense<U>& other) {
+
+  reallocate(other._rows, other._cols, other._location, other._device_id);
+  _transposed = other._transposed;
+
+};
+/** \overload
+ */
+template <typename T>
+template <typename U>
+inline void Dense<T>::reallocate_like(Dense<U>& other, Location location,
+                                      int device_id) {
+
+  reallocate(other._rows, other._cols, location, device_id);
+  _transposed = other._transposed;
+
+};
 
 /** \brief              Data copy operator, copies values from one (sub)matrix
  *                      to another (sub)matrix.
