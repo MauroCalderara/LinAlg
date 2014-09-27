@@ -74,6 +74,11 @@ namespace LinAlg {
   /// Definition of LAPACK double precision floating point, complex
   typedef magmaDoubleComplex Z_t;
 
+  /// Construction of S_t
+  #define LINALG_MAKE_Ct(r, i) MAGMA_C_MAKE(r, i)
+  /// Construction of Z_t
+  #define LINALG_MAKE_Zt(r, i) MAGMA_Z_MAKE(r, i)
+
   /** \brief          Return real part of a number
    *
    *  \param          z
@@ -122,6 +127,11 @@ namespace LinAlg {
   typedef std::complex<float> C_t;
   /// Definition of LAPACK double precision floating point, complex
   typedef std::complex<double> Z_t;
+  
+  /// Construction of S_t
+  #define LINALG_MAKE_Ct(r, i) C_t(r, i)
+  /// Construction of Z_t
+  #define LINALG_MAKE_Zt(r, i) Z_t(r, i)
 
   /** \brief          Return real part of a number
    *
@@ -197,62 +207,113 @@ template <>           inline Type type<Z_t>() { return Type::Z; };
  */
 template <>           inline Type type<I_t>() { return Type::I; };
 
-/** \brief              Type casts.
+
+/////////////
+// Type casts
+/** \brief              Cast from two numbers
  *
  *                      Use as cast<desired_type>(real, imag).
  *
- *  \param[in]          real
+ *  \param[in]          r
  *                      Real part.
  *
- *  \param[in]          imag
- *                      OPTIONAL: imaginary part. Ignored for S_t and D_t
- *                      conversions. If omitted for C_t and Z_t, the imaginary
- *                      part is set to zero.
- *
- *  \returns            The number in the requested type.
- *
- *  \note               All type casts optionally take two arguments to avoid
- *                      having to branch for being complex in templated
- *                      functions.
- */
-template <typename T, typename U, typename V>
-inline T cast(U real, V imag) { T tmp(real, imag); return tmp; };
-/** \overload
- *
- *  \param[in]          real
- *                      Real part.
- *
- *  \returns            The number as the requested type
- */
-template <typename T, typename U>
-inline T cast(U real) { T tmp(real); return tmp; };
-
-// These catch also cast<S_t>(1, 2) due to automatic casting of int, float,
-// double, etc.
-/** \overload
- *
- *  \param[in]          real
- *                      Real part
- *
- *  \param[in]          imag
- *                      Imaginary part
- *
- *  \returns            The number as S_t (float)
- */
-template <>
-inline S_t cast<S_t>(S_t real, S_t imag) { S_t tmp(real); return tmp; };
-/** \overload
- *
- *  \param[in]          real
- *                      Real part.
- *
- *  \param[in]          imag
+ *  \param[in]          i
  *                      Imaginary part.
  *
- *  \returns            The number as D_t (double)
+ *  \returns            The number in the requested type.
  */
-template <>
-inline D_t cast<D_t>(D_t real, D_t imag) { D_t tmp(real); return tmp; };
+template <typename T, typename U, typename V>
+#ifndef LINALG_NO_CHECK
+// If this exception is thrown, there is a specialization missing below 
+// (probably you tried to convert from two complex numbers to a real number).
+inline T cast(U r, V i) { throw; return 0; };
+#else
+inline T cast(U r, V i) { return 0; };
+#endif
+#ifndef DOXYGEN_SKIP
+// This sucks: we basically specialize all possible combinations of casts so 
+// why is this 'templated' anyway? The reason is that this way we can use the 
+// cast<T> syntax within templated code.
+template <> inline S_t cast<S_t>(S_t r, S_t i) { return r; };
+template <> inline S_t cast<S_t>(S_t r, D_t i) { return r; };
+template <> inline S_t cast<S_t>(D_t r, S_t i) { return S_t(r); };
+template <> inline S_t cast<S_t>(D_t r, D_t i) { return S_t(r); };
+
+template <> inline D_t cast<D_t>(S_t r, S_t i) { return D_t(r); };
+template <> inline D_t cast<D_t>(S_t r, D_t i) { return D_t(r); };
+template <> inline D_t cast<D_t>(D_t r, S_t i) { return r; };
+template <> inline D_t cast<D_t>(D_t r, D_t i) { return r; };
+
+template <> inline C_t cast<C_t>(S_t r, S_t i) { 
+  return LINALG_MAKE_Ct(r, i); 
+};
+template <> inline C_t cast<C_t>(S_t r, D_t i) { 
+  return LINALG_MAKE_Ct(r, S_t(i));
+};
+template <> inline C_t cast<C_t>(D_t r, S_t i) {
+  return LINALG_MAKE_Ct(S_t(r), i);
+};
+template <> inline C_t cast<C_t>(D_t r, D_t i) {
+  return LINALG_MAKE_Ct(S_t(r), S_t(i));
+};
+
+template <> inline Z_t cast<Z_t>(S_t r, S_t i) { 
+  return LINALG_MAKE_Zt(D_t(r), D_t(i)); 
+};
+template <> inline Z_t cast<Z_t>(S_t r, D_t i) { 
+  return LINALG_MAKE_Zt(D_t(r), i);
+};
+template <> inline Z_t cast<Z_t>(D_t r, S_t i) {
+  return LINALG_MAKE_Zt(r, D_t(i));
+};
+template <> inline Z_t cast<Z_t>(D_t r, D_t i) {
+  return LINALG_MAKE_Zt(r, i);
+};
+#endif
+
+/** \brief              Cast from single number
+ *
+ *  Use as cast<desired_type>(v);
+ *
+ *  \param[in]          v
+ *                      Value.
+ *
+ *  \returns            The value as the requested type
+ */
+template <typename T, typename U>
+#ifndef LINALG_NO_CHECKS
+// If this exception is thrown, there is something strange since all 
+// combinations should be specialized below ... 
+inline T cast(U value) { throw; return 0; };
+#else
+inline T cast(U value) { return 0; };
+#endif
+#ifndef DOXYGEN_SKIP
+// See above for an explanation of this
+template <> inline S_t cast<S_t>(S_t v) { return v; };
+template <> inline S_t cast<S_t>(D_t v) { return S_t(v); };
+template <> inline S_t cast<S_t>(C_t v) { return S_t(real(v)); };
+template <> inline S_t cast<S_t>(Z_t v) { return S_t(real(v)); };
+
+template <> inline D_t cast<D_t>(S_t v) { return D_t(v); };
+template <> inline D_t cast<D_t>(D_t v) { return v; };
+template <> inline D_t cast<D_t>(C_t v) { return D_t(real(v)); };
+template <> inline D_t cast<D_t>(Z_t v) { return D_t(real(v)); };
+
+template <> inline C_t cast<C_t>(S_t v) { return LINALG_MAKE_Ct(v, 0); };
+template <> inline C_t cast<C_t>(D_t v) { return LINALG_MAKE_Ct(D_t(v), 0); };
+template <> inline C_t cast<C_t>(C_t v) { return v; };
+template <> inline C_t cast<C_t>(Z_t v) { 
+  return LINALG_MAKE_Ct(S_t(real(v)), S_t(imag(v)));
+};
+
+template <> inline Z_t cast<Z_t>(S_t v) { return LINALG_MAKE_Zt(v, 0); };
+template <> inline Z_t cast<Z_t>(D_t v) { return LINALG_MAKE_Zt(D_t(v), 0); };
+template <> inline Z_t cast<Z_t>(C_t v) { 
+  return LINALG_MAKE_Zt(D_t(real(v)), D_t(imag(v)));
+};
+template <> inline Z_t cast<Z_t>(Z_t v) { return v; };
+#endif
 
 
 /** \brief            Storage locations
