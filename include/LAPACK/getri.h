@@ -31,7 +31,6 @@
 
 #ifdef HAVE_MAGMA
 #include <magma.h>
-#include <magma_lapack.h>
 #endif /* HAVE_MAGMA */
 
 #endif /* HAVE_CUDA */
@@ -349,15 +348,29 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
   ipiv_empty = false;
 #else
   ipiv_empty = (ipiv._rows == 0) ? true : false;
+#ifndef USE_MAGMA_GETRI
   if (ipiv_empty && A._location != Location::GPU) {
     throw excBadArgument("xGETRI(A, ipiv, work), ipiv: empty ipiv is only "
-                         "allowed when inverting matrices on the GPU");
+                         "allowed when inverting matrices on the GPU and using "
+                         "the CUBLAS backend");
   }
-#endif
+#else
+  if (ipiv_empty && A._location == Location::GPU) {
+    throw excBadArgument("xGETRI(A, ipiv, work), ipiv: empty ipiv is not "
+                         "supported when using the MAGMA backend");
+  }
+  if (ipiv._location != Location::host) {
+    throw excBadArgument("xGETRI(A, ipiv, work), ipiv: ipiv must be allocated "
+                         "in main memory for MAGMA backend");
+  }
+#endif /* USE_MAGMA_GETRI */
+#endif /* HAVE_CUDA */
 
   if (!ipiv_empty) {
 
+#ifndef USE_MAGMA_GETRI
     check_device(A, ipiv, "xGETRI()");
+#endif
     check_input_transposed(ipiv, "xGETRI(A, ipiv, work), ipiv");
     if (A.rows() != ipiv.rows()) {
       throw excBadArgument("xGETRI(A, ipiv, work), ipiv: argument matrix size "
@@ -369,7 +382,6 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
 
 #endif /* LINALG_NO_CHECKS */
 
-  auto device_id = A._device_id;
   auto n = A.cols();
   auto A_ptr = A._begin();
   auto lda = A._leading_dimension;
@@ -431,6 +443,7 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
 
     Dense<T> C(A._rows, A._cols, A._location, A._device_id);
 
+    auto device_id = A._device_id;
     auto C_ptr = C._begin();
     auto ldc = C._leading_dimension;
     auto ipiv_ptr = (ipiv_empty) ? nullptr : ipiv._begin();
@@ -445,7 +458,7 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
 
     auto lwork = work._rows;
 
-    // If work is empty, we have to allocate it optimally
+    // If work is empty, we have to allocate it optimally (in main memory!)
     if (lwork == 0) {
 
       using LinAlg::Type;
@@ -458,7 +471,6 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
     } 
 #ifndef LINALG_NO_CHECKS 
     else if (lwork < A._rows) {
-    
       throw excBadArgument("xGETRI(A, ipiv, work), work: work must have at "
                            "least A.rows() = %d rows (work.rows() = %d)",
                            A._rows, lwork);
@@ -567,15 +579,28 @@ inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
   ipiv_empty = false;
 #else
   ipiv_empty = (ipiv._rows == 0) ? true : false;
+#ifndef USE_MAGMA_GETRI
   if (ipiv_empty && A._location != Location::GPU) {
     throw excBadArgument("xGETRI(A, ipiv, work), ipiv: empty ipiv is only "
                          "allowed when inverting matrices on the GPU");
   }
-#endif
+#else
+  if (ipiv_empty && A._location == Location::GPU) {
+    throw excBadArgument("xGETRI(A, ipiv, work), ipiv: empty ipiv is not "
+                         "supported when using the MAGMA backend");
+  }
+  if (ipiv._location != Location::host) {
+    throw excBadArgument("xGETRI(A, ipiv, work), ipiv: ipiv must be allocated "
+                         "in main memory for MAGMA backend");
+  }
+#endif /* USE_MAGMA_GETRI */
+#endif /* HAVE_CUDA */
 
   if (!ipiv_empty) {
 
+#ifndef USE_MAGMA_GETRI
     check_device(A, ipiv, "xGETRI()");
+#endif
     check_input_transposed(ipiv, "xGETRI(A, ipiv, work), ipiv");
     if (A.rows() != ipiv.rows()) {
       throw excBadArgument("xGETRI(A, ipiv, work), ipiv: argument matrix size "
@@ -593,7 +618,7 @@ inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
                          "and C (%dx%d) don't match", A.rows(), A.cols(),
                          C.rows(), C.cols());
   }
-#endif
+#endif /* not LINALG_NO_CHECKS */
 
   auto device_id = A._device_id;
   auto n = A.cols();
@@ -673,7 +698,7 @@ inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
 
     auto lwork = work._rows;
 
-    // If work is empty, we have to allocate it optimally
+    // If work is empty, we have to allocate it optimally (in main memory!)
     if (lwork == 0) {
 
       using LinAlg::Type;
@@ -687,9 +712,9 @@ inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
 
     // At least the temporary could be omitted if we had a fast swap for 
     // arrays
-    printf("LinAlg::LAPACK::xGETRI(): warning, using magma_xgetri(), "
-           "out-of-place inversion for matrices in requires 3 times the "
-           "memory of an in-place inversion and incurs three memory copies "
+    printf("LinAlg::LAPACK::xGETRI(): warning, using xGETRI() with the MAGMA "
+           "backend: out-of-place inversion for matrices in requires 3 times "
+           "the memory of an in-place inversion and incurs three memory copies "
            "of the matrix\n");
     Dense<T> A_tmp;
     A_tmp << A;
@@ -717,9 +742,6 @@ inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
 #endif
 
   }
-#ifdef HAVE_MAGMA
-  // check if MAGMA's or CUBLAS' GETRI is faster and use that one.
-#endif
 #endif
 
 #ifndef LINALG_NO_CHECKS

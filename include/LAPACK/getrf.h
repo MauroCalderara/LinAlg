@@ -28,7 +28,6 @@
 
 #ifdef HAVE_MAGMA
 #include <magma.h>
-#include <magma_lapack.h>
 #endif /* HAVE_MAGMA */
 
 #endif /* HAVE_CUDA */
@@ -274,7 +273,6 @@ template <typename T>
 inline void xGETRF(Dense<T>& A, Dense<int>& ipiv) {
 
 #ifndef LINALG_NO_CHECKS
-  check_device(A, ipiv, "xGETRF(A, ipiv)");
   check_input_transposed(A, "xGETRF(A, ipiv), A:");
 #ifndef HAVE_CUDA
   check_input_transposed(ipiv, "xGETRF(A, ipiv), ipiv:");
@@ -311,6 +309,9 @@ inline void xGETRF(Dense<T>& A, Dense<int>& ipiv) {
   int  info = 0;
 
   if (A._location == Location::host) {
+#ifndef LINALG_NO_CHECKS
+    check_device(A, ipiv, "xGETRF(A, ipiv)");
+#endif
     auto m = A.cols();
     FORTRAN::xGETRF(m, n, A_ptr, lda, ipiv_ptr, &info);
   }
@@ -318,10 +319,19 @@ inline void xGETRF(Dense<T>& A, Dense<int>& ipiv) {
   else if (A._location == Location::GPU) {
 
 #ifndef USE_MAGMA_GETRF
+#ifndef LINALG_NO_CHECKS
+    check_device(A, ipiv, "xGETRF(A, ipiv)");
+#endif
     using LinAlg::CUDA::CUBLAS::handles;
     auto device_id = A._device_id;
     CUBLAS::xGETRF(handles[device_id], n, A_ptr, lda, ipiv_ptr, &info);
 #else /* USE_MAGMA_GETRF */
+#ifndef LINALG_NO_CHECKS
+    if (ipiv.location() != Location::host) {
+      throw excBadArgument("xGETRF(A, ipiv): ipiv must be allocated in main "
+                           "memory (using MAGMA's getrf)");
+    }
+#endif
     auto m = A.cols();
     MAGMA::xGETRF(m, n, A_ptr, lda, ipiv_ptr, &info);
 #endif /* not USE_MAGMA_GETRF */

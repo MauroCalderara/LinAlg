@@ -14,7 +14,6 @@
 
 #ifdef HAVE_MAGMA
 #include <magma.h>
-#include <magma_lapack.h>
 #endif
 
 // Keep this in alphabetical order

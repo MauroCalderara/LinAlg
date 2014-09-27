@@ -17,8 +17,6 @@
  *    LinAlg::LAPACK
  *        convenience bindings supporting different locations for Dense<T>
  *
- *        'Abstract' functions like 'solve' and 'invert'
- *
  *    LinAlg::LAPACK::<NAME>
  *        bindings to the <NAME> LAPACK backend
  */
@@ -31,7 +29,6 @@
 
 #ifdef HAVE_MAGMA
 #include <magma.h>
-#include <magma_lapack.h>
 #endif
 
 #endif
@@ -50,11 +47,14 @@ namespace FORTRAN {
 
 #ifndef DOXYGEN_SKIP
 extern "C" {
-  fortran_name(xyz, XYZ)(...);
+  void fortran_name(sxyz, SXYZ)(...);
+  void fortran_name(dxyz, DXYZ)(...);
+  void fortran_name(cxyz, CXYZ)(...);
+  void fortran_name(zxyz, ZXYZ)(...);
 }
 #endif
 
-/** \brief            XYZ
+/** \brief            xXYZ
  *
  *  Z <- X + Y
  *
@@ -91,7 +91,7 @@ inline void xXYZ(...) {
 #ifdef HAVE_CUDA
 namespace CUBLAS {
 
-/** \brief            XYZ
+/** \brief            xXYZ
  *
  *  Z <- X + Y
  *
@@ -123,12 +123,49 @@ inline void xXYZ(...) {
 };
 
 } /* namespace LinAlg::LAPACK::CUBLAS */
-#endif
+
+#ifdef HAVE_MAGMA
+namespace MAGMA {
+
+/** \brief            xXYZ
+ *
+ *  Z <- X + Y
+ *
+ *  \param[in]        X
+ *
+ *  \param[in]        Y
+ *
+ *  \param[in,out]    Z
+ *
+ *  See [DXYZ](http://www.mathkeisan.com/usersguide/man/dxyz.html)
+ */
+inline void xXYZ(...) {
+  magma_sxyz(...);
+};
+/** \overload
+ */
+inline void xXYZ(...) {
+  magma_dxyz(...);
+};
+/** \overload
+ */
+inline void xXYZ(...) {
+  magma_cxyz(...);
+};
+/** \overload
+ */
+inline void xXYZ(...) {
+  magma_zxyz(...);
+};
+    
+} /* namespace LinAlg::LAPACK::MAGMA */
+#endif /* HAVE_MAGMA */
+#endif /* HAVE_CUDA */
 
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_input_transposed;
 
-/** \brief            XYZ
+/** \brief            xXYZ
  *
  *  Z <- X + Y
  *

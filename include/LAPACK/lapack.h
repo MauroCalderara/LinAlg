@@ -26,5 +26,7 @@
 #include "getrf.h"
 #include "getri.h"
 #include "ilaenv.h"
+#include "larnv.h"
+#include "laset.h"
 
 #endif /* LINALG_LAPACK_LAPACK_H_ */

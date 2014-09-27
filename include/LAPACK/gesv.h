@@ -26,10 +26,10 @@
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 #include "../CUDA/cuda_checks.h"
+#include "../CUDA/cuda_cublas.h"
 
 #ifdef HAVE_MAGMA
 #include <magma.h>
-#include <magma_lapack.h>
 #endif /* HAVE_MAGMA */
 
 #endif /* HAVE_CUDA */
@@ -191,7 +191,6 @@ template <typename T>
 inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
 
 #ifndef LINALG_NO_CHECKS
-  check_device(A, B, ipiv, "xGESV(A, ipiv, B)");
   check_format(Format::ColMajor, A, "xGESV(A, ipiv, B), A");
   check_format(Format::ColMajor, B, "xGESV(A, ipiv, B), B");
   check_dimensions(A.rows(), B.cols(), B, "xGESV(A, ipiv, B), B");
@@ -212,10 +211,15 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
 
   if (A._location == Location::host) {
 
+#ifndef LINALG_NO_CHECKS
+    check_device(A, B, ipiv, "xGESV(A, ipiv, B)");
+#endif
+
     FORTRAN::xGESV(n, nrhs, A_ptr, lda, ipiv_ptr, B_ptr, ldb, &info);
+
 #ifndef LINALG_NO_CHECKS
     if (info != 0) {
-      throw excMath("xGESV(): error = %d)", info);
+      throw excMath("xGESV(): backend error = %d)", info);
     }
 #endif
 
@@ -223,15 +227,15 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
 #ifdef HAVE_CUDA
   else if (A._location == Location::GPU) {
 
-    using LinAlg::CUDA::CUBLAS::handles;
-
 #ifndef USE_MAGMA_GESV
-    // This is basically xGESV done by hand.
+    // When using the CUBLAS variant, we basically do xGESV by hand.
+
+    using LinAlg::CUDA::CUBLAS::handles;
 
 #ifndef LINALG_NO_CHECKS
     // Note that the MAGMA GETRF would support non-square matrices
     if (A._rows != A._cols) {
-      throw excBadArgument("xGETRF(A, ipiv, B), A: matrix must be square (when "
+      throw excBadArgument("xGETSV(A, ipiv, B), A: matrix must be square (when "
                            "using cublasXgetrfBatched)");
     }
 #endif
@@ -249,7 +253,8 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
 #ifndef LINALG_NO_CHECKS
     if (info != 0) {
       throw excMath("xGESV() (using CUBLAS::GETRF + CUBLAS::TRSM): unable to "
-                    "LU decompose A (CUBLAS::xGETRF(): error = %d)", info);
+                    "LU decompose A (CUBLAS::xGETRF(): backend error = %d)", 
+                    info);
     }
 #endif
 
@@ -265,10 +270,18 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
 
 #else /* USE_MAGMA_GESV */
 
+#ifndef LINALG_NO_CHECKS
+    if (ipiv.location() != Location::host) {
+      throw excBadArgument("xGESV(A, ipiv, B): the pivoting vector ipiv must "
+                           "reside in main memory (using the MAGMA backend)");
+    }
+#endif
+
     MAGMA::xGESV(n, nrhs, A_ptr, lda, ipiv_ptr, B_ptr, ldb, &info);
+
 #ifndef LINALG_NO_CHECKS
     if (info != 0) {
-      throw excMath("xGESV(): error = %d)", info);
+      throw excMath("xGESV(): backend error = %d)", info);
     }
 #endif
 
