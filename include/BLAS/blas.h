@@ -22,6 +22,7 @@
 #define LINALG_BLAS_H_
 
 // Keep this in alphabetical order
+#include "axpy.h"
 #include "copy.h"
 #include "geam.h"
 #include "gemm.h"
