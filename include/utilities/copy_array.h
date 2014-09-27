@@ -390,8 +390,8 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
 
       // Since xGEAM doesn't support B = nullptr, we use B = A and beta = 0.0;
       xGEAM(my_stream.cublas_handle, CUBLAS_OP_T, CUBLAS_OP_T, line_length,
-            lines, 1.0, src_array, src_ld, 0.0, src_array, src_ld, dst_array,
-            dst_ld);
+            lines, cast<T>(1.0), src_array, src_ld, cast<T>(0.0), src_array,
+            src_ld, dst_array, dst_ld);
 
     }
 

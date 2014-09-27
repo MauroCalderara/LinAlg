@@ -202,7 +202,7 @@ void read_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
  *  \param[in]          filename
  *                      Name of the file to read from.
  */
-template <typename T, typename... Us>
+template <typename T>
 void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
 
 #ifndef LINALG_NO_CHECKS

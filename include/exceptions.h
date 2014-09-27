@@ -27,6 +27,7 @@
 
 #include <exception>
 #include <string>
+#include <sstream>    // std::stringstream
 
 #include "utilities/stringformat.h"
 
