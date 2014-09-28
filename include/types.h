@@ -12,6 +12,10 @@
 #ifndef LINALG_TYPES_H_
 #define LINALG_TYPES_H_
 
+#ifndef LINALG_NO_CHECK
+#include <cstdio>
+#endif
+
 // For an explanation, see below under "TYPE DISCUSSION"
 #ifdef HAVE_MAGMA
 #include <magma_types.h>
@@ -226,7 +230,13 @@ template <typename T, typename U, typename V>
 #ifndef LINALG_NO_CHECK
 // If this exception is thrown, there is a specialization missing below 
 // (probably you tried to convert from two complex numbers to a real number).
-inline T cast(U r, V i) { throw; return 0; };
+inline T cast(U r, V i) {
+  std::printf("Error in %s:%d\n", __FILE__, __LINE__);
+  std::printf("   (Most likely you tried to convert an integer type using "
+             "    cast<>(), which is not supported.\n");
+  throw;
+  return 0;
+};
 #else
 inline T cast(U r, V i) { return 0; };
 #endif
@@ -284,7 +294,13 @@ template <typename T, typename U>
 #ifndef LINALG_NO_CHECKS
 // If this exception is thrown, there is something strange since all 
 // combinations should be specialized below ... 
-inline T cast(U value) { throw; return 0; };
+inline T cast(U value) {
+  std::printf("Error in %s:%d\n", __FILE__, __LINE__);
+  std::printf("   (Most likely you tried to convert an integer type using "
+             "    cast<>(), which is not supported.\n");
+  throw;
+  return 0;
+};
 #else
 inline T cast(U value) { return 0; };
 #endif

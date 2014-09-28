@@ -261,12 +261,12 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
     // Directly solve using xTRSM (no xLASWP since we didn't pivot):
     // 1: y = L\b
     BLAS::CUBLAS::xTRSM(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
-                        CUBLAS_OP_N, CUBLAS_DIAG_UNIT, n, nrhs, T(1.0), A_ptr,
-                        lda, B_ptr, ldb);
+                        CUBLAS_OP_N, CUBLAS_DIAG_UNIT, n, nrhs, cast<T>(1.0),
+                        A_ptr, lda, B_ptr, ldb);
     // 2: x = U\y
     BLAS::CUBLAS::xTRSM(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_UPPER,
-                        CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, n, nrhs, T(1.0),
-                        A_ptr, lda, B_ptr, ldb);
+                        CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, n, nrhs,
+                        cast<T>(1.0), A_ptr, lda, B_ptr, ldb);
 
 #else /* USE_MAGMA_GESV */
 

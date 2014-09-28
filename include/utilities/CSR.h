@@ -163,7 +163,7 @@ void read_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
 
           linestream.str(line); linestream.clear();
           linestream >> i >> j >> real;
-          m_data[j * ld + i] = T(real);
+          m_data[j * ld + i] = cast<T>(real);
 
           ++line_num;
 
@@ -462,7 +462,7 @@ void write_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
     I_t n_nonzeros = 0;
     for (I_t col = 0; col < columns; ++col) {
       for (I_t row = 0; row < rows; ++row) {
-        if (begin[col * leading_dimension + row] == T(0)) {
+        if (begin[col * leading_dimension + row] == cast<T>(0.0)) {
           ++n_nonzeros;
         }
       }

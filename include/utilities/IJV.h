@@ -68,7 +68,7 @@ void write_IJV_data(LinAlg::Dense<T>& matrix, std::string filename) {
         for (I_t col = 0; col < columns; ++col) {
 
           auto value = begin[col * leading_dimension + row];
-          if (value != T(0)) {
+          if (value != cast<T>(0.0)) {
             file_to_write << row + 1 << " " << col + 1 << " ";
             if (matrix_is_complex) {
               file_to_write << real(value) << imag(value) << "\n";
@@ -84,7 +84,7 @@ void write_IJV_data(LinAlg::Dense<T>& matrix, std::string filename) {
         for (I_t row = 0; row < rows; ++row) {
 
           auto value = begin[col * leading_dimension + row];
-          if (value != T(0)) {
+          if (value != cast<T>(0.0)) {
             file_to_write << col + 1 << " " << row + 1 << " ";
             if (matrix_is_complex) {
               file_to_write << real(value) << imag(value) << "\n";

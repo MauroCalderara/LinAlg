@@ -72,7 +72,7 @@ inline void val(Sparse<T>& matrix, T value) {
 template <typename T>
 inline void zero(Dense<T>& matrix) {
 
-  val(matrix, cast<T>(0));
+  val(matrix, cast<T>(0.0));
 
 }
 /** \overload
@@ -80,7 +80,7 @@ inline void zero(Dense<T>& matrix) {
 template <typename T>
 inline void zero(Sparse<T>& matrix) {
 
-  val(matrix, cast<T>(0));
+  val(matrix, cast<T>(0.0));
 
 }
 

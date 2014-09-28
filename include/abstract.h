@@ -113,7 +113,7 @@ inline void add(T alpha, Dense<T>& A, Dense<T>& B) {
   
     // B = alpha * A + 1.0 * B (see CUBLAS GEAM documentation under 'in-place 
     // mode')
-    BLAS::xGEAM(alpha, A, T(1.0), B, B);
+    BLAS::xGEAM(alpha, A, cast<T>(1.0), B, B);
   
   }
 #endif /* HAVE_CUDA */
@@ -138,7 +138,7 @@ inline void add(T alpha, Dense<T>& A, Dense<T>& B) {
 template <typename T>
 inline void add(Dense<T>& A, Dense<T>& B) {
 
-  add(T(1.0), A, B);
+  add(cast<T>(1.0), A, B);
 
 };
 
