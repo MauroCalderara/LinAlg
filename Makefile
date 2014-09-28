@@ -35,7 +35,7 @@ $(OBJECTS): obj/%.o : src/%.cc
 	    $(MPI_FLAGS) $(MPI_INCLUDE) \
 	    $(MKL_FLAGS) $(MKL_INCLUDE) \
 	    $(CUDA_FLAGS) $(CUDA_INCLUDE) \
-		$(MAGMA_FLAGS) $(MAGMA_INCLUDE)
+	    $(MAGMA_FLAGS) $(MAGMA_INCLUDE)
 
 clean:
 	rm -rf obj/*.o obj/*/*.o lib/liblinalg.a lib/liblinalg.so doc/html/doxygen/* doc/latex/*
