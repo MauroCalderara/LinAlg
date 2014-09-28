@@ -37,7 +37,7 @@ namespace Utilities {
 std::tuple<I_t, I_t, I_t, bool> parse_CSR_header(std::string filename);
 
 // See src/utilities/CSR.cc
-std::tuple<I_t, I_t, bool> parse_CSR_body(std::string filename);
+std::tuple<I_t, I_t, I_t, bool> parse_CSR_body(std::string filename);
 
 /** \brief              Read from a CSR file into a matrix.
  *
@@ -80,10 +80,11 @@ void read_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
 
 #endif
 
-  I_t rows, columns;
+  I_t rows, columns, n_nonzeros;
   bool file_is_complex;
 
-  std::tie(rows, columns, file_is_complex) = parse_CSR_body(filename);
+  std::tie(rows, columns, n_nonzeros, file_is_complex) =
+                                                  parse_CSR_body(filename);
 
   if (matrix._rows == 0) {
 
@@ -144,7 +145,9 @@ void read_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
 
         double real, imag;
 
-        while (getline(file_to_read, line)) {
+        for (I_t element = 0; element < n_nonzeros; ++element) {
+
+          getline(file_to_read, line);
 
           // Input has already been checked by parse_CSR_body()
           linestream.str(line); linestream.clear();
@@ -159,7 +162,9 @@ void read_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
 
         double real;
 
-        while (getline(file_to_read, line)) {
+        for (I_t element = 0; element < n_nonzeros; ++element) {
+
+          getline(file_to_read, line);
 
           linestream.str(line); linestream.clear();
           linestream >> i >> j >> real;

@@ -30,8 +30,8 @@ namespace Utilities {
  *  \param[in]          filename
  *                      Path to the CSR file
  *
- *  \return             A std::tuple<I_t, I_t, I_t, bool> with the elements: 
- *                      size, n_nonzero, first_index, and is_complex. Those  
+ *  \return             A std::tuple<I_t, I_t, I_t, bool> with the elements:
+ *                      size, n_nonzeros, first_index, and is_complex. Those 
  *                      are the number of rows (for a CSR matrix) or columns 
  *                      (for a CSC matrix), the number of non zero elements, 
  *                      the index of the first element (0 for C style, 1 for 
@@ -41,7 +41,7 @@ namespace Utilities {
  *  Example usage:
  *  \code
  *     using std::tie;
- *     tie(size, n_nonzero, first_index, is_complex) = parse_CSR_header(file);
+ *     tie(size, n_nonzeros, first_index, is_complex)= parse_CSR_header(file);
  *  \endcode
  */
 std::tuple<I_t, I_t, I_t, bool> parse_CSR_header(std::string filename) {
@@ -154,17 +154,17 @@ std::tuple<I_t, I_t, I_t, bool> parse_CSR_header(std::string filename) {
  *                      Path to the CSR file.
  *
  *  \return             A std::tuple<I_t, I_t, bool> with the elements: rows,
- *                      colums, is_complex.
+ *                      colums, n_nonzeros, is_complex.
  *
  *  \todo               Have an example of how to use this using idiomatic C++
  *                      with std::tie:
  *
  *  Example usage:
  *  \code
- *       std::tie(rows, cols, is_complex) = parse_CSR_body(file);
+ *       std::tie(rows, cols, n_nonzeros, is_complex) = parse_CSR_body(file);
  *  \endcode
  */
-std::tuple<I_t, I_t, bool> parse_CSR_body(std::string filename) {
+std::tuple<I_t, I_t, I_t, bool> parse_CSR_body(std::string filename) {
 
   using std::ifstream;
   using std::string;
@@ -173,6 +173,7 @@ std::tuple<I_t, I_t, bool> parse_CSR_body(std::string filename) {
   //using std::regex_match;
   using std::tuple;
 
+  I_t header_rows, header_n_nonzeros;
   I_t rows = 0;
   I_t columns = 0;
   bool matrix_is_cmpx;
@@ -194,19 +195,39 @@ std::tuple<I_t, I_t, bool> parse_CSR_body(std::string filename) {
                                ifstream::eofbit);
 #endif
 
-      // Skip the first two lines
+      // Read header_rows
       line_num = 1;
       getline(file_to_parse, line);
+      linestream.str(line); linestream.clear();
+      parse_ok = linestream >> header_rows;
+#ifndef LINALG_NO_CHECKS
+      if (!parse_ok) {
+        throw excBadFile("parse_CSR_body(): error in %s:%d", filename.c_str(),
+                         line_num);
+      }
+#endif
+
+      // Read header_n_nonzeros
       line_num = 2;
       getline(file_to_parse, line);
+      linestream.str(line); linestream.clear();
+      parse_ok = linestream >> header_n_nonzeros;
+#ifndef LINALG_NO_CHECKS
+      if (!parse_ok) {
+        throw excBadFile("parse_CSR_body(): error in %s:%d", filename.c_str(),
+                         line_num);
+      }
+#endif
 
       // Read fortran_index / first_index
       line_num = 3;
+      getline(file_to_parse, line);
       linestream.str(line); linestream.clear();
       parse_ok = linestream >> first_index;
 #ifndef LINALG_NO_CHECKS
       if (!parse_ok) {
-        throw excBadFile("parse_CSR_body(): error in %s:3", filename.c_str());
+        throw excBadFile("parse_CSR_body(): error in %s:%d", filename.c_str(),
+                         line_num);
       }
 #endif
 
@@ -218,11 +239,16 @@ std::tuple<I_t, I_t, bool> parse_CSR_body(std::string filename) {
       double real, imag;
       matrix_is_cmpx = linestream >> i >> j >> real >> imag;
 
-      // Parse the rest of the file. Don't throw at EOF:
-      file_to_parse.exceptions(ifstream::failbit | ifstream::badbit);
-      line_num = 5;
-      while (getline(file_to_parse, line)) {
+      // Update the counted rows and columns
+      rows = ((i - first_index + 1) > rows) ? (i - first_index + 1) : rows;
+      columns = ((j - first_index + 1) > columns) ?
+                j - first_index + 1 : columns;
 
+      // Parse the rest of the file.
+      line_num = 5;
+      for (I_t element = 1; element < header_n_nonzeros; ++element) {
+
+        getline(file_to_parse, line);
         linestream.str(line); linestream.clear();
 
         if (matrix_is_cmpx) {
@@ -238,8 +264,8 @@ std::tuple<I_t, I_t, bool> parse_CSR_body(std::string filename) {
         }
 #endif
 
-        rows = (i - first_index + 1> rows) ? i - first_index + 1 : rows;
-        columns = (j - first_index + 1> columns) ?
+        rows = ((i - first_index + 1) > rows) ? (i - first_index + 1) : rows;
+        columns = ((j - first_index + 1) > columns) ?
                   j - first_index + 1 : columns;
 
         ++line_num;
@@ -249,8 +275,8 @@ std::tuple<I_t, I_t, bool> parse_CSR_body(std::string filename) {
 #ifndef LINALG_NO_CHECKS
     } catch(ifstream::failure err) {
 
-      throw excBadFile("read_CSR(): Input file (%s:%d): premature end or read "
-                       "error.", filename.c_str(), line_num);
+      throw excBadFile("parse_CSR_body(): Input file (%s:%d): premature end or "
+                       "read error (%s).", filename.c_str(), line_num, err.what());
 
     }
 #endif
@@ -268,7 +294,8 @@ std::tuple<I_t, I_t, bool> parse_CSR_body(std::string filename) {
   }
 #endif
 
-  return tuple<I_t, I_t, bool>(rows, columns, matrix_is_cmpx);
+  return tuple<I_t, I_t, I_t, bool>(rows, columns, header_n_nonzeros,
+                                    matrix_is_cmpx);
 
 };
 
