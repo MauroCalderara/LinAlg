@@ -184,8 +184,8 @@ inline void xGEAM(const T alpha, const Dense<T>& A, const T beta,
   auto C_ptr = C._begin();
   auto ldc = C._leading_dimension;
 
-  xGEAM(handles[device_id], transa, transb, m, n, alpha, A_ptr, lda,
-        beta, B_ptr, ldb, C_ptr, ldc);
+  CUBLAS::xGEAM(handles[device_id], transa, transb, m, n, alpha, A_ptr, lda,
+                beta, B_ptr, ldb, C_ptr, ldc);
 
 };
 
@@ -248,8 +248,8 @@ inline void xGEAM_async(const T alpha, const Dense<T>& A, const T beta,
   auto C_ptr = C._begin();
   auto ldc = C._leading_dimension;
 
-  xGEAM(stream.cublas_handle, transa, transb, m, n, alpha, A_ptr, lda, beta,
-        B_ptr, ldb, C_ptr, ldc);
+  CUBLAS::xGEAM(stream.cublas_handle, transa, transb, m, n, alpha, A_ptr, lda,
+                beta, B_ptr, ldb, C_ptr, ldc);
 
 };
 /** \overload

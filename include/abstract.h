@@ -63,6 +63,12 @@ namespace LinAlg {
 template <typename T>
 inline void add(T alpha, Dense<T>& A, Dense<T>& B) {
 
+  using Utilities::check_format;
+  using Utilities::check_input_transposed;
+  using Utilities::check_output_transposed;
+  using Utilities::check_same_dimensions;
+  using Utilities::check_device;
+
 #ifndef LINALG_NO_CHECKS
   // Currently only ColMajor is supported
   check_format(Format::ColMajor, A, "add(alpha, A, B), A [only ColMajor is "
@@ -72,7 +78,7 @@ inline void add(T alpha, Dense<T>& A, Dense<T>& B) {
   check_input_transposed(A, "add(alpha, A, B), A");
   check_output_transposed(B, "add(alpha, A, B), B");
   check_same_dimensions(A, B, "add(alpha, A, B), A, B");
-  check_location(A, B, "add(alpha, A, B), A, B");
+  check_device(A, B, "add(alpha, A, B), A, B");
 #endif
 
   if (A._location == Location::host) {
