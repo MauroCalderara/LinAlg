@@ -39,14 +39,15 @@
 #include "../utilities/checks.h"
 #include "../dense.h"
 
-namespace LinAlg {
-
-namespace LAPACK {
-
-namespace FORTRAN {
-
 #ifndef DOXYGEN_SKIP
 extern "C" {
+
+  using LinAlg::I_t;
+  using LinAlg::S_t;
+  using LinAlg::D_t;
+  using LinAlg::C_t;
+  using LinAlg::Z_t;
+
   void fortran_name(slaset, SLASET)(const char* uplo, const I_t* m, 
                                     const I_t* n, const S_t* alpha, 
                                     const S_t* beta, S_t* A, const I_t* lda);
@@ -61,6 +62,12 @@ extern "C" {
                                     const Z_t* beta, Z_t* A, const I_t* lda);
 }
 #endif
+
+namespace LinAlg {
+
+namespace LAPACK {
+
+namespace FORTRAN {
 
 /** \brief            xLASET
  *

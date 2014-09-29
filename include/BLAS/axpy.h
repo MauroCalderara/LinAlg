@@ -31,15 +31,15 @@
 #include "../exceptions.h"
 #include "../dense.h"
 
-
-namespace LinAlg {
-
-namespace BLAS {
-
-namespace FORTRAN {
-
 #ifndef DOXYGEN_SKIP
 extern "C" {
+
+  using LinAlg::I_t;
+  using LinAlg::S_t;
+  using LinAlg::D_t;
+  using LinAlg::C_t;
+  using LinAlg::Z_t;
+
   void fortran_name(saxpy, SAXPY)(const I_t* n, const S_t* alpha, const S_t* x,
                                   const I_t* incx, S_t* y, const I_t* incy);
   void fortran_name(daxpy, DAXPY)(const I_t* n, const D_t* alpha, const D_t* x,
@@ -50,6 +50,13 @@ extern "C" {
                                   const I_t* incx, Z_t* y, const I_t* incy);
 }
 #endif
+
+
+namespace LinAlg {
+
+namespace BLAS {
+
+namespace FORTRAN {
 
 /** \brief            Vector addition with prefactor
  *

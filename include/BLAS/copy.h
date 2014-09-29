@@ -26,14 +26,15 @@
 #include "../utilities/checks.h"
 #include "../dense.h"
 
-namespace LinAlg {
-
-namespace BLAS {
-
-namespace FORTRAN {
-
 #ifndef DOXYGEN_SKIP
 extern "C" {
+
+  using LinAlg::I_t;
+  using LinAlg::S_t;
+  using LinAlg::D_t;
+  using LinAlg::C_t;
+  using LinAlg::Z_t;
+
   void fortran_name(scopy, SCOPY)(const I_t* n, const S_t* x, const I_t* incx,
                                   S_t* y, const I_t* incy);
   void fortran_name(dcopy, DCOPY)(const I_t* n, const D_t* x, const I_t* incx,
@@ -44,6 +45,13 @@ extern "C" {
                                   Z_t* y, const I_t* incy);
 }
 #endif
+
+namespace LinAlg {
+
+namespace BLAS {
+
+namespace FORTRAN {
+
 
 /** \brief            General matrix-matrix multiply
  *

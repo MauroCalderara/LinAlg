@@ -42,14 +42,15 @@
 #include "../dense.h"
 #include "ilaenv.h"
 
-namespace LinAlg {
-
-namespace LAPACK {
-
-namespace FORTRAN {
-
 #ifndef DOXYGEN_SKIP
 extern "C" {
+
+  using LinAlg::I_t;
+  using LinAlg::S_t;
+  using LinAlg::D_t;
+  using LinAlg::C_t;
+  using LinAlg::Z_t;
+
   void fortran_name(sgetri, SGETRI)(const I_t* n, S_t* A, const I_t* lda,
                                     const I_t* ipiv, S_t* work,
                                     const I_t* lwork, int* info);
@@ -64,6 +65,12 @@ extern "C" {
                                     const I_t* lwork, int* info);
 }
 #endif
+
+namespace LinAlg {
+
+namespace LAPACK {
+
+namespace FORTRAN {
 
 /** \brief            GETRI
  *

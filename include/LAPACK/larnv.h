@@ -25,14 +25,15 @@
 #include "../exceptions.h"
 #include "../dense.h"
 
-namespace LinAlg {
-
-namespace LAPACK {
-
-namespace FORTRAN {
-
 #ifndef DOXYGEN_SKIP
 extern "C" {
+
+  using LinAlg::I_t;
+  using LinAlg::S_t;
+  using LinAlg::D_t;
+  using LinAlg::C_t;
+  using LinAlg::Z_t;
+
   void fortran_name(slarnv, SLARNV)(const int* idist, int* iseed, const int* n,
                                S_t* x);
   void fortran_name(dlarnv, DLARNV)(const int* idist, int* iseed, const int* n,
@@ -43,6 +44,12 @@ extern "C" {
                                Z_t* x);
 }
 #endif
+
+namespace LinAlg {
+
+namespace LAPACK {
+
+namespace FORTRAN {
 
 /** \brief            xLARNV
  *
