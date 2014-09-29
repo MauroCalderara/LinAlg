@@ -14,6 +14,9 @@
 
 #include <chrono>     // std::chrono and all submembers
 #include <cstdio>     // std::fprint
+#include <string>
+
+#include "stringformat.h"
 
 namespace LinAlg {
 
@@ -30,9 +33,7 @@ struct Timer {
   time_point_t start;
   time_point_t stop;
   std::chrono::duration<double> time_span;
-  const char* name;
-  bool microsec_resolution;
-  int factor;
+  std::string name;
 #endif
 
   /** \brief          Constructor
@@ -45,10 +46,7 @@ struct Timer {
    */
   Timer(bool us = false)
       : start(std::chrono::high_resolution_clock::now()),
-        name(""),
-        microsec_resolution(us) {
-    factor = (microsec_resolution) ? 1000000 : 1;
-  };
+        name("") { };
   /** \brief          Constructor with a name string
    *
    *  \param[in]      name_in
@@ -60,12 +58,10 @@ struct Timer {
    *                  microseconds, otherwise in units of seconds. DEFAULT:
    *                  false.
    */
-  Timer(const char* name_in, bool us = false)
+  template <typename... Us>
+  Timer(const char* name_in, Us... formatargs)
       : start(std::chrono::high_resolution_clock::now()),
-        name(name_in),
-        microsec_resolution(us) {
-    factor = (microsec_resolution) ? 1000000 : 1;
-  };
+        name(stringformat(name_in, formatargs...)) { };
 
   /** \brief          Start the timer
    */
@@ -85,7 +81,7 @@ struct Timer {
 
     time_span = duration_cast<duration<double>>(stop - start);
 
-    return time_span.count() * factor;
+    return time_span.count();
 
   };
 
@@ -102,11 +98,79 @@ struct Timer {
   inline double toc() {
 
     auto tmp = measure();
-    if (microsec_resolution) {
-      std::printf("%s : %fus\n", name, tmp);
-    } else {
-      std::printf("%s : %fs\n", name, tmp);
-    }
+    std::printf("%s : %fs\n", name.c_str(), tmp);
+
+    return tmp;
+
+  };
+
+};
+
+struct HiResTimer {
+
+#ifndef DOXYGEN_SKIP
+  typedef std::chrono::high_resolution_clock::time_point time_point_t;
+
+  time_point_t start;
+  time_point_t stop;
+  std::chrono::duration<double> time_span;
+  std::string name;
+#endif
+
+  /** \brief          Constructor
+   */
+  HiResTimer()
+           : start(std::chrono::high_resolution_clock::now()),
+             name("") {};
+  /** \brief          Constructor with a name string
+   *
+   *  \param[in]      name_in
+   *                  Name that will be printed before the timer's output
+   *
+   *  \param[in]      formatargs
+   *                  OPTIONAL: printf style format arguments
+   */
+  template <typename... Us>
+  HiResTimer(const char* name_in, Us... formatargs)
+           : start(std::chrono::high_resolution_clock::now()),
+             name(stringformat(name_in, formatargs...)) {};
+
+  /** \brief          Start the timer
+   */
+  inline void set() { start = std::chrono::high_resolution_clock::now(); };
+
+  /** \brief          Stop the timer
+   *
+   *  \returns        The time in seconds or microseconds (depending on the
+   *                  parameter given at construction time)
+   */
+  inline double measure() {
+
+    using std::chrono::duration_cast;
+    using std::chrono::duration;
+
+    stop = std::chrono::high_resolution_clock::now();
+
+    time_span = duration_cast<duration<double>>(stop - start);
+
+    return time_span.count() * 1000000;
+
+  };
+
+  /** \brief          Start the timer (MATLAB&reg; alike)
+   */
+  inline void tic() { set(); };
+
+  /** \brief          Stop the timer, print the elapsed time since the last
+   *                  set() or tic() (MATLAB&reg; alike)
+   *
+   *  \returns        The time in seconds or microseconds (depending on the
+   *                  parameter given at construction time)
+   */
+  inline double toc() {
+
+    auto tmp = measure();
+    std::printf("%s : %fus\n", name.c_str(), tmp);
 
     return tmp;
 
