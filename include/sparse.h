@@ -65,7 +65,7 @@ struct Sparse : Matrix {
          Format format = Format::CSR);
 
   // Construct from existing CSR or CSC array triplet
-  Sparse(I_t size, I_t n_nonzeros, T* values, T* indices, T* edges,
+  Sparse(I_t size, I_t n_nonzeros, T* values, I_t* indices, I_t* edges,
          int first_index = 0, Location location = Location::host,
          int device_id = 0, Format format = Format::CSR);
 
@@ -356,7 +356,7 @@ Sparse<T>::Sparse(I_t size, I_t n_nonzeros, int first_index, Location location,
  *                      Default: Format::CSR.
  */
 template <typename T>
-Sparse<T>::Sparse(I_t size, I_t n_nonzeros, T* values, T* indices, T* edges,
+Sparse<T>::Sparse(I_t size, I_t n_nonzeros, T* values, I_t* indices, I_t* edges,
                   int first_index, Location location, int device_id,
                   Format format)
                 : _n_nonzeros(n_nonzeros),
@@ -386,8 +386,8 @@ Sparse<T>::Sparse(I_t size, I_t n_nonzeros, T* values, T* indices, T* edges,
   // Create shared_ptrs that will not deallocate upon destruction (this is
   // common to all storage locations supported so far).
   _values  = std::shared_ptr<T>(values, [](T* values){});
-  _indices = std::shared_ptr<T>(indices, [](T* indices){});
-  _edges   = std::shared_ptr<T>(edges, [](T* edges){});
+  _indices = std::shared_ptr<I_t>(indices, [](I_t* indices){});
+  _edges   = std::shared_ptr<I_t>(edges, [](I_t* edges){});
 
 
 #ifdef HAVE_CUDA
