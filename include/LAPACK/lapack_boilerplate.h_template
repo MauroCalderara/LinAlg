@@ -39,20 +39,27 @@
 #include "../utilities/checks.h"
 #include "../dense.h"
 
-namespace LinAlg {
-
-namespace LAPACK {
-
-namespace FORTRAN {
-
 #ifndef DOXYGEN_SKIP
 extern "C" {
+
+  using LinAlg::I_t;
+  using LinAlg::S_t;
+  using LinAlg::D_t;
+  using LinAlg::C_t;
+  using LinAlg::Z_t;
+
   void fortran_name(sxyz, SXYZ)(...);
   void fortran_name(dxyz, DXYZ)(...);
   void fortran_name(cxyz, CXYZ)(...);
   void fortran_name(zxyz, ZXYZ)(...);
 }
 #endif
+
+namespace LinAlg {
+
+namespace LAPACK {
+
+namespace FORTRAN {
 
 /** \brief            xXYZ
  *

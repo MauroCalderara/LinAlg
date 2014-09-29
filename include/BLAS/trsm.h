@@ -32,14 +32,15 @@
 
 #include "../types.h"
 
-namespace LinAlg {
-
-namespace BLAS {
-
-namespace FORTRAN {
-
 #ifndef DOXYGEN_SKIP
 extern "C" {
+
+  using LinAlg::I_t;
+  using LinAlg::S_t;
+  using LinAlg::D_t;
+  using LinAlg::C_t;
+  using LinAlg::Z_t;
+
   void fortran_name(strsm, STRSM)(const char* side, const char* uplo,
                                   const char* transa, const char* diag,
                                   const I_t* m, const I_t* n, const S_t* alpha,
@@ -62,6 +63,12 @@ extern "C" {
                                   const I_t* ldb);
 }
 #endif
+
+namespace LinAlg {
+
+namespace BLAS {
+
+namespace FORTRAN {
 
 /** \brief            Triangular matrix solve
  *

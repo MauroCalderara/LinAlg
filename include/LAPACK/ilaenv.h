@@ -38,20 +38,26 @@
 
 #include "../types.h"
 
-namespace LinAlg {
-
-namespace LAPACK {
-
-namespace FORTRAN {
-
 #ifndef DOXYGEN_SKIP
 extern "C" {
+
+  using LinAlg::I_t;
+  using LinAlg::S_t;
+  using LinAlg::D_t;
+  using LinAlg::C_t;
+  using LinAlg::Z_t;
+
   I_t fortran_name(ilaenv, ILAENV)(const I_t* ispec, const char* name,
                                    const char* opts, const I_t* n1,
                                    const I_t* n2, const I_t* n3, const I_t* n4);
 }
 #endif
 
+namespace LinAlg {
+
+namespace LAPACK {
+
+namespace FORTRAN {
 
 /** \brief            ILAENV
  *

@@ -41,14 +41,15 @@
 #include "../dense.h"
 #include "getrf.h"
 
-namespace LinAlg {
-
-namespace LAPACK {
-
-namespace FORTRAN {
-
 #ifndef DOXYGEN_SKIP
 extern "C" {
+
+  using LinAlg::I_t;
+  using LinAlg::S_t;
+  using LinAlg::D_t;
+  using LinAlg::C_t;
+  using LinAlg::Z_t;
+
   void fortran_name(sgesv, SGESV)(const I_t* n, const I_t* nrhs, S_t* A,
                                   const I_t* lda, I_t* ipiv, S_t* B,
                                   const I_t* ldb, int* info);
@@ -63,6 +64,12 @@ extern "C" {
                                   const I_t* ldb, int* info);
 }
 #endif
+
+namespace LinAlg {
+
+namespace LAPACK {
+
+namespace FORTRAN {
 
 /** \brief            GESV
  *

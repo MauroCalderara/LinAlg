@@ -38,14 +38,15 @@
 #include "../utilities/checks.h"
 #include "../dense.h"
 
-namespace LinAlg {
-
-namespace LAPACK {
-
-namespace FORTRAN {
-
 #ifndef DOXYGEN_SKIP
 extern "C" {
+
+  using LinAlg::I_t;
+  using LinAlg::S_t;
+  using LinAlg::D_t;
+  using LinAlg::C_t;
+  using LinAlg::Z_t;
+
   void fortran_name(sgetrf, SGETRF)(const I_t* m, const I_t* n, S_t* A,
                                     const I_t* lda, I_t* ipiv, int* info);
   void fortran_name(dgetrf, DGETRF)(const I_t* m, const I_t* n, D_t* A,
@@ -56,6 +57,12 @@ extern "C" {
                                     const I_t* lda, I_t* ipiv, int* info);
 }
 #endif
+
+namespace LinAlg {
+
+namespace LAPACK {
+
+namespace FORTRAN {
 
 /** \brief            Compute LU factorization
  *
