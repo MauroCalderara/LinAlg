@@ -111,8 +111,6 @@ void write_IJV_data(LinAlg::Dense<T>& matrix, std::string filename) {
 template <typename T>
 void write_IJV_data(LinAlg::Sparse<T>& matrix, std::string filename) {
 
-  printf("write_IJV_data(): entered\n");
-
   auto size              = matrix._size;
   auto first_index       = matrix._first_index;
   auto values            = matrix._values.get();
