@@ -68,7 +68,7 @@ struct Dense : Matrix {
         Location location = Location::host, int device_id = 0);
 
   // Submatrix creation (from dense)
-  Dense(Dense<T>& source, I_t first_row, I_t last_row, I_t first_col,
+  Dense(const Dense<T>& source, I_t first_row, I_t last_row, I_t first_col,
         I_t last_col);
 
   // Submatrix creation from ()-operator
@@ -409,8 +409,8 @@ Dense<T>::Dense(T* in_array, I_t leading_dimension, I_t rows, I_t cols,
  *                    part of the submatrix (i.e. exclusive).
  */
 template <typename T>
-Dense<T>::Dense(Dense<T>& source, I_t first_row, I_t last_row, I_t first_col,
-                I_t last_col)
+Dense<T>::Dense(const Dense<T>& source, I_t first_row, I_t last_row,
+                I_t first_col, I_t last_col)
               : _memory(source._memory),
                 _leading_dimension(source._leading_dimension),
                 _format(source._format),
@@ -456,7 +456,7 @@ template <typename T>
 Dense<T> Dense<T>::operator()(I_t first_row, I_t last_row, I_t first_col,
                           I_t last_col) {
 
-  return Dense<T>(this, first_row, last_row, first_col, last_col);
+  return Dense<T>(*this, first_row, last_row, first_col, last_col);
 
 }
 
