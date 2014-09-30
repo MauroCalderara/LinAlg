@@ -64,9 +64,8 @@ struct Dense : Matrix {
 
   // Construct from existing (col-major) array, don't copy data and optionally
   // delete the memory afterwards.
-  Dense(T* in_array, I_t leading_dimension_in, I_t rows, I_t cols,
-        bool delete_active = false, Location location = Location::host,
-        int device_id = 0);
+  Dense(T* in_array, I_t leading_dimension_in, I_t rows, I_t cols, 
+        Location location = Location::host, int device_id = 0);
 
   // Submatrix creation (from dense)
   Dense(Dense<T>& source, I_t first_row, I_t last_row, I_t first_col,
@@ -337,9 +336,9 @@ Dense<T>::Dense(I_t rows, I_t cols, Location location, int device_id)
 
 /** \brief            Constructor from array
  *
- *  This constructor allows to create a matrix from preexisting data. No memory
- *  is allocated and no data is copied. Memory has to be allocated and
- *  deallocated by the user.
+ *  This constructor allows to create a matrix from preexisting data in 
+ *  ColMajor format.  No memory is allocated and no data is copied. Memory has 
+ *  to be allocated and deallocated by the user.
  *
  *  \param[in]        in_array
  *                    Host pointer to the first element of the matrix. Device
@@ -347,18 +346,13 @@ Dense<T>::Dense(I_t rows, I_t cols, Location location, int device_id)
  *
  *  \param[in]        leading_dimension
  *                    Distance between the first elements of two consecutive
- *                    columns if (format == Format::ColMajor) or two
- *                    consecutive rows (format == Format::RowMajor).
+ *                    columns
  *
  *  \param[in]        rows
  *                    Number of rows in the matrix.
  *
  *  \param[in]        cols
  *                    Number of columns in the matrix.
- *
- *  \param[in]        delete_active
- *                    OPTIONAL: Whether to attempt to delete the pointer when
- *                    this matrix handle is destroyed. Default: false
  *
  *  \param[in]        location
  *                    OPTIONAL: Location of the data. Default: Location::host.
@@ -368,9 +362,10 @@ Dense<T>::Dense(I_t rows, I_t cols, Location location, int device_id)
  */
 template <typename T>
 Dense<T>::Dense(T* in_array, I_t leading_dimension, I_t rows, I_t cols,
-                bool delete_active, Location location, int device_id)
+                Location location, int device_id)
               : _offset(0),
                 _leading_dimension(leading_dimension),
+                _format(Format::ColMajor),
                 _rows(rows),
                 _cols(cols),
                 _location(location),
@@ -381,30 +376,8 @@ Dense<T>::Dense(T* in_array, I_t leading_dimension, I_t rows, I_t cols,
   std::cout << "Dense.constructor_from_array\n";
 #endif
 
-  if (!delete_active) {
-
-    // Create a shared_ptr that will not deallocate upon destruction.
-    _memory = std::shared_ptr<T>(in_array, [](T* in_array){});
-
-  } else {
-    if (_location == Location::host) {
-
-      // Create a shared_ptr that will deallocate using delete[]
-      _memory = std::shared_ptr<T>(in_array, [](T* p){ delete[] p; });
-
-    }
-#ifdef HAVE_CUDA
-    else if (_location == Location::GPU) {
-
-      using CUDA::cuda_deallocate;
-      // Create a deleter for memory on cuda and a shared pointer using it
-      auto deleter = std::bind(cuda_deallocate<T>, std::placeholders::_1,
-                               _device_id);
-      _memory = std::shared_ptr<T>(in_array, deleter);
-
-    }
-#endif
-  }
+  // Create a shared_ptr that will not deallocate upon destruction.
+  _memory = std::shared_ptr<T>(in_array, [](T* in_array){});
 
 };
 
