@@ -62,8 +62,7 @@ struct Dense : Matrix {
   Dense(I_t rows, I_t cols, Location location = Location::host,
         int device_id = 0);
 
-  // Construct from existing (col-major) array, don't copy data and optionally
-  // delete the memory afterwards.
+  // Construct from pre-allocated/existing (col-major) array, don't copy data.
   Dense(T* in_array, I_t leading_dimension_in, I_t rows, I_t cols, 
         Location location = Location::host, int device_id = 0);
 
@@ -116,12 +115,29 @@ struct Dense : Matrix {
   // Print the matrix contents
   inline void print() const;
 
-  // Return true if matrix is on host
+  // Return true if matrix is on the given location. These are needed to allow 
+  // user code to check the location irrespective of the compilation flags of 
+  // the LinAlg libraries
   inline bool is_on_host() const;
   // Return true if matrix is on GPU
-  inline bool is_on_GPU() const;
+  inline bool is_on_GPU()  const;
   // Return true if matrix is on MIC
-  inline bool is_on_MIC() const;
+  inline bool is_on_MIC()  const;
+
+  // Return pointer to matrix begin
+  inline T* operator&() const { return _begin(); };
+
+  // Get properties
+  inline bool is(Property property) const { return (_properties & property); };
+
+  // Set properties
+  inline void set(Property property);
+
+  // Unset properties
+  inline void unset(Property property);
+
+  // Returns true if matrix is empty
+  inline bool is_empty() const { return (_rows == 0 || _cols == 0); };
 
 
 #ifndef DOXYGEN_SKIP
@@ -152,6 +168,9 @@ struct Dense : Matrix {
   // Whether the matrix is complex or not. Overridden in dense.cc with
   // specializations for C_t and Z_t:
   inline bool _is_complex() const { return false; };
+
+  // Properties of the matrix
+  unsigned char _properties;
 #endif
 
 };
@@ -159,8 +178,7 @@ struct Dense : Matrix {
 /** \brief              Default (empty) constructor
  *
  *  This constructor doesn't allocate any memory. Typically empty matrices
- *  (defined as those that have rows == 0) are initialized suitably by all
- *  operations that have output parameters.
+ *  are initialized suitably by all operations that have output parameters.
  */
 template <typename T>
 Dense<T>::Dense()
@@ -336,9 +354,9 @@ Dense<T>::Dense(I_t rows, I_t cols, Location location, int device_id)
 
 /** \brief            Constructor from array
  *
- *  This constructor allows to create a matrix from preexisting data in 
- *  ColMajor format.  No memory is allocated and no data is copied. Memory has 
- *  to be allocated and deallocated by the user.
+ *  This constructor allows to create a matrix from pre-allocated/existing 
+ *  data in ColMajor format.  No memory is allocated and no data is copied.  
+ *  Memory has to be allocated and deallocated by the user.
  *
  *  \param[in]        in_array
  *                    Host pointer to the first element of the matrix. Device
@@ -550,7 +568,8 @@ inline void Dense<T>::reallocate(I_t rows, I_t cols, Location location,
 
 #ifndef LINALG_NO_CHECKS
   if (rows == 0 || cols == 0) {
-    throw excBadArgument("Dense.reallocate(): rows or cols must not be zero.");
+    throw excBadArgument("Dense.reallocate(): rows or cols must not be zero, "
+                         "use unlin() instead");
   }
 #endif
 
@@ -653,14 +672,14 @@ void Dense<T>::operator<<(const Dense<T>& source) {
   if (this->_transposed) {
     throw excBadArgument("DenseA^t << DenseB: can't assign to transposed "
                          "matrices");
-  } else if (source._rows == 0) {
-    throw excBadArgument("DenseA << DenseB: can't assign from empty matrix");
   }
 #endif
 
-
-  // If 'this' is empty, allocate memory accordingly
-  if (this->_rows == 0) {
+  // If both matrices are empty, this is a noop
+  if (source.is_empty() && this->is_empty()) {
+    return;
+  } else if (this->is_empty()) {
+    // If only 'this' is empty allocate memory accordingly
     this->reallocate(source.rows(), source.cols(), source._location,
                       source._device_id);
   }
@@ -723,7 +742,7 @@ void Dense<T>::location(Location new_location, int device_id) {
 #endif
 
   // The matrix is empty, we just update the meta data
-  if (_rows == 0) {
+  if (is_empty()) {
 
     _location = new_location;
     _device_id = device_id;
@@ -773,7 +792,7 @@ inline void Dense<T>::unlink() {
 template <typename T>
 inline void Dense<T>::print() const {
 
-  if (_rows == 0) {
+  if (is_empty()) {
     return;
   }
 
@@ -824,7 +843,7 @@ inline void Dense<T>::print() const {
 };
 
 /** \brief            Return true if matrix is on host
-  */
+ */
 template <typename T>
 inline bool Dense<T>::is_on_host() const {
 
@@ -833,7 +852,7 @@ inline bool Dense<T>::is_on_host() const {
 };
 
 /** \brief            Return true if matrix is on GPU
-  */
+ */
 template <typename T>
 inline bool Dense<T>::is_on_GPU() const {
 
@@ -846,7 +865,7 @@ inline bool Dense<T>::is_on_GPU() const {
 };
 
 /** \brief            Return true if matrix is on MIC
-  */
+ */
 template <typename T>
 inline bool Dense<T>::is_on_MIC() const {
 
@@ -857,6 +876,42 @@ inline bool Dense<T>::is_on_MIC() const {
 #endif
 
 };
+
+/** \brief            Setter for properties
+ *
+ *  \param[in]        property
+ *                    Property to set on the matrix.
+ */
+template <typename T>
+inline void Dense<T>::set(Property property) {
+
+  if (property == Property::Hermitian) {
+
+    if (!_is_complex()) {
+
+      throw excBadArgument("Dense.set(property): can't set Property::Hermitian "
+                           "on real matrices");
+
+    }
+
+  }
+
+  _properties = _properties | property;
+
+};
+
+/** \brief            Unset properties
+ *
+ *  \param[in]        property
+ *                    Property to remove from the matrix.
+ */
+template <typename T>
+inline void Dense<T>::unset(Property property) {
+
+  _properties = _properties & ~(property);
+
+};
+
 
 } /* namespace LinAlg */
 

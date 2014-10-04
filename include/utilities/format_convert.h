@@ -74,7 +74,7 @@ inline void sparse2dense(Sparse<T>& src, I_t first_row, I_t last_row,
     auto cols = last_col - first_col;
 
     // Check if size fits. If dst is empty, reallocate accordingly
-    if (dst._rows == 0) {
+    if (dst.is_empty()) {
 
       dst.reallocate(rows, cols);
 

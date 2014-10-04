@@ -331,6 +331,18 @@ template <> inline Z_t cast<Z_t>(C_t v) {
 template <> inline Z_t cast<Z_t>(Z_t v) { return v; };
 #endif
 
+/** \brief            Matrix properties
+ *
+ *  We store matrix properties as bitfield internally. The matrices' setter 
+ *  members check for internal consistency.
+ */
+enum Property {
+  General   = 0x01,
+  Symmetric = 0x02,
+  Hermitian = 0x04,
+  Packed    = 0x08,
+};
+
 
 /** \brief            Storage locations
  *
