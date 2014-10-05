@@ -385,6 +385,18 @@ enum class BufferDirection {
   decreasing,   //< Buffer runs in direction of decreasing indices
 };
 
+/** \brief            IJ, a point in a matrix (row/column pair)
+ */
+struct IJ {
+
+  I_t row;      //< Row
+  I_t col;      //< Column
+
+  IJ() : row(0), col(0) {};             //< Empty constructor
+  IJ(I_t i, I_t j) : row(i), col(j) {}; //< Constructor from row and column
+
+};
+
 
 } /* namespace LinAlg */
 

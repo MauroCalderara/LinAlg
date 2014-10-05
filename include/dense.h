@@ -67,15 +67,19 @@ struct Dense : Matrix {
         Location location = Location::host, int device_id = 0);
 
   // Submatrix creation (from dense)
+  Dense(const Dense<T>& source, IJ start, IJ stop);
   Dense(const Dense<T>& source, I_t first_row, I_t last_row, I_t first_col,
         I_t last_col);
 
   // Submatrix creation from ()-operator
-  Dense<T> operator()(I_t first_row, I_t last_row, I_t first_col, I_t last_col);
+  inline Dense<T> operator()(IJ start, IJ stop);
+  inline Dense<T> operator()(I_t first_row, I_t last_row, I_t first_col,
+                             I_t last_col);
 
   // Explicitly clone
   inline void clone_from(const Dense<T>& source);
   // Explicit cloning as submatrix
+  inline void clone_from(const Dense<T>& source, IJ start, IJ stop);
   inline void clone_from(const Dense<T>& source, I_t first_row, I_t last_row,
                          I_t first_col, I_t last_col);
 
@@ -94,7 +98,7 @@ struct Dense : Matrix {
                               int device_id);
 
   // Data copy from one (sub)matrix to another
-  void operator<<(const Dense<T>& source);
+  inline void operator<<(const Dense<T>& source);
 
   /// Return the number of rows in the matrix
   inline I_t rows() const { return (_transposed ? _cols : _rows); };
@@ -410,6 +414,47 @@ Dense<T>::Dense(T* in_array, I_t leading_dimension, I_t rows, I_t cols,
  *                    The matrix from which to construct the new dense
  *                    matrix.
  *
+ *  \param[in]        start
+ *                    Point to mark the upper left corner of the submatrix 
+ *                    (included, c-numbering).
+ *
+ *  \param[in]        stop
+ *                    Point to mark the lower right corner of the submatrix 
+ *                    (excluded, c-numbering).
+ */
+template <typename T>
+Dense<T>::Dense(const Dense<T>& source, IJ start, IJ stop)
+              : _memory(source._memory),
+                _leading_dimension(source._leading_dimension),
+                _format(source._format),
+                _rows(stop.row - start.row),
+                _cols(stop.col - stop.col),
+                _location(source._location),
+                _device_id(source._device_id),
+                _transposed(source._transposed) {
+
+#ifdef CONSTRUCTOR_VERBOSE
+  std::cout << "Dense.submatrix_constructor\n";
+#endif
+
+  if (_format == Format::ColMajor) {
+    _offset = source._offset + start.col * _leading_dimension + start.row;
+  } else {
+    _offset = source._offset + start.row * _leading_dimension + start.col;
+  }
+
+};
+/** \brief            Submatrix constructor
+ *
+ *  Create a submatrix from an existing matrix.
+ *  For construction from dense matrices no memory is copied and the ownership
+ *  of the memory of the source matrix is shared with the source and all other
+ *  submatrices.
+ *
+ *  \param[in]        source
+ *                    The matrix from which to construct the new dense
+ *                    matrix.
+ *
  *  \param[in]        first_row
  *                    The first row of the source matrix which is part of
  *                    the submatrix (i.e. inclusive).
@@ -429,24 +474,25 @@ Dense<T>::Dense(T* in_array, I_t leading_dimension, I_t rows, I_t cols,
 template <typename T>
 Dense<T>::Dense(const Dense<T>& source, I_t first_row, I_t last_row,
                 I_t first_col, I_t last_col)
-              : _memory(source._memory),
-                _leading_dimension(source._leading_dimension),
-                _format(source._format),
-                _rows(last_row - first_row),
-                _cols(last_col - first_col),
-                _location(source._location),
-                _device_id(source._device_id),
-                _transposed(source._transposed) {
+              : Dense(source, IJ(first_row, first_col), IJ(last_row, last_col)){
+};
 
-#ifdef CONSTRUCTOR_VERBOSE
-  std::cout << "Dense.submatrix_constructor\n";
-#endif
+/** \brief            Submatrix creation
+ *
+ *  \param[in]        start
+ *                    Point to mark the upper left corner of the submatrix 
+ *                    (included, c-numbering).
+ *
+ *  \param[in]        stop
+ *                    Point to mark the lower right corner of the submatrix 
+ *                    (excluded, c-numbering).
+ *
+ *  \returns          A submatrix with the given coordinates
+ */
+template <typename T>
+inline Dense<T> Dense<T>::operator()(IJ start, IJ stop) {
 
-  if (_format == Format::ColMajor) {
-    _offset = source._offset + first_col * _leading_dimension + first_row;
-  } else {
-    _offset = source._offset + first_row * _leading_dimension + first_col;
-  }
+  return Dense<T>(*this, start, stop);
 
 };
 
@@ -471,10 +517,10 @@ Dense<T>::Dense(const Dense<T>& source, I_t first_row, I_t last_row,
  *  \returns          A submatrix with the given coordinates
  */
 template <typename T>
-Dense<T> Dense<T>::operator()(I_t first_row, I_t last_row, I_t first_col,
-                          I_t last_col) {
+inline Dense<T> Dense<T>::operator()(I_t first_row, I_t last_row, I_t first_col,
+                                     I_t last_col) {
 
-  return Dense<T>(*this, first_row, last_row, first_col, last_col);
+  return Dense<T>(*this, IJ(first_row, first_col), IJ(last_row, last_col));
 
 }
 
@@ -501,30 +547,69 @@ inline void Dense<T>::clone_from(const Dense<T>& source) {
 
 };
 
-/** \brief              Cloning from an existing matrix
+/** \brief            Cloning from an existing matrix
  *
  *  Applies the parameters of another instance \<source\> to the left hand 
  *  instance. No memory is copied.
  *
- *  \param[in]          source
- *                      The matrix to clone from
+ *  \param[in]        source
+ *                    The matrix to clone from.
+ *
+ *  \param[in]        start
+ *                    Point to mark the upper left corner of the submatrix 
+ *                    (included, c-numbering).
+ *
+ *  \param[in]        stop
+ *                    Point to mark the lower right corner of the submatrix 
+ *                    (excluded, c-numbering).
+ */
+template <typename T>
+inline void Dense<T>::clone_from(const Dense<T>& source, IJ start, IJ stop) {
+
+  clone_from(source);
+
+  if (_format == Format::ColMajor) {
+    _offset = source._offset + start.col * _leading_dimension + start.row;
+  } else {
+    _offset = source._offset + start.col * _leading_dimension + start.col;
+  }
+
+  _rows = stop.row - start.row;
+  _cols = stop.col - start.col;
+
+};
+
+/** \brief            Cloning from an existing matrix
+ *
+ *  Applies the parameters of another instance \<source\> to the left hand 
+ *  instance. No memory is copied.
+ *
+ *  \param[in]        source
+ *                    The matrix to clone from
+ *
+ *  \param[in]        first_row
+ *                    The first row of the source matrix which is part of
+ *                    the submatrix (i.e. inclusive)
+ *
+ *  \param[in]        last_row
+ *                    The first row of the source matrix which is not part
+ *                    of the submatrix (i.e. exclusive)
+ *
+ *  \param[in]        first_col
+ *                    The first column of the source matrix which is part of
+ *                    the submatrix (i.e. inclusive)
+ *
+ *  \param[in]        last_col
+ *                    The first column of the source matrix which is not
+ *                    part of the submatrix (i.e. exclusive).
  */
 template <typename T>
 inline void Dense<T>::clone_from(const Dense<T>& source, I_t first_row, 
                                  I_t last_row, I_t first_col, I_t last_col) {
 
-  clone_from(source);
+  clone_from(source, IJ(first_row, first_col), IJ(last_row, last_col));
 
-  if (_format == Format::ColMajor) {
-    _offset = source._offset + first_col * _leading_dimension + first_row;
-  } else {
-    _offset = source._offset + first_row * _leading_dimension + first_col;
-  }
-
-  _rows = last_row - first_row;
-  _cols = last_col - first_col;
-
-}
+};
 
 /** \brief              Move matrix to another matrix
  *
@@ -564,7 +649,7 @@ inline void Dense<T>::move_to(Dense<T>& destination) {
  */
 template <typename T>
 inline void Dense<T>::reallocate(I_t rows, I_t cols, Location location,
-                                  int device_id) {
+                                 int device_id) {
 
 #ifndef LINALG_NO_CHECKS
   if (rows == 0 || cols == 0) {
@@ -661,7 +746,7 @@ inline void Dense<T>::reallocate_like(Dense<U>& other, Location location,
  *  \note               Usage:    A << B      // assign's B's values to A
  */
 template <typename T>
-void Dense<T>::operator<<(const Dense<T>& source) {
+inline void Dense<T>::operator<<(const Dense<T>& source) {
 
 #ifdef WARN_COPY
   std::cout << "Warning: matrix data copy\n";
