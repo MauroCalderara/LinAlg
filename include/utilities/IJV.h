@@ -73,7 +73,7 @@ void write_IJV_data(LinAlg::Dense<T>& matrix, std::string filename) {
             if (matrix_is_complex) {
               file_to_write << real(value) << imag(value) << "\n";
             } else {
-              file_to_write << value << "\n";
+              file_to_write << real(value) << "\n";
             }
           }
 
@@ -89,7 +89,7 @@ void write_IJV_data(LinAlg::Dense<T>& matrix, std::string filename) {
             if (matrix_is_complex) {
               file_to_write << real(value) << imag(value) << "\n";
             } else {
-              file_to_write << value << "\n";
+              file_to_write << real(value) << "\n";
             }
           }
 

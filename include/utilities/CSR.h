@@ -435,7 +435,8 @@ void write_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
   if (matrix._location != Location::host) {
 
     // Create a temporary matrix located in main memory and try again
-    Dense<T> temporary = matrix;
+    Dense<T> temporary;
+    temporary.clone_from(matrix);
     temporary.location(Location::host);
     write_CSR(temporary, filename);
 
@@ -485,7 +486,7 @@ void write_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
       file_to_write.close();
 
       // Write the data
-      write_IJV_data(matrix, file_to_write);
+      write_IJV_data(matrix, filename);
 
 #ifndef LINALG_NO_CHECKS
     } catch(std::ofstream::failure err) {
