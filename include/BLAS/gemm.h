@@ -30,7 +30,7 @@
 
 #include "../types.h"
 #ifdef HAVE_MKL
-#include <mkl.h>
+#include <mkl.h>    // need to have types.h before mkl.h
 #endif
 #include "../exceptions.h"
 #include "../utilities/checks.h"

@@ -62,8 +62,7 @@ struct Dense : Matrix {
   Dense(I_t rows, I_t cols, Location location = Location::host,
         int device_id = 0);
 
-  // Construct from existing (col-major) array, don't copy data and optionally
-  // delete the memory afterwards.
+  // Construct from pre-allocated/existing (col-major) array, don't copy data.
   Dense(T* in_array, I_t leading_dimension_in, I_t rows, I_t cols, 
         Location location = Location::host, int device_id = 0);
 
@@ -122,6 +121,9 @@ struct Dense : Matrix {
   inline bool is_on_GPU() const;
   // Return true if matrix is on MIC
   inline bool is_on_MIC() const;
+
+  // Return pointer to matrix begin
+  inline T* operator&() const { return _begin(); };
 
 
 #ifndef DOXYGEN_SKIP
@@ -336,9 +338,9 @@ Dense<T>::Dense(I_t rows, I_t cols, Location location, int device_id)
 
 /** \brief            Constructor from array
  *
- *  This constructor allows to create a matrix from preexisting data in 
- *  ColMajor format.  No memory is allocated and no data is copied. Memory has 
- *  to be allocated and deallocated by the user.
+ *  This constructor allows to create a matrix from pre-allocated/existing 
+ *  data in ColMajor format.  No memory is allocated and no data is copied.  
+ *  Memory has to be allocated and deallocated by the user.
  *
  *  \param[in]        in_array
  *                    Host pointer to the first element of the matrix. Device
@@ -653,14 +655,14 @@ void Dense<T>::operator<<(const Dense<T>& source) {
   if (this->_transposed) {
     throw excBadArgument("DenseA^t << DenseB: can't assign to transposed "
                          "matrices");
-  } else if (source._rows == 0) {
-    throw excBadArgument("DenseA << DenseB: can't assign from empty matrix");
   }
 #endif
 
-
-  // If 'this' is empty, allocate memory accordingly
-  if (this->_rows == 0) {
+  // If both matrices are empty, this is a noop
+  if (source.is_empty() && this->is_empty()) {
+    return;
+  } else if (this->is_empty()) {
+    // If only 'this' is empty allocate memory accordingly
     this->reallocate(source.rows(), source.cols(), source._location,
                       source._device_id);
   }
