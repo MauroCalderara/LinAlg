@@ -71,13 +71,9 @@ template <typename T>
 void send_matrix(Dense<T>& matrix, MPI_Comm communicator, int receiving_rank,
                  int tag) {
 
-#ifndef LINALG_NO_CHECKS
-  if (matrix._rows == 0) {
-
-    throw excBadArgument("send_matrix(): matrix to send must not be empty.");
-
+  if (matrix.is_empty()) {
+    return;
   }
-#endif
 
   // Check if the matrix is continuous or not. If it is not, we'll later need to
   // create a buffer.
@@ -148,13 +144,9 @@ template <typename T>
 void send_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
                        int receiving_rank, int tag, MPIStream& stream) {
 
-#ifndef LINALG_NO_CHECKS
-  if (matrix._rows == 0) {
-
-    throw excBadArgument("send_matrix(): matrix to send must not be empty.");
-
+  if (matrix.is_empty()) {
+    return;
   }
-#endif
 
   // Check if the default stream has been passed, that is synchronous behavior
   // has been requested
@@ -273,14 +265,9 @@ template <typename T>
 void receive_matrix(Dense<T>& matrix, MPI_Comm communicator, int sending_rank,
                     int tag) {
 
-#ifndef LINALG_NO_CHECKS
-  if (matrix._rows == 0) {
-
-    throw excBadArgument("receive_matrix(): receiving matrix must not be "
-                         "empty. Preallocate with the right size");
-
+  if (matrix.is_empty()) {
+    return;
   }
-#endif
 
   // Check if the matrix is continuous or not. If it is not, we'll later need to
   // create a buffer.
@@ -359,14 +346,9 @@ template <typename T>
 void receive_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
                           int sending_rank, int tag, MPIStream& stream) {
 
-#ifndef LINALG_NO_CHECKS
-  if (matrix._rows == 0) {
-
-    throw excBadArgument("receive_matrix_async(): receiving matrix must not be "
-                         "empty. Preallocate with the right size");
-
+  if (matrix.is_empty()) {
+    return;
   }
-#endif
 
   // Check if the default stream has been passed, that is synchronous behavior
   // has been requested

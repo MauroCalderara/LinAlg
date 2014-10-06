@@ -169,7 +169,7 @@ inline void xTRSM(cublasHandle_t handle, cublasSideMode_t side,
                   const S_t* A, I_t lda, S_t* B, I_t ldb) {
   checkCUBLAS(cublasStrsm(handle, side, uplo, trans, diag, m, n, &alpha, A, \
                           lda, B, ldb));
-}
+};
 /** \overload
  */
 inline void xTRSM(cublasHandle_t handle, cublasSideMode_t side,
@@ -178,7 +178,7 @@ inline void xTRSM(cublasHandle_t handle, cublasSideMode_t side,
                   const D_t* A, I_t lda, D_t* B, I_t ldb) {
   checkCUBLAS(cublasDtrsm(handle, side, uplo, trans, diag, m, n, &alpha, A, \
                           lda, B, ldb));
-}
+};
 /** \overload
  */
 inline void xTRSM(cublasHandle_t handle, cublasSideMode_t side,
@@ -188,7 +188,7 @@ inline void xTRSM(cublasHandle_t handle, cublasSideMode_t side,
   checkCUBLAS(cublasCtrsm(handle, side, uplo, trans, diag, m, n, \
                           (const cuComplex*)&alpha, (const cuComplex*)A, lda, \
                           (cuComplex*)B, ldb));
-}
+};
 /** \overload
  */
 inline void xTRSM(cublasHandle_t handle, cublasSideMode_t side,
@@ -199,11 +199,11 @@ inline void xTRSM(cublasHandle_t handle, cublasSideMode_t side,
                           (const cuDoubleComplex*)&alpha, \
                           (const cuDoubleComplex*)A, lda, \
                           (cuDoubleComplex*)B, ldb));
-}
+};
 
 
 } /* namespace LinAlg::BLAS::CUBLAS */
-#endif
+#endif /* HAVE_CUDA */
 
 } /* namespace LinAlg::BLAS */
 

@@ -350,19 +350,15 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
   }
 
   // Check if ipiv is empty _and_ we use the CUBLAS backend
-  bool ipiv_empty;
-#ifndef HAVE_CUDA
-  ipiv_empty = false;
-#else
-  ipiv_empty = (ipiv._rows == 0) ? true : false;
+#ifdef HAVE_CUDA
 #ifndef USE_MAGMA_GETRI
-  if (ipiv_empty && A._location != Location::GPU) {
+  if (ipiv.is_empty() && A._location != Location::GPU) {
     throw excBadArgument("xGETRI(A, ipiv, work), ipiv: empty ipiv is only "
                          "allowed when inverting matrices on the GPU and using "
                          "the CUBLAS backend");
   }
 #else
-  if (ipiv_empty && A._location == Location::GPU) {
+  if (ipiv.is_empty() && A._location == Location::GPU) {
     throw excBadArgument("xGETRI(A, ipiv, work), ipiv: empty ipiv is not "
                          "supported when using the MAGMA backend");
   }
@@ -373,7 +369,7 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
 #endif /* USE_MAGMA_GETRI */
 #endif /* HAVE_CUDA */
 
-  if (!ipiv_empty) {
+  if (!ipiv.is_empty()) {
 
 #ifndef USE_MAGMA_GETRI
     check_device(A, ipiv, "xGETRI()");
@@ -453,7 +449,7 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
     auto device_id = A._device_id;
     auto C_ptr = C._begin();
     auto ldc = C._leading_dimension;
-    auto ipiv_ptr = (ipiv_empty) ? nullptr : ipiv._begin();
+    auto ipiv_ptr = (ipiv.is_empty()) ? nullptr : ipiv._begin();
 
     using LinAlg::CUDA::CUBLAS::handles;
     CUBLAS::xGETRI(handles[device_id], n, A_ptr, lda, ipiv_ptr, C_ptr, ldc,
@@ -569,7 +565,7 @@ template <typename T>
 inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
                        Dense<T>& C) {
 
-  if (C._rows == 0) {
+  if (C.is_empty()) {
     C.reallocate(A._rows, A._cols, A._location, A._device_id);
   }
 
@@ -581,18 +577,14 @@ inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
   }
 
   // Check if ipiv is empty _and_ we use the CUBLAS backend
-  bool ipiv_empty;
-#ifndef HAVE_CUDA
-  ipiv_empty = false;
-#else
-  ipiv_empty = (ipiv._rows == 0) ? true : false;
+#ifdef HAVE_CUDA
 #ifndef USE_MAGMA_GETRI
-  if (ipiv_empty && A._location != Location::GPU) {
+  if (ipiv.is_empty() && A._location != Location::GPU) {
     throw excBadArgument("xGETRI(A, ipiv, work), ipiv: empty ipiv is only "
                          "allowed when inverting matrices on the GPU");
   }
 #else
-  if (ipiv_empty && A._location == Location::GPU) {
+  if (ipiv.is_empty() && A._location == Location::GPU) {
     throw excBadArgument("xGETRI(A, ipiv, work), ipiv: empty ipiv is not "
                          "supported when using the MAGMA backend");
   }
@@ -603,7 +595,7 @@ inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
 #endif /* USE_MAGMA_GETRI */
 #endif /* HAVE_CUDA */
 
-  if (!ipiv_empty) {
+  if (!ipiv.is_empty()) {
 
 #ifndef USE_MAGMA_GETRI
     check_device(A, ipiv, "xGETRI()");
@@ -693,7 +685,7 @@ inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
   else if (A._location == Location::GPU) {
 
 #ifndef USE_MAGMA_GETRI
-    auto ipiv_ptr = (ipiv_empty) ? nullptr : ipiv._begin();
+    auto ipiv_ptr = (ipiv.is_empty()) ? nullptr : ipiv._begin();
     auto C_ptr    = C._begin();
     auto ldc      = C._leading_dimension;
     int  info     = 0;

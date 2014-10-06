@@ -74,6 +74,18 @@ template <>           inline Type type<Z_t>() { return Type::Z; };
 template <>           inline Type type<I_t>() { return Type::I; };
 
 
+/** \brief            Matrix properties
+ *
+ *  We store matrix properties as bitfield internally. The matrices' setter 
+ *  members check for internal consistency.
+ */
+enum Property {
+  General   = 0x01,
+  Symmetric = 0x02,
+  Hermitian = 0x04,
+  Packed    = 0x08,
+};
+
 /** \brief            Storage locations
  *
  *  \note             This enum only includes members for which there is
@@ -113,6 +125,18 @@ enum class BufferType {
 enum class BufferDirection {
   increasing,   //< Buffer runs in direction of increasing indices
   decreasing,   //< Buffer runs in direction of decreasing indices
+};
+
+/** \brief            IJ, a point in a matrix (row/column pair)
+ */
+struct IJ {
+
+  I_t row;      //< Row
+  I_t col;      //< Column
+
+  IJ() : row(0), col(0) {};             //< Empty constructor
+  IJ(I_t i, I_t j) : row(i), col(j) {}; //< Constructor from row and column
+
 };
 
 

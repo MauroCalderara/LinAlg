@@ -23,14 +23,14 @@
 
 #ifdef HAVE_CUDA
 
-#include <cuda_runtime.h>
-#include <cublas_v2.h>
-#include "../CUDA/cuda_checks.h"
-#include "../CUDA/cuda_cublas.h"
+# include <cuda_runtime.h>
+# include <cublas_v2.h>
+# include "../CUDA/cuda_checks.h"
+# include "../CUDA/cuda_cublas.h"
 
-#ifdef HAVE_MAGMA
-#include <magma.h>
-#endif /* HAVE_MAGMA */
+# ifdef HAVE_MAGMA
+#   include <magma.h>
+# endif /* HAVE_MAGMA */
 
 #endif /* HAVE_CUDA */
 
@@ -40,6 +40,9 @@
 #include "../utilities/checks.h"
 #include "../dense.h"
 #include "getrf.h"
+#ifndef USE_MAGMA_GESV
+# include "../BLAS/trsm.h"
+#endif
 
 #ifndef DOXYGEN_SKIP
 extern "C" {

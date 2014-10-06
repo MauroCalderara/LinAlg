@@ -284,8 +284,7 @@ inline void xGETRF(Dense<T>& A, Dense<int>& ipiv) {
 #ifndef HAVE_CUDA
   check_input_transposed(ipiv, "xGETRF(A, ipiv), ipiv:");
 #else
-  bool ipiv_empty = (ipiv._rows == 0) ? true : false;
-  if (!ipiv_empty) {
+  if (!ipiv.is_empty()) {
     check_input_transposed(ipiv, "xGETRF(A, ipiv), ipiv:");
   }
 #endif
@@ -300,7 +299,7 @@ inline void xGETRF(Dense<T>& A, Dense<int>& ipiv) {
     throw excBadArgument("xGETRF(A, ipiv), A: matrix A must be a square matrix "
                          "(CUBLAS restriction)");
   }
-  if (!ipiv_empty) {
+  if (!ipiv.is_empty()) {
     if (A.rows() != ipiv.rows()) {
       throw excBadArgument("xGETRF(A, ipiv): A, ipiv: must have same number "
                            "of rows");

@@ -86,7 +86,7 @@ void read_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
   std::tie(rows, columns, n_nonzeros, file_is_complex) =
                                                   parse_CSR_body(filename);
 
-  if (matrix._rows == 0) {
+  if (matrix.is_empty()) {
 
     matrix.reallocate(rows, columns);
     Fills::zero(matrix);

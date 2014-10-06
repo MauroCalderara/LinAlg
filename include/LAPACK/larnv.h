@@ -104,11 +104,9 @@ inline void xLARNV(I_t idist, I_t* iseed, I_t n, Z_t* x){
 template <typename T>
 inline void xLARNV(I_t idist, I_t* iseed, Dense<T>& X) {
 
-#ifndef LINALG_NO_CHECKS
-  if (X._rows == 0 || X._cols == 0) {
-    throw excBadArgument("xLARNV(): matrix must not be empty");
+  if (X.is_empty()) {
+    return;
   }
-#endif /* LINALG_NO_CHECKS */
 
   if (X._location == Location::host) {
 

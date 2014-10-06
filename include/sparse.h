@@ -101,9 +101,21 @@ struct Sparse : Matrix {
   // Return true if matrix is on host
   inline bool is_on_host() const;
   // Return true if matrix is on GPU
-  inline bool is_on_GPU() const;
+  inline bool is_on_GPU()  const;
   // Return true if matrix is on MIC
-  inline bool is_on_MIC() const;
+  inline bool is_on_MIC()  const;
+
+  // Get properties
+  inline bool is(Property property) const { return (_properties & property); };
+
+  // Set properties
+  inline void set(Property property);
+
+  // Unset properties
+  inline void unset(Property property);
+
+  // Returns true if matrix is empty
+  inline bool is_empty() const { return (_size == 0); };
 
 
 #ifndef DOXYGEN_SKIP
@@ -145,6 +157,9 @@ struct Sparse : Matrix {
   // the global (unpartitioned) matrix
   I_t _row_offset;
 #endif
+
+  // Properties of the matrix
+  unsigned char _properties;
 
 #endif /* DOXYGEN_SKIP */
 
@@ -808,6 +823,42 @@ inline bool Sparse<T>::is_on_MIC() const {
 #endif
 
 };
+
+/** \brief            Setter for properties
+ *
+ *  \param[in]        property
+ *                    Property to set on the matrix.
+ */
+template <typename T>
+inline void Sparse<T>::set(Property property) {
+
+  if (property == Property::Hermitian) {
+
+    if (!_is_complex()) {
+
+      throw excBadArgument("Sparse.set(property): can't set "
+                           "Property::Hermitian on real matrices");
+
+    }
+
+  }
+
+  _properties = _properties | property;
+
+};
+
+/** \brief            Unset properties
+ *
+ *  \param[in]        property
+ *                    Property to remove from the matrix.
+ */
+template <typename T>
+inline void Sparse<T>::unset(Property property) {
+
+  _properties = _properties & ~(property);
+
+};
+
 
 } /* namespace LinAlg */
 
