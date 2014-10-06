@@ -143,9 +143,6 @@ struct Dense : Matrix {
   // Returns true if matrix is empty
   inline bool is_empty() const { return (_rows == 0 || _cols == 0); };
 
-  // Return pointer to matrix begin
-  inline T* operator&() const { return _begin(); };
-
 
 #ifndef DOXYGEN_SKIP
   ///////////////////////////////////////////////////////////////////////////
