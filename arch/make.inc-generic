@@ -1,6 +1,9 @@
+# Variables with extra flags
+include arch/extraflags.inc
+
 # Compiler
 CXX = gcc
-CXX_FLAGS = -fPIC -pthread -std=c++11
+CXX_FLAGS = -fPIC -pthread -std=c++11 $(GCC_EXTRA_FLAGS)
 CXX_LINKER_FLAGS = -pthread -lstdc++
 
 # Flags to change behavior of the LinAlg library

@@ -4,7 +4,7 @@ include arch/extraflags.inc
 # Compiler
 CXX = gcc-4.8.3
 #CXX = clang++
-CXX_FLAGS = -O2 -fPIC -pthread -std=c++11 -fopenmp $(GCC_EXTRA_FLAGS)
+CXX_FLAGS = -O2 -fPIC -pthread -std=c++11 $(GCC_EXTRA_FLAGS)
 CXX_LINKER_FLAGS = -pthread -lstdc++
 
 # Flags to change behavior of the LinAlg library
