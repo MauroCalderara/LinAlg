@@ -61,7 +61,7 @@ class excLinAlg : public std::exception {
     std::string error_msg = std::string(prefix()) + usermsg +
                             std::string(suffix()) + stack_trace;
     return error_msg.c_str();
-  };
+  }
 #endif /* DOXYGEN_SKIP */
 
   /** \brief          Constructor from const char*
@@ -105,7 +105,7 @@ class excLinAlg : public std::exception {
     get_stack();
   }
 
-  ~excLinAlg() throw() {};
+  ~excLinAlg() throw() {}
 
 };
 
@@ -161,7 +161,7 @@ inline void excLinAlg::get_stack() {
   stack_trace = stack_trace_stream.str();
 #endif /* not EXCEPTION_STACK_TRACE */
 
-};
+}
 
 
 /** \exception        excUnimplemented
@@ -174,10 +174,10 @@ class excUnimplemented : public excLinAlg {
  public:
   template <typename... Ts>
   excUnimplemented(const char* userfmtstr, Ts... args)
-                 : excLinAlg(userfmtstr, args...) {};
-  excUnimplemented(const char* userstring) : excLinAlg(userstring) {};
-  excUnimplemented(std::string string) : excLinAlg(string) {};
-  const char* prefix() const { return "LinAlg unimplemented - "; };
+                 : excLinAlg(userfmtstr, args...) {}
+  excUnimplemented(const char* userstring) : excLinAlg(userstring) {}
+  excUnimplemented(std::string string) : excLinAlg(string) {}
+  const char* prefix() const { return "LinAlg unimplemented - "; }
 #endif
 };
 
@@ -191,10 +191,10 @@ class excBadArgument : public excLinAlg {
  public:
   template <typename... Ts>
   excBadArgument(const char* userfmtstr, Ts... args)
-               : excLinAlg(userfmtstr, args...) {};
-  excBadArgument(const char* userstring) : excLinAlg(userstring) {};
-  excBadArgument(std::string string) : excLinAlg(string) {};
-  const char* prefix() const { return "LinAlg bad argument - "; };
+               : excLinAlg(userfmtstr, args...) {}
+  excBadArgument(const char* userstring) : excLinAlg(userstring) {}
+  excBadArgument(std::string string) : excLinAlg(string) {}
+  const char* prefix() const { return "LinAlg bad argument - "; }
 #endif
 };
 
@@ -208,10 +208,10 @@ class excMallocError : public excLinAlg {
  public:
   template <typename... Ts>
   excMallocError(const char* userfmtstr, Ts... args)
-               : excLinAlg(userfmtstr, args...) {};
-  excMallocError(const char* userstring) : excLinAlg(userstring) {};
-  excMallocError(std::string string) : excLinAlg(string) {};
-  const char* prefix() const { return "LinAlg malloc error - "; };
+               : excLinAlg(userfmtstr, args...) {}
+  excMallocError(const char* userstring) : excLinAlg(userstring) {}
+  excMallocError(std::string string) : excLinAlg(string) {}
+  const char* prefix() const { return "LinAlg malloc error - "; }
 #endif
 };
 
@@ -224,10 +224,10 @@ class excBadFile : public excLinAlg {
  public:
   template <typename... Ts>
   excBadFile(const char* userfmtstr, Ts... args)
-           : excLinAlg(userfmtstr, args...) {};
-  excBadFile(const char* userstring) : excLinAlg(userstring) {};
-  excBadFile(std::string string) : excLinAlg(string) {};
-  const char* prefix() const { return "LinAlg bad file - "; };
+           : excLinAlg(userfmtstr, args...) {}
+  excBadFile(const char* userstring) : excLinAlg(userstring) {}
+  excBadFile(std::string string) : excLinAlg(string) {}
+  const char* prefix() const { return "LinAlg bad file - "; }
 #endif
 };
 
@@ -240,10 +240,10 @@ class excBufferHelper : public excLinAlg {
  public:
   template <typename... Ts>
   excBufferHelper(const char* userfmtstr, Ts... args)
-           : excLinAlg(userfmtstr, args...) {};
-  excBufferHelper(const char* userstring) : excLinAlg(userstring) {};
-  excBufferHelper(std::string string) : excLinAlg(string) {};
-  const char* prefix() const { return "LinAlg buffer - "; };
+           : excLinAlg(userfmtstr, args...) {}
+  excBufferHelper(const char* userstring) : excLinAlg(userstring) {}
+  excBufferHelper(std::string string) : excLinAlg(string) {}
+  const char* prefix() const { return "LinAlg buffer - "; }
 #endif
 };
 
@@ -256,10 +256,10 @@ class excMath : public excLinAlg {
  public:
   template <typename... Ts>
   excMath(const char* userfmtstr, Ts... args)
-           : excLinAlg(userfmtstr, args...) {};
-  excMath(const char* userstring) : excLinAlg(userstring) {};
-  excMath(std::string string) : excLinAlg(string) {};
-  const char* prefix() const { return "LinAlg math - "; };
+           : excLinAlg(userfmtstr, args...) {}
+  excMath(const char* userstring) : excLinAlg(userstring) {}
+  excMath(std::string string) : excLinAlg(string) {}
+  const char* prefix() const { return "LinAlg math - "; }
 #endif
 };
 
@@ -276,10 +276,10 @@ class excCUDAError : public excLinAlg {
  public:
   template <typename... Ts>
   excCUDAError(const char* userfmtstr, Ts... args)
-             : excLinAlg(userfmtstr, args...) {};
-  excCUDAError(const char* userstring) : excLinAlg(userstring) {};
-  excCUDAError(std::string string) : excLinAlg(string) {};
-  const char* prefix() const { return "LinAlg CUDA error - "; };
+             : excLinAlg(userfmtstr, args...) {}
+  excCUDAError(const char* userstring) : excLinAlg(userstring) {}
+  excCUDAError(std::string string) : excLinAlg(string) {}
+  const char* prefix() const { return "LinAlg CUDA error - "; }
 #endif
 };
 
@@ -293,10 +293,10 @@ class excCUBLASError : public excLinAlg {
  public:
   template <typename... Ts>
   excCUBLASError(const char* userfmtstr, Ts... args)
-               : excLinAlg(userfmtstr, args...) {};
-  excCUBLASError(const char* userstring) : excLinAlg(userstring) {};
-  excCUBLASError(std::string string) : excLinAlg(string) {};
-  const char* prefix() const { return "LinAlg CUBLAS error - "; };
+               : excLinAlg(userfmtstr, args...) {}
+  excCUBLASError(const char* userstring) : excLinAlg(userstring) {}
+  excCUBLASError(std::string string) : excLinAlg(string) {}
+  const char* prefix() const { return "LinAlg CUBLAS error - "; }
 #endif
 };
 
@@ -310,10 +310,10 @@ class excCUSPARSEError : public excLinAlg {
  public:
   template <typename... Ts>
   excCUSPARSEError(const char* userfmtstr, Ts... args)
-                 : excLinAlg(userfmtstr, args...) {};
-  excCUSPARSEError(const char* userstring) : excLinAlg(userstring) {};
-  excCUSPARSEError(std::string string) : excLinAlg(string) {};
-  const char* prefix() const { return "LinAlg CUSPARSE error - "; };
+                 : excLinAlg(userfmtstr, args...) {}
+  excCUSPARSEError(const char* userstring) : excLinAlg(userstring) {}
+  excCUSPARSEError(std::string string) : excLinAlg(string) {}
+  const char* prefix() const { return "LinAlg CUSPARSE error - "; }
 #endif
 };
 
@@ -333,11 +333,11 @@ class excMPIError : public excLinAlg {
  public:
   template <typename... Ts>
   excMPIError(const char* userfmtstr, Ts... args)
-             : excLinAlg(userfmtstr, args...) {};
-  excMPIError(const char* userstring) : excLinAlg(userstring) {};
-  excMPIError(std::string string) : excLinAlg(string) {};
-  const char* prefix() const { return "LinAlg MPI error - "; };
-  const char* suffix() const { return suffix_string.c_str(); };
+             : excLinAlg(userfmtstr, args...) {}
+  excMPIError(const char* userstring) : excLinAlg(userstring) {}
+  excMPIError(std::string string) : excLinAlg(string) {}
+  const char* prefix() const { return "LinAlg MPI error - "; }
+  const char* suffix() const { return suffix_string.c_str(); }
 
   std::string suffix_string;
 #endif
@@ -369,7 +369,7 @@ class excMPIError : public excLinAlg {
 
     suffix_string = suffix_sstream.str();
 
-  };
+  }
 
 };
 

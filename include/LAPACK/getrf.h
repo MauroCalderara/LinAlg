@@ -85,22 +85,22 @@ namespace FORTRAN {
  */
 inline void xGETRF(I_t m, I_t n, S_t* A, I_t lda, I_t* ipiv, int* info) {
   fortran_name(sgetrf, SGETRF)(&m, &n, A, &lda, ipiv, info);
-};
+}
 /** \overload
  */
 inline void xGETRF(I_t m, I_t n, D_t* A, I_t lda, I_t* ipiv, int* info) {
   fortran_name(dgetrf, DGETRF)(&m, &n, A, &lda, ipiv, info);
-};
+}
 /** \overload
  */
 inline void xGETRF(I_t m, I_t n, C_t* A, I_t lda, I_t* ipiv, int* info) {
   fortran_name(cgetrf, CGETRF)(&m, &n, A, &lda, ipiv, info);
-};
+}
 /** \overload
  */
 inline void xGETRF(I_t m, I_t n, Z_t* A, I_t lda, I_t* ipiv, int* info) {
   fortran_name(zgetrf, ZGETRF)(&m, &n, A, &lda, ipiv, info);
-};
+}
 
 } /* namespace FORTRAN */
 
@@ -130,16 +130,16 @@ inline void xGETRF(cublasHandle_t handle, I_t n, S_t* A, I_t lda, int* ipiv,
                    int* info) {
   throw excUnimplemented("CUBLAS xGETRF not properly implemented");
   checkCUBLAS(cublasSgetrfBatched(handle, n, &A, lda, ipiv, info, 1));
-};
+}
 /** \overload
  */
 inline void xGETRF(cublasHandle_t handle, I_t n, D_t* A, I_t lda, int* ipiv,
                    int* info) {
   throw excUnimplemented("CUBLAS xGETRF not properly implemented");
-  //D_t* Aarray[] = { A };
+  //D_t* Aarray[] = { A }
   //checkCUBLAS(cublasDgetrfBatched(handle, n, Aarray, lda, ipiv, info, 1));
   checkCUBLAS(cublasDgetrfBatched(handle, n, &A, lda, ipiv, info, 1));
-};
+}
 /** \overload
  */
 inline void xGETRF(cublasHandle_t handle, I_t n, C_t* A, I_t lda, int* ipiv,
@@ -148,7 +148,7 @@ inline void xGETRF(cublasHandle_t handle, I_t n, C_t* A, I_t lda, int* ipiv,
   checkCUBLAS(cublasCgetrfBatched(handle, n, \
                                   reinterpret_cast<cuComplex**>(&A),lda, ipiv, \
                                   info, 1));
-};
+}
 /** \overload
  */
 inline void xGETRF(cublasHandle_t handle, I_t n, Z_t* A, I_t lda, int* ipiv,
@@ -157,7 +157,7 @@ inline void xGETRF(cublasHandle_t handle, I_t n, Z_t* A, I_t lda, int* ipiv,
   checkCUBLAS(cublasZgetrfBatched(handle, n, \
                                   reinterpret_cast<cuDoubleComplex**>(&A), \
                                   lda, ipiv, info, 1));
-};
+}
 
 /** \brief            Compute LU factorization for multiple matrices
  *
@@ -181,14 +181,14 @@ inline void xGETRF_batched(cublasHandle_t handle, I_t n, S_t* Aarray[], I_t lda,
                            int* PivotArray, int* infoArray, I_t batchSize) {
   checkCUBLAS(cublasSgetrfBatched(handle, n, Aarray, lda, PivotArray, \
                                   infoArray, batchSize));
-};
+}
 /** \overload
  */
 inline void xGETRF_batched(cublasHandle_t handle, I_t n, D_t* Aarray[], I_t lda,
                            int* PivotArray, int* infoArray, I_t batchSize) {
   checkCUBLAS(cublasDgetrfBatched(handle, n, Aarray, lda, PivotArray, \
                                   infoArray, batchSize));
-};
+}
 /** \overload
  */
 inline void xGETRF_batched(cublasHandle_t handle, I_t n, C_t* Aarray[], I_t lda,
@@ -196,7 +196,7 @@ inline void xGETRF_batched(cublasHandle_t handle, I_t n, C_t* Aarray[], I_t lda,
   checkCUBLAS(cublasCgetrfBatched(handle, n, \
                                   reinterpret_cast<cuComplex**>(Aarray), lda, \
                                   PivotArray, infoArray, batchSize));
-};
+}
 /** \overload
  */
 inline void xGETRF_batched(cublasHandle_t handle, I_t n, Z_t* Aarray[], I_t lda,
@@ -204,7 +204,7 @@ inline void xGETRF_batched(cublasHandle_t handle, I_t n, Z_t* Aarray[], I_t lda,
   checkCUBLAS(cublasZgetrfBatched(handle, n, \
                                   reinterpret_cast<cuDoubleComplex**>(Aarray), \
                                   lda, PivotArray, infoArray, batchSize));
-};
+}
 
 } /* namespace LinAlg::LAPACK::CUBLAS */
 
@@ -233,22 +233,22 @@ namespace MAGMA {
  */
 inline void xGETRF(I_t m, I_t n, S_t* A, I_t lda, I_t* ipiv, int* info) {
   magma_sgetrf_gpu(m, n, A, lda, ipiv, info);
-};
+}
 /** \overload
  */
 inline void xGETRF(I_t m, I_t n, D_t* A, I_t lda, I_t* ipiv, int* info) {
   magma_dgetrf_gpu(m, n, A, lda, ipiv, info);
-};
+}
 /** \overload
  */
 inline void xGETRF(I_t m, I_t n, C_t* A, I_t lda, I_t* ipiv, int* info) {
   magma_cgetrf_gpu(m, n, A, lda, ipiv, info);
-};
+}
 /** \overload
  */
 inline void xGETRF(I_t m, I_t n, Z_t* A, I_t lda, I_t* ipiv, int* info) {
   magma_zgetrf_gpu(m, n, A, lda, ipiv, info);
-};
+}
 
 } /* namespace LinAlg::LAPACK::MAGMA */
 #endif /* HAVE_MAGMA */
@@ -356,7 +356,7 @@ inline void xGETRF(Dense<T>& A, Dense<int>& ipiv) {
   }
 #endif
 
-};
+}
 
 } /* namespace LinAlg::LAPACK */
 

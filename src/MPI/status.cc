@@ -52,7 +52,7 @@ MPI_Status construct_status(int error_code, MPI_Comm communicator, int tag) {
 
   return std::move(status);
 
-};
+}
 
 } /* namespace MPI */
 

@@ -60,7 +60,7 @@ void send_meta(MetaData& meta, MPI_Comm communicator, int receiving_rank,
   }
 #endif
 
-};
+}
 
 /** \brief            Send meta data about a matrix asynchronously
  *
@@ -108,7 +108,7 @@ void send_meta_async(MetaData meta, MPI_Comm communicator,
   // Error handling happens when synchronizing on the stream.
   stream.statuses[stream_position] = construct_status(error, communicator,
                                                        tag);
-};
+}
 
 /** \brief            Receive meta data
  *
@@ -152,7 +152,7 @@ MetaData receive_meta(MPI_Comm communicator, int sending_rank, int tag) {
 
   return std::move(meta);
 
-};
+}
 
 /** \brief            Receive meta data asynchronously
  *
@@ -198,7 +198,7 @@ void receive_meta_async(MetaData& meta, MPI_Comm communicator,
   stream.statuses[stream_position] = construct_status(error, communicator,
                                                        tag);
 
-};
+}
 
 } /* namespace MPI */
 

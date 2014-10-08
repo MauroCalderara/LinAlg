@@ -34,23 +34,23 @@ namespace Utilities {
 template <typename T>
 inline void copy_1Darray_host(T* src_array, I_t length, T* dst_array) {
   for (I_t i = 0; i < length; ++i) dst_array[i] = src_array[i];
-};
+}
 template <>
 inline void copy_1Darray_host(S_t* src_array, I_t length, S_t* dst_array){
   LinAlg::BLAS::FORTRAN::xCOPY(length, src_array, 1, dst_array, 1);
-};
+}
 template <>
 inline void copy_1Darray_host(D_t* src_array, I_t length, D_t* dst_array){
   LinAlg::BLAS::FORTRAN::xCOPY(length, src_array, 1, dst_array, 1);
-};
+}
 template <>
 inline void copy_1Darray_host(C_t* src_array, I_t length, C_t* dst_array){
   LinAlg::BLAS::FORTRAN::xCOPY(length, src_array, 1, dst_array, 1);
-};
+}
 template <>
 inline void copy_1Darray_host(Z_t* src_array, I_t length, Z_t* dst_array){
   LinAlg::BLAS::FORTRAN::xCOPY(length, src_array, 1, dst_array, 1);
-};
+}
 
 #endif /* DOXYGEN_SKIP */
 
@@ -168,7 +168,7 @@ void copy_1Darray(T* src_array, I_t length, T* dst_array,
   }
 #endif
 
-};
+}
 
 
 /** \brief              2D array copy
@@ -408,7 +408,7 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
   }
 #endif
 
-};
+}
 
 } /* namespace LinAlg::Utilities */
 

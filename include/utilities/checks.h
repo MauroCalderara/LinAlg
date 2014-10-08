@@ -150,7 +150,7 @@ inline void check_stream(Dense<T>& A, CUDAStream stream,
     throw excBadArgument(message);
 
   }
-};
+}
 #endif /* HAVE_CUDA */
 
 /*  \brief            Checks if a matrix is in a certain format. Raises an
@@ -186,7 +186,7 @@ inline void check_format(Format format, Dense<T>& A, const char* caller_name) {
 
   }
 
-};
+}
 
 /*  \brief            Checks if a matrix has certain dimensions. Throws an
  *                    exception if it does not.
@@ -217,7 +217,7 @@ inline void check_dimensions(I_t rows, I_t columns, Dense<T>& A,
 
   }
 
-};
+}
 
 /*  \brief            Checks two matrices have the same dimensions. Throws an
  *                    exception if they do not.
@@ -245,7 +245,7 @@ inline void check_same_dimensions(Dense<T>& A, Dense<U>& B,
 
   }
 
-};
+}
 
 #endif /* LINALG_NO_CHECKS */
 

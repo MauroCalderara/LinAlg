@@ -37,7 +37,7 @@ namespace Utilities {
  */
 struct BufferHelper {
 
-  BufferHelper() {};
+  BufferHelper() {}
   BufferHelper(I_t size, I_t lookahead, BufferType type,
                std::function<void(I_t)> loader,
                std::function<void(I_t)> deleter);

@@ -82,7 +82,7 @@ namespace FORTRAN {
 inline I_t ILAENV(I_t ispec, const char* name, const char* opts, I_t n1, I_t n2,
                   I_t n3, I_t n4) {
   return fortran_name(ilaenv, ILAENV)(&ispec, name, opts, &n1, &n2, &n3, &n4);
-};
+}
 
 } /* namespace LinAlg::LAPACK::FORTRAN */
 

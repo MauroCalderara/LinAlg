@@ -55,7 +55,7 @@ inline void init() {
 
   checkCUDA(cudaSetDevice(prev_device));
 
-};
+}
 
 /** \brief            Check if the handles are initialized.
  *
@@ -65,7 +65,7 @@ inline bool is_initialized() {
 
   return ((handles.empty()) ? false : true);
 
-};
+}
 
 /** \brief            Destroy the global CUBLAS handles
  */
@@ -79,7 +79,7 @@ inline void destroy() {
 
   handles.clear();
 
-};
+}
 
 } /* namespace LinAlg::CUDA::CUBLAS */
 

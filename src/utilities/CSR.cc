@@ -145,7 +145,7 @@ std::tuple<I_t, I_t, I_t, bool> parse_CSR_header(std::string filename) {
   return tuple<I_t, I_t, I_t, bool>(size, n_nonzeros, first_index,
                                     matrix_is_cmpx);
 
-};
+}
 
 /** \brief              Parses a CSR file to determine the size of the matrix
  *                      contained.
@@ -297,8 +297,7 @@ std::tuple<I_t, I_t, I_t, bool> parse_CSR_body(std::string filename) {
   return tuple<I_t, I_t, I_t, bool>(rows, columns, header_n_nonzeros,
                                     matrix_is_cmpx);
 
-};
-
+}
 
 } /* namespace LinAlg::Utilities */
 

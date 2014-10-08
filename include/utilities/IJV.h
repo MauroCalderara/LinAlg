@@ -107,7 +107,7 @@ void write_IJV_data(LinAlg::Dense<T>& matrix, std::string filename) {
   }
 #endif
 
-};
+}
 template <typename T>
 void write_IJV_data(LinAlg::Sparse<T>& matrix, std::string filename) {
 
@@ -158,7 +158,7 @@ void write_IJV_data(LinAlg::Sparse<T>& matrix, std::string filename) {
   }
 #endif
 
-};
+}
 
 #endif /* DOXYGEN_SKIP */
 
@@ -235,7 +235,7 @@ inline void write_IJV(LinAlg::Dense<T>& matrix, std::string filename) {
   }
 #endif
 
-};
+}
 /** \overload
  *
  *  \param[in]          matrix
@@ -280,7 +280,7 @@ inline void write_IJV(LinAlg::Sparse<T>& matrix, std::string filename) {
   }
 #endif
 
-};
+}
 
 /** \overload
  *
@@ -300,7 +300,7 @@ inline void write_IJV(LinAlg::Dense<T>& matrix, const char* formatstring,
                       Us... formatargs) {
   std::string filename_str = stringformat(formatstring, formatargs...);
   write_IJV(matrix, filename_str);
-};
+}
 
 /** \overload
  *
@@ -315,7 +315,7 @@ template <typename T>
 inline void write_IJV(LinAlg::Dense<T>& matrix, const char* filename) {
   std::string filename_str = filename;
   write_IJV(matrix, filename_str);
-};
+}
 
 /** \overload
  *
@@ -335,7 +335,7 @@ inline void write_IJV(LinAlg::Sparse<T>& matrix, const char* formatstring,
                       Us... formatargs) {
   std::string filename_str = stringformat(formatstring, formatargs...);
   write_IJV(matrix, filename_str);
-};
+}
 
 /** \overload
  *
@@ -350,7 +350,7 @@ template <typename T>
 inline void write_IJV(LinAlg::Sparse<T>& matrix, const char* filename) {
   std::string filename_str = filename;
   write_IJV(matrix, filename_str);
-};
+}
 
 } /* namespace LinAlg::Utilities */
 

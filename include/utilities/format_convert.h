@@ -141,7 +141,7 @@ inline void sparse2dense(Sparse<T>& src, IJ start, IJ stop, Dense<T>& dst) {
 
   // if mixed: transfer csr to GPU, call sparse2dense recursively
 
-};
+}
 
 /** \brief            Add a subblock of a sparse matrix to a dense matrix
  *
@@ -173,7 +173,7 @@ inline void sparse2dense(Sparse<T>& src, I_t first_row, I_t last_row,
 
   sparse2dense(src, IJ(first_row, first_col), IJ(last_row, last_col));
 
-};
+}
 
 /*
 template <typename T>

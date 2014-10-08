@@ -78,22 +78,22 @@ namespace FORTRAN {
  */
 inline void xAXPY(I_t n, S_t alpha, S_t* x, I_t incx, S_t* y, I_t incy) {
   fortran_name(saxpy, SAXPY)(&n, &alpha, x, &incx, y, &incy);
-};
+}
 /** \overload
  */
 inline void xAXPY(I_t n, D_t alpha, D_t* x, I_t incx, D_t* y, I_t incy) {
   fortran_name(daxpy, DAXPY)(&n, &alpha, x, &incx, y, &incy);
-};
+}
 /** \overload
  */
 inline void xAXPY(I_t n, C_t alpha, C_t* x, I_t incx, C_t* y, I_t incy) {
   fortran_name(caxpy, CAXPY)(&n, &alpha, x, &incx, y, &incy);
-};
+}
 /** \overload
  */
 inline void xAXPY(I_t n, Z_t alpha, Z_t* x, I_t incx, Z_t* y, I_t incy) {
   fortran_name(zaxpy, ZAXPY)(&n, &alpha, x, &incx, y, &incy);
-};
+}
 
 } /* namespace FORTRAN */
 
@@ -123,25 +123,25 @@ namespace CUBLAS {
 inline void xAXPY(cublasHandle_t handle, I_t n, S_t alpha, S_t* x, I_t incx,
                   S_t* y, I_t incy) {
   checkCUBLAS(cublasSaxpy(handle, n, &alpha, x, incx, y, incy));
-};
+}
 /** \overload
  */
 inline void xAXPY(cublasHandle_t handle, I_t n, D_t alpha, D_t* x, I_t incx,
                   D_t* y, I_t incy) {
   checkCUBLAS(cublasDaxpy(handle, n, &alpha, x, incx, y, incy));
-};
+}
 /** \overload
  */
 inline void xAXPY(cublasHandle_t handle, I_t n, C_t alpha, C_t* x, I_t incx,
                   C_t* y, I_t incy) {
   checkCUBLAS(cublasCaxpy(handle, n, &alpha, x, incx, y, incy));
-};
+}
 /** \overload
  */
 inline void xAXPY(cublasHandle_t handle, I_t n, Z_t alpha, Z_t* x, I_t incx,
                   Z_t* y, I_t incy) {
   checkCUBLAS(cublasZaxpy(handle, n, &alpha, x, incx, y, incy));
-};
+}
 
 } /* namespace CUBLAS */
 #endif /* HAVE_CUDA */

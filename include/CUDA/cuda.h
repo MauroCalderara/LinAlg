@@ -40,7 +40,7 @@ inline void init() {
   magma_init();
 #endif
 
-};
+}
 
 } /* namespace LinAlg::CUDA */
 

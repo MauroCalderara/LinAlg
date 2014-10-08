@@ -75,22 +75,22 @@ namespace FORTRAN {
  */
 inline void xXYZ(...) {
   fortran_name(sxyz, SXYZ)(...);
-};
+}
 /** \overload
  */
 inline void xXYZ(...) {
   fortran_name(dxyz, DXYZ)(...);
-};
+}
 /** \overload
  */
 inline void xXYZ(...) {
   fortran_name(cxyz, CXYZ)(...);
-};
+}
 /** \overload
  */
 inline void xXYZ(...) {
   fortran_name(zxyz, ZXYZ)(...);
-};
+}
 
 } /* namespace FORTRAN */
 
@@ -112,22 +112,22 @@ namespace CUBLAS {
  */
 inline void xXYZ(...) {
   checkCUBLAS(cublasSxyz(...));
-};
+}
 /** \overload
  */
 inline void xXYZ(...) {
   checkCUBLAS(cublasDxyz(...));
-};
+}
 /** \overload
  */
 inline void xXYZ(...) {
   checkCUBLAS(cublasCxyz(...));
-};
+}
 /** \overload
  */
 inline void xXYZ(...) {
   checkCUBLAS(cublasZxyz(...));
-};
+}
 
 } /* namespace LinAlg::LAPACK::CUBLAS */
 
@@ -148,22 +148,22 @@ namespace MAGMA {
  */
 inline void xXYZ(...) {
   magma_sxyz(...);
-};
+}
 /** \overload
  */
 inline void xXYZ(...) {
   magma_dxyz(...);
-};
+}
 /** \overload
  */
 inline void xXYZ(...) {
   magma_cxyz(...);
-};
+}
 /** \overload
  */
 inline void xXYZ(...) {
   magma_zxyz(...);
-};
+}
     
 } /* namespace LinAlg::LAPACK::MAGMA */
 #endif /* HAVE_MAGMA */
@@ -216,7 +216,7 @@ inline void xXYZ(Dense<T>& X, Dense<int>& Y) {
   }
 #endif
 
-};
+}
 
 } /* namespace LinAlg::LAPACK */
 

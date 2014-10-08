@@ -95,25 +95,25 @@ namespace FORTRAN {
 inline void xGETRI(I_t n, S_t* A, I_t lda, int* ipiv, S_t* work, int lwork,
                    int* info) {
   fortran_name(sgetri, SGETRI)(&n, A, &lda, ipiv, work, &lwork, info);
-};
+}
 /** \overload
  */
 inline void xGETRI(I_t n, D_t* A, I_t lda, int* ipiv, D_t* work, int lwork,
                    int* info) {
   fortran_name(dgetri, DGETRI)(&n, A, &lda, ipiv, work, &lwork, info);
-};
+}
 /** \overload
  */
 inline void xGETRI(I_t n, C_t* A, I_t lda, int* ipiv, C_t* work, int lwork,
                    int* info) {
   fortran_name(cgetri, CGETRI)(&n, A, &lda, ipiv, work, &lwork, info);
-};
+}
 /** \overload
  */
 inline void xGETRI(I_t n, Z_t* A, I_t lda, int* ipiv, Z_t* work, int lwork,
                    int* info) {
   fortran_name(zgetri, ZGETRI)(&n, A, &lda, ipiv, work, &lwork, info);
-};
+}
 
 } /* namespace LinAlg::LAPACK::FORTRAN */
 
@@ -147,13 +147,13 @@ namespace CUBLAS {
 inline void xGETRI(cublasHandle_t handle, I_t n, S_t* A, I_t lda, int* ipiv,
                    S_t* C, I_t ldc, int* info) {
   checkCUBLAS(cublasSgetriBatched(handle, n, &A, lda, ipiv, &C, ldc, info, 1));
-};
+}
 /** \overload
  */
 inline void xGETRI(cublasHandle_t handle, I_t n, D_t* A, I_t lda, int* ipiv,
                    D_t* C, I_t ldc, int* info) {
   checkCUBLAS(cublasDgetriBatched(handle, n, &A, lda, ipiv, &C, ldc, info, 1));
-};
+}
 /** \overload
  */
 inline void xGETRI(cublasHandle_t handle, I_t n, C_t* A, I_t lda, int* ipiv,
@@ -162,7 +162,7 @@ inline void xGETRI(cublasHandle_t handle, I_t n, C_t* A, I_t lda, int* ipiv,
                                   reinterpret_cast<cuComplex**>(&A), lda, \
                                   ipiv, reinterpret_cast<cuComplex**>(&C), \
                                   ldc, info, 1));
-};
+}
 /** \overload
  */
 inline void xGETRI(cublasHandle_t handle, I_t n, Z_t* A, I_t lda, int* ipiv,
@@ -172,7 +172,7 @@ inline void xGETRI(cublasHandle_t handle, I_t n, Z_t* A, I_t lda, int* ipiv,
                                   ipiv, \
                                   reinterpret_cast<cuDoubleComplex**>(&C), \
                                   ldc, info, 1));
-};
+}
 
 /** \brief            Invert multiple matrices in LU decomposed format
  *
@@ -205,7 +205,7 @@ inline void xGETRI_batched(cublasHandle_t handle, I_t n, S_t* Aarray[], I_t lda,
                            int* infoArray, I_t batchSize) {
   checkCUBLAS(cublasSgetriBatched(handle, n, Aarray, lda, PivotArray, Carray, \
                                   ldc, infoArray, batchSize));
-};
+}
 /** \overload
  */
 inline void xGETRI_batched(cublasHandle_t handle, I_t n, D_t* Aarray[], I_t lda,
@@ -213,7 +213,7 @@ inline void xGETRI_batched(cublasHandle_t handle, I_t n, D_t* Aarray[], I_t lda,
                            int* infoArray, I_t batchSize) {
   checkCUBLAS(cublasDgetriBatched(handle, n, Aarray, lda, PivotArray, Carray, \
                                   ldc, infoArray, batchSize));
-};
+}
 /** \overload
  */
 inline void xGETRI_batched(cublasHandle_t handle, I_t n, C_t* Aarray[], I_t lda,
@@ -224,7 +224,7 @@ inline void xGETRI_batched(cublasHandle_t handle, I_t n, C_t* Aarray[], I_t lda,
                                   PivotArray, \
                                   reinterpret_cast<cuComplex**>(Carray), \
                                   ldc, infoArray, batchSize));
-};
+}
 /** \overload
  */
 inline void xGETRI_batched(cublasHandle_t handle, I_t n, Z_t* Aarray[], I_t lda,
@@ -235,7 +235,7 @@ inline void xGETRI_batched(cublasHandle_t handle, I_t n, Z_t* Aarray[], I_t lda,
                                   lda, PivotArray, \
                                   reinterpret_cast<cuDoubleComplex**>(Carray), \
                                   ldc, infoArray, batchSize));
-};
+}
 
 } /* namespace LinAlg::LAPACK::CUBLAS */
 
@@ -266,25 +266,25 @@ namespace MAGMA {
 inline void xGETRI(I_t n, S_t* A, I_t lda, int* ipiv, S_t* work, int lwork,
                    int* info) {
   magma_sgetri_gpu(n, A, lda, ipiv, work, lwork, info);
-};
+}
 /** \overload
  */
 inline void xGETRI(I_t n, D_t* A, I_t lda, int* ipiv, D_t* work, int lwork,
                    int* info) {
   magma_dgetri_gpu(n, A, lda, ipiv, work, lwork, info);
-};
+}
 /** \overload
  */
 inline void xGETRI(I_t n, C_t* A, I_t lda, int* ipiv, C_t* work, int lwork,
                    int* info) {
   magma_cgetri_gpu(n, A, lda, ipiv, work, lwork, info);
-};
+}
 /** \overload
  */
 inline void xGETRI(I_t n, Z_t* A, I_t lda, int* ipiv, Z_t* work, int lwork,
                    int* info) {
   magma_zgetri_gpu(n, A, lda, ipiv, work, lwork, info);
-};
+}
 
 #ifndef DOXYGEN_SKIP
 /*  Utility routines to determine the right size of lwork for xGETRI */
@@ -295,13 +295,13 @@ inline I_t get_xgetri_nb(I_t n) {
   return 0;
 }
 template <>
-inline I_t get_xgetri_nb<S_t>(I_t n) { return magma_get_sgetri_nb(n); };
+inline I_t get_xgetri_nb<S_t>(I_t n) { return magma_get_sgetri_nb(n); }
 template <>
-inline I_t get_xgetri_nb<D_t>(I_t n) { return magma_get_dgetri_nb(n); };
+inline I_t get_xgetri_nb<D_t>(I_t n) { return magma_get_dgetri_nb(n); }
 template <>
-inline I_t get_xgetri_nb<C_t>(I_t n) { return magma_get_cgetri_nb(n); };
+inline I_t get_xgetri_nb<C_t>(I_t n) { return magma_get_cgetri_nb(n); }
 template <>
-inline I_t get_xgetri_nb<Z_t>(I_t n) { return magma_get_zgetri_nb(n); };
+inline I_t get_xgetri_nb<Z_t>(I_t n) { return magma_get_zgetri_nb(n); }
 #endif /* DOXYGEN_SKIP */
 
 } /* namespace LinAlg::LAPACK::MAGMA */
@@ -499,7 +499,7 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
   }
 #endif
 
-};
+}
 /** \overload
  *
  *  \param[in]        A
@@ -514,7 +514,7 @@ template <typename T>
 inline void xGETRI(Dense<T>& A, Dense<int>& ipiv) {
   Dense<T> work;
   xGETRI(A, ipiv, work);
-};
+}
 
 /** \brief            Compute the inverse using the LU decomposition of a
  *                    matrix out-of-place
@@ -750,7 +750,7 @@ inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
   }
 #endif
 
-};
+}
 
 /** \overload
  *
@@ -771,7 +771,7 @@ template <typename T>
 inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& C) {
   Dense<T>   work;
   xGETRI(A, ipiv, work, C);
-};
+}
 
 } /* namespace LinAlg::LAPACK */
 

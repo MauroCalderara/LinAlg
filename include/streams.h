@@ -51,7 +51,7 @@ enum class Streams { Synchronous };
  */
 struct StreamBase {
 
-  StreamBase() : synchronous_operation(false), synchronized(true) {};
+  StreamBase() : synchronous_operation(false), synchronized(true) {}
 
   /** \brief          Synchronous stream constructor
    */
@@ -61,7 +61,7 @@ struct StreamBase {
                                                                     false;
     synchronized = true;
 
-  };
+  }
 
 #ifndef DOXYGEN_SKIP
   virtual inline void sync() = 0;
@@ -116,14 +116,14 @@ inline Stream::Stream()
   // Start the worker thread
   worker_thread = std::thread(&Stream::worker, this);
 
-};
+}
 
 /** \brief            Constructor for aa stream without a worker thread
  *                    (causes synchronous execution on all routines that use
  *                    this stream)
  */
 inline Stream::Stream(Streams stream_spec) : StreamBase(stream_spec) {
-};
+}
 
 /** \brief            Terminate the stream
  */
@@ -131,7 +131,7 @@ inline Stream::~Stream() {
 
   destroy();
 
-};
+}
 
 // The routine for the worker thread
 #ifndef DOXYGEN_SKIP
@@ -179,7 +179,7 @@ inline void Stream::worker() {
 
   return;
 
-};
+}
 #endif /* DOXYGEN_SKIP */
 
 /** \brief            Add a new task to the queue
@@ -218,7 +218,7 @@ inline I_t Stream::add(std::function<void()> task) {
 
   return my_ticket;
 
-};
+}
 
 /** \brief            Synchronize with a specific task, i.e. wait for a
  *                    specific task to be completed
@@ -242,7 +242,7 @@ inline void Stream::sync(I_t ticket) {
 
   }
 
-};
+}
 
 /** \brief            Synchronize with the stream (i.e. waits till all tasks
  *                    are processed)
@@ -263,7 +263,7 @@ inline void Stream::sync() {
 
   }
 
-};
+}
 
 /** \brief            Signal the worker thread to exit
  */
@@ -281,7 +281,7 @@ inline void Stream::destroy() {
 
   worker_thread.join();
 
-};
+}
 
 
 
@@ -319,7 +319,7 @@ inline CUDAStream::CUDAStream() {
   checkCUDA(cudaStreamCreate(&cuda_stream));
   checkCUBLAS(cublasCreate(&cublas_handle));
 
-};
+}
 
 /** \brief              Constructor for the default (synchronous) stream on
  *                      the current device
@@ -329,7 +329,7 @@ inline CUDAStream::CUDAStream(Streams stream_spec)
 
   checkCUBLAS(cublasCreate(&cublas_handle));
 
-};
+}
 
 /** \brief              Constructor for a stream on a specific device
  *
@@ -348,14 +348,14 @@ inline CUDAStream::CUDAStream(int device_id)
 
   checkCUDA(cudaSetDevice(prev_device));
 
-};
+}
 
 // Destructor
 inline CUDAStream::~CUDAStream() {
 
   destroy();
 
-};
+}
 
 /** \brief            Synchronize with the stream (i.e. waits till all tasks
  *                    are processed)
@@ -371,7 +371,7 @@ inline void CUDAStream::sync() {
   checkCUDA(cudaStreamSynchronize(cuda_stream));
   synchronized = true;
 
-};
+}
 
 /** \brief            Destroy the stream
  */
@@ -385,7 +385,7 @@ inline void CUDAStream::destroy() {
 
   }
 
-};
+}
 
 #endif /* HAVE_CUDA */
 
@@ -417,12 +417,12 @@ struct MPIStream : StreamBase {
 /** \brief            Constructor for an asynchronous stream
  */
 inline MPIStream::MPIStream() {
-};
+}
 
 /** \brief            Constructor for a synchronous stream
  */
 inline MPIStream::MPIStream(Streams stream_spec) : StreamBase(stream_spec) {
-};
+}
 
 
 // Internal helper function to append to the stream
@@ -435,7 +435,7 @@ inline I_t MPIStream::add_operations(I_t i) {
 
   return current;
 
-};
+}
 #endif
 
 /** \brief            Synchronize with the stream (i.e. waits till all tasks
@@ -475,7 +475,7 @@ inline void MPIStream::sync() {
 
   }
 
-};
+}
 
 #endif /* HAVE_MPI */
 

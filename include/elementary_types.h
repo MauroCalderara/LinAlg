@@ -113,24 +113,24 @@ namespace LinAlg {
    *  \returns        Real part.
    */
 #ifdef MAGMA_TYPES_H
-  inline S_t real(S_t z) { return z; };
+  inline S_t real(S_t z) { return z; }
   /** \overload */
-  inline D_t real(D_t z) { return z; };
+  inline D_t real(D_t z) { return z; }
   /** \overload */
-  inline S_t real(C_t z) { return MAGMA_C_REAL(z); };
+  inline S_t real(C_t z) { return MAGMA_C_REAL(z); }
   /** \overload */
-  inline D_t real(Z_t z) { return MAGMA_Z_REAL(z); };
+  inline D_t real(Z_t z) { return MAGMA_Z_REAL(z); }
 #else
-  inline S_t real(S_t z) { return z; };
+  inline S_t real(S_t z) { return z; }
   /** \overload */
-  inline D_t real(D_t z) { return z; };
+  inline D_t real(D_t z) { return z; }
   /** \overload */
-  inline S_t real(C_t z) { return std::real(z); };
+  inline S_t real(C_t z) { return std::real(z); }
   /** \overload */
-  inline D_t real(Z_t z) { return std::real(z); };
+  inline D_t real(Z_t z) { return std::real(z); }
 #endif
   /** \overload */
-  inline I_t real(I_t z) { return z; };
+  inline I_t real(I_t z) { return z; }
 
   /** \brief          Return imaginary part of a number
    *
@@ -140,24 +140,24 @@ namespace LinAlg {
    *  \returns        Imaginary part.
    */
 #ifdef MAGMA_TYPES_H
-  inline S_t imag(S_t z) { return 0.0; };
+  inline S_t imag(S_t z) { return 0.0; }
   /** \overload */
-  inline D_t imag(D_t z) { return 0.0; };
+  inline D_t imag(D_t z) { return 0.0; }
   /** \overload */
-  inline S_t imag(C_t z) { return MAGMA_C_IMAG(z); };
+  inline S_t imag(C_t z) { return MAGMA_C_IMAG(z); }
   /** \overload */
-  inline D_t imag(Z_t z) { return MAGMA_Z_IMAG(z); };
+  inline D_t imag(Z_t z) { return MAGMA_Z_IMAG(z); }
 #else
-  inline S_t imag(S_t z) { return 0.0; };
+  inline S_t imag(S_t z) { return 0.0; }
   /** \overload */
-  inline D_t imag(D_t z) { return 0.0; };
+  inline D_t imag(D_t z) { return 0.0; }
   /** \overload */
-  inline S_t imag(C_t z) { return std::imag(z); };
+  inline S_t imag(C_t z) { return std::imag(z); }
   /** \overload */
-  inline D_t imag(Z_t z) { return std::imag(z); };
+  inline D_t imag(Z_t z) { return std::imag(z); }
 #endif
   /** \overload */
-  inline I_t imag(I_t z) { return 0; };
+  inline I_t imag(I_t z) { return 0; }
 
 
 /////////////
@@ -165,16 +165,16 @@ namespace LinAlg {
 #ifdef MAGMA_TYPES_H
   inline bool operator==(C_t a, C_t b) {
     return ((real(a) == real(b)) && (real(a) == real(b)));
-  };
+  }
   inline bool operator==(Z_t a, Z_t b) {
     return ((real(a) == real(b)) && (real(a) == real(b)));
-  };
+  }
   inline bool operator!=(C_t a, C_t b) {
     return ((real(a) != real(b)) || (real(a) != real(b)));
-  };
+  }
   inline bool operator!=(Z_t a, Z_t b) {
     return ((real(a) != real(b)) || (real(a) != real(b)));
-  };
+  }
 #endif
 
 
@@ -203,49 +203,49 @@ inline T cast(U r, V i) {
              "    cast<>(), which is not supported.\n");
   throw;
   return 0;
-};
+}
 #else
-inline T cast(U r, V i) { return 0; };
+inline T cast(U r, V i) { return 0; }
 #endif
 #ifndef DOXYGEN_SKIP
 // This sucks: we basically specialize all possible combinations of casts so 
 // why is this 'templated' anyway? The reason is that this way we can use the 
 // cast<T> syntax within templated code.
-template <> inline S_t cast<S_t>(S_t r, S_t i) { return r; };
-template <> inline S_t cast<S_t>(S_t r, D_t i) { return r; };
-template <> inline S_t cast<S_t>(D_t r, S_t i) { return S_t(r); };
-template <> inline S_t cast<S_t>(D_t r, D_t i) { return S_t(r); };
+template <> inline S_t cast<S_t>(S_t r, S_t i) { return r; }
+template <> inline S_t cast<S_t>(S_t r, D_t i) { return r; }
+template <> inline S_t cast<S_t>(D_t r, S_t i) { return S_t(r); }
+template <> inline S_t cast<S_t>(D_t r, D_t i) { return S_t(r); }
 
-template <> inline D_t cast<D_t>(S_t r, S_t i) { return D_t(r); };
-template <> inline D_t cast<D_t>(S_t r, D_t i) { return D_t(r); };
-template <> inline D_t cast<D_t>(D_t r, S_t i) { return r; };
-template <> inline D_t cast<D_t>(D_t r, D_t i) { return r; };
+template <> inline D_t cast<D_t>(S_t r, S_t i) { return D_t(r); }
+template <> inline D_t cast<D_t>(S_t r, D_t i) { return D_t(r); }
+template <> inline D_t cast<D_t>(D_t r, S_t i) { return r; }
+template <> inline D_t cast<D_t>(D_t r, D_t i) { return r; }
 
 template <> inline C_t cast<C_t>(S_t r, S_t i) { 
   return LINALG_MAKE_Ct(r, i); 
-};
+}
 template <> inline C_t cast<C_t>(S_t r, D_t i) { 
   return LINALG_MAKE_Ct(r, S_t(i));
-};
+}
 template <> inline C_t cast<C_t>(D_t r, S_t i) {
   return LINALG_MAKE_Ct(S_t(r), i);
-};
+}
 template <> inline C_t cast<C_t>(D_t r, D_t i) {
   return LINALG_MAKE_Ct(S_t(r), S_t(i));
-};
+}
 
 template <> inline Z_t cast<Z_t>(S_t r, S_t i) { 
   return LINALG_MAKE_Zt(D_t(r), D_t(i)); 
-};
+}
 template <> inline Z_t cast<Z_t>(S_t r, D_t i) { 
   return LINALG_MAKE_Zt(D_t(r), i);
-};
+}
 template <> inline Z_t cast<Z_t>(D_t r, S_t i) {
   return LINALG_MAKE_Zt(r, D_t(i));
-};
+}
 template <> inline Z_t cast<Z_t>(D_t r, D_t i) {
   return LINALG_MAKE_Zt(r, i);
-};
+}
 #endif
 
 /** \brief              Cast from single number
@@ -267,37 +267,37 @@ inline T cast(U value) {
              "    cast<>(), which is not supported.\n");
   throw;
   return 0;
-};
+}
 #else
-inline T cast(U value) { return 0; };
+inline T cast(U value) { return 0; }
 #endif
 #ifndef DOXYGEN_SKIP
 // See above for an explanation of this
-template <> inline I_t cast<I_t>(I_t v) { return v; };
+template <> inline I_t cast<I_t>(I_t v) { return v; }
 
-template <> inline S_t cast<S_t>(S_t v) { return v; };
-template <> inline S_t cast<S_t>(D_t v) { return S_t(v); };
-template <> inline S_t cast<S_t>(C_t v) { return S_t(real(v)); };
-template <> inline S_t cast<S_t>(Z_t v) { return S_t(real(v)); };
+template <> inline S_t cast<S_t>(S_t v) { return v; }
+template <> inline S_t cast<S_t>(D_t v) { return S_t(v); }
+template <> inline S_t cast<S_t>(C_t v) { return S_t(real(v)); }
+template <> inline S_t cast<S_t>(Z_t v) { return S_t(real(v)); }
 
-template <> inline D_t cast<D_t>(S_t v) { return D_t(v); };
-template <> inline D_t cast<D_t>(D_t v) { return v; };
-template <> inline D_t cast<D_t>(C_t v) { return D_t(real(v)); };
-template <> inline D_t cast<D_t>(Z_t v) { return D_t(real(v)); };
+template <> inline D_t cast<D_t>(S_t v) { return D_t(v); }
+template <> inline D_t cast<D_t>(D_t v) { return v; }
+template <> inline D_t cast<D_t>(C_t v) { return D_t(real(v)); }
+template <> inline D_t cast<D_t>(Z_t v) { return D_t(real(v)); }
 
-template <> inline C_t cast<C_t>(S_t v) { return LINALG_MAKE_Ct(v, 0); };
-template <> inline C_t cast<C_t>(D_t v) { return LINALG_MAKE_Ct(D_t(v), 0); };
-template <> inline C_t cast<C_t>(C_t v) { return v; };
+template <> inline C_t cast<C_t>(S_t v) { return LINALG_MAKE_Ct(v, 0); }
+template <> inline C_t cast<C_t>(D_t v) { return LINALG_MAKE_Ct(D_t(v), 0); }
+template <> inline C_t cast<C_t>(C_t v) { return v; }
 template <> inline C_t cast<C_t>(Z_t v) { 
   return LINALG_MAKE_Ct(S_t(real(v)), S_t(imag(v)));
-};
+}
 
-template <> inline Z_t cast<Z_t>(S_t v) { return LINALG_MAKE_Zt(v, 0); };
-template <> inline Z_t cast<Z_t>(D_t v) { return LINALG_MAKE_Zt(D_t(v), 0); };
+template <> inline Z_t cast<Z_t>(S_t v) { return LINALG_MAKE_Zt(v, 0); }
+template <> inline Z_t cast<Z_t>(D_t v) { return LINALG_MAKE_Zt(D_t(v), 0); }
 template <> inline Z_t cast<Z_t>(C_t v) { 
   return LINALG_MAKE_Zt(D_t(real(v)), D_t(imag(v)));
-};
-template <> inline Z_t cast<Z_t>(Z_t v) { return v; };
+}
+template <> inline Z_t cast<Z_t>(Z_t v) { return v; }
 #endif
 
 

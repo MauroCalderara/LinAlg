@@ -46,7 +46,7 @@ struct Timer {
    */
   Timer(bool us = false)
       : start(std::chrono::high_resolution_clock::now()),
-        name("") { };
+        name("") { }
   /** \brief          Constructor with a name string
    *
    *  \param[in]      name_in
@@ -61,11 +61,11 @@ struct Timer {
   template <typename... Us>
   Timer(const char* name_in, Us... formatargs)
       : start(std::chrono::high_resolution_clock::now()),
-        name(stringformat(name_in, formatargs...)) { };
+        name(stringformat(name_in, formatargs...)) { }
 
   /** \brief          Start the timer
    */
-  inline void set() { start = std::chrono::high_resolution_clock::now(); };
+  inline void set() { start = std::chrono::high_resolution_clock::now(); }
 
   /** \brief          Stop the timer
    *
@@ -83,11 +83,11 @@ struct Timer {
 
     return time_span.count();
 
-  };
+  }
 
   /** \brief          Start the timer (MATLAB&reg; alike)
    */
-  inline void tic() { set(); };
+  inline void tic() { set(); }
 
   /** \brief          Stop the timer, print the elapsed time since the last
    *                  set() or tic() (MATLAB&reg; alike)
@@ -102,7 +102,7 @@ struct Timer {
 
     return tmp;
 
-  };
+  }
 
 };
 
@@ -121,7 +121,7 @@ struct HiResTimer {
    */
   HiResTimer()
            : start(std::chrono::high_resolution_clock::now()),
-             name("") {};
+             name("") {}
   /** \brief          Constructor with a name string
    *
    *  \param[in]      name_in
@@ -133,11 +133,11 @@ struct HiResTimer {
   template <typename... Us>
   HiResTimer(const char* name_in, Us... formatargs)
            : start(std::chrono::high_resolution_clock::now()),
-             name(stringformat(name_in, formatargs...)) {};
+             name(stringformat(name_in, formatargs...)) {}
 
   /** \brief          Start the timer
    */
-  inline void set() { start = std::chrono::high_resolution_clock::now(); };
+  inline void set() { start = std::chrono::high_resolution_clock::now(); }
 
   /** \brief          Stop the timer
    *
@@ -155,11 +155,11 @@ struct HiResTimer {
 
     return time_span.count() * 1000000;
 
-  };
+  }
 
   /** \brief          Start the timer (MATLAB&reg; alike)
    */
-  inline void tic() { set(); };
+  inline void tic() { set(); }
 
   /** \brief          Stop the timer, print the elapsed time since the last
    *                  set() or tic() (MATLAB&reg; alike)
@@ -174,8 +174,7 @@ struct HiResTimer {
 
     return tmp;
 
-  };
-
+  }
 
 };
 

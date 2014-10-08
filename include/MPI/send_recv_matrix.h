@@ -121,7 +121,7 @@ void send_matrix(Dense<T>& matrix, MPI_Comm communicator, int receiving_rank,
   }
 #endif
 
-};
+}
 
 /** \brief            Send a matrix asynchronously
  *
@@ -215,7 +215,7 @@ void send_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
   stream.statuses[stream_position] = construct_status(error, communicator,
                                                        tag);
 
-};
+}
 /** \overload
  *
  *  \param[in]        matrix
@@ -243,7 +243,7 @@ inline MPIStream send_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
 
   return std::move(stream);
 
-};
+}
 
 
 
@@ -320,7 +320,7 @@ void receive_matrix(Dense<T>& matrix, MPI_Comm communicator, int sending_rank,
 
   }
 
-};
+}
 
 /** \brief            Receive a remote matrix into a preallocated local matrix
  *                    asynchronously
@@ -409,7 +409,7 @@ void receive_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
   // Errors are handled at synchronization time
   stream.statuses[pos] = construct_status(error, communicator, tag);
 
-};
+}
 /** \overload
  *
  *  \param[in,out]    matrix
@@ -434,7 +434,7 @@ inline MPIStream receive_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
   receive_matrix_async(matrix, communicator, sending_rank, tag, stream);
   return std::move(stream);
 
-};
+}
 
 } /* namespace MPI */
 

@@ -72,7 +72,7 @@ inline MPIStream send_meta_async(MetaData meta, MPI_Comm communicator,
 
   return std::move(stream);
 
-};
+}
 
 /** \brief            Send meta data about a matrix
  *
@@ -190,7 +190,7 @@ inline MPIStream receive_meta_async(MetaData& meta, MPI_Comm communicator,
 
   return std::move(stream);
 
-};
+}
 
 
 /** \brief            Receive meta data about a matrix and save/apply it to

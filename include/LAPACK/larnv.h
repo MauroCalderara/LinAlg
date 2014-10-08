@@ -67,22 +67,22 @@ namespace FORTRAN {
  */
 inline void xLARNV(I_t idist, I_t* iseed, I_t n, S_t* x){
   fortran_name(slarnv, SLARNV)(&idist, iseed, &n, x);
-};
+}
 /** \overload
  */
 inline void xLARNV(I_t idist, I_t* iseed, I_t n, D_t* x){
   fortran_name(dlarnv, DLARNV)(&idist, iseed, &n, x);
-};
+}
 /** \overload
  */
 inline void xLARNV(I_t idist, I_t* iseed, I_t n, C_t* x){
   fortran_name(clarnv, CLARNV)(&idist, iseed, &n, x);
-};
+}
 /** \overload
  */
 inline void xLARNV(I_t idist, I_t* iseed, I_t n, Z_t* x){
   fortran_name(zlarnv, ZLARNV)(&idist, iseed, &n, x);
-};
+}
 
 } /* namespace FORTRAN */
 
@@ -145,7 +145,7 @@ inline void xLARNV(I_t idist, I_t* iseed, Dense<T>& X) {
   }
 #endif
 
-};
+}
 
 } /* namespace LinAlg::LAPACK */
 

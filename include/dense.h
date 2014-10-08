@@ -101,20 +101,20 @@ struct Dense : Matrix {
   inline void operator<<(const Dense<T>& source);
 
   /// Return the number of rows in the matrix
-  inline I_t rows() const { return (_transposed ? _cols : _rows); };
+  inline I_t rows() const { return (_transposed ? _cols : _rows); }
   /// Return the number of columns in the matrix
-  inline I_t cols() const { return (_transposed ? _rows : _cols); };
+  inline I_t cols() const { return (_transposed ? _rows : _cols); }
   /// Mark the matrix as transposed
-  inline void transpose() { _transposed = !_transposed; };
+  inline void transpose() { _transposed = !_transposed; }
 
   /// Return the current location of the matrix
-  inline Location location() const { return _location; };
+  inline Location location() const { return _location; }
   void location(Location new_location, int device_id = 0);
 
   void unlink();
 
   /// Return the storage format
-  inline Format format() const { return _format; };
+  inline Format format() const { return _format; }
 
   // Print the matrix contents
   inline void print() const;
@@ -129,10 +129,10 @@ struct Dense : Matrix {
   inline bool is_on_MIC()  const;
 
   // Return pointer to matrix begin
-  inline T* operator&() const { return _begin(); };
+  inline T* operator&() const { return _begin(); }
 
   // Get properties
-  inline bool is(Property property) const { return (_properties & property); };
+  inline bool is(Property property) const { return (_properties & property); }
 
   // Set properties
   inline void set(Property property);
@@ -141,7 +141,7 @@ struct Dense : Matrix {
   inline void unset(Property property);
 
   // Returns true if matrix is empty
-  inline bool is_empty() const { return (_rows == 0 || _cols == 0); };
+  inline bool is_empty() const { return (_rows == 0 || _cols == 0); }
 
 
 #ifndef DOXYGEN_SKIP
@@ -156,7 +156,7 @@ struct Dense : Matrix {
   I_t _offset;
   I_t _leading_dimension;
   Format _format;
-  inline T* _begin() const { return (_memory.get() + _offset); };
+  inline T* _begin() const { return (_memory.get() + _offset); }
 
   // Rows and columns
   I_t _rows;
@@ -171,7 +171,7 @@ struct Dense : Matrix {
 
   // Whether the matrix is complex or not. Overridden in dense.cc with
   // specializations for C_t and Z_t:
-  inline bool _is_complex() const { return false; };
+  inline bool _is_complex() const { return false; }
 
   // Properties of the matrix
   unsigned char _properties;
@@ -198,7 +198,7 @@ Dense<T>::Dense()
 #ifdef CONSTRUCTOR_VERBOSE
   std::cout << "Dense.empty_constructor\n";
 #endif
-};
+}
 
 /*  \brief              Destructor
  */
@@ -233,7 +233,7 @@ Dense<T>::Dense(Dense<T>& src)
   std::cout << "Dense.copy_constructor\n";
 #endif
 
-};
+}
 */
 
 /* \brief              Copy const constructor
@@ -249,7 +249,7 @@ Dense<T>::Dense(const Dense<T>& other) : Dense(const_cast<Dense<T>&>(other)) {
 #ifdef CONSTRUCTOR_VERBOSE
   std::cout << "Dense.copy_const_constructor\n";
 #endif
-};
+}
 */
 
 /** \brief              Move constructor
@@ -264,7 +264,7 @@ Dense<T>::Dense(Dense<T>&& other) : Dense() {
   // Default initialize using the default initialization and swap
   swap(*this, other);
 
-};
+}
 
 /*  \brief              Assignment operator, creates a copy of the handle
  *                      'other' and assigns it to the left hand side. No data is
@@ -354,7 +354,7 @@ Dense<T>::Dense(I_t rows, I_t cols, Location location, int device_id)
 
   reallocate(rows, cols, location, device_id);
 
-};
+}
 
 /** \brief            Constructor from array
  *
@@ -401,7 +401,7 @@ Dense<T>::Dense(T* in_array, I_t leading_dimension, I_t rows, I_t cols,
   // Create a shared_ptr that will not deallocate upon destruction.
   _memory = std::shared_ptr<T>(in_array, [](T* in_array){});
 
-};
+}
 
 /** \brief            Submatrix constructor
  *
@@ -443,7 +443,7 @@ Dense<T>::Dense(const Dense<T>& source, IJ start, IJ stop)
     _offset = source._offset + start.row * _leading_dimension + start.col;
   }
 
-};
+}
 /** \brief            Submatrix constructor
  *
  *  Create a submatrix from an existing matrix.
@@ -475,7 +475,7 @@ template <typename T>
 Dense<T>::Dense(const Dense<T>& source, I_t first_row, I_t last_row,
                 I_t first_col, I_t last_col)
               : Dense(source, IJ(first_row, first_col), IJ(last_row, last_col)){
-};
+}
 
 /** \brief            Submatrix creation
  *
@@ -494,7 +494,7 @@ inline Dense<T> Dense<T>::operator()(IJ start, IJ stop) {
 
   return Dense<T>(*this, start, stop);
 
-};
+}
 
 /** \brief            Submatrix creation
  *
@@ -545,7 +545,7 @@ inline void Dense<T>::clone_from(const Dense<T>& source) {
   _device_id         = source._device_id;
   _transposed        = source._transposed;
 
-};
+}
 
 /** \brief            Cloning from an existing matrix
  *
@@ -577,7 +577,7 @@ inline void Dense<T>::clone_from(const Dense<T>& source, IJ start, IJ stop) {
   _rows = stop.row - start.row;
   _cols = stop.col - start.col;
 
-};
+}
 
 /** \brief            Cloning from an existing matrix
  *
@@ -609,7 +609,7 @@ inline void Dense<T>::clone_from(const Dense<T>& source, I_t first_row,
 
   clone_from(source, IJ(first_row, first_col), IJ(last_row, last_col));
 
-};
+}
 
 /** \brief              Move matrix to another matrix
  *
@@ -626,7 +626,7 @@ inline void Dense<T>::move_to(Dense<T>& destination) {
   destination.clone_from(*this);
   unlink();
 
-};
+}
 
 /** \brief            Allocates new empty memory for an already constructed
  *                    matrix.
@@ -722,7 +722,7 @@ inline void Dense<T>::reallocate_like(Dense<U>& other) {
   reallocate(other._rows, other._cols, other._location, other._device_id);
   _transposed = other._transposed;
 
-};
+}
 /** \overload
  */
 template <typename T>
@@ -733,7 +733,7 @@ inline void Dense<T>::reallocate_like(Dense<U>& other, Location location,
   reallocate(other._rows, other._cols, location, device_id);
   _transposed = other._transposed;
 
-};
+}
 
 /** \brief              Data copy operator, copies values from one (sub)matrix
  *                      to another (sub)matrix.
@@ -834,7 +834,7 @@ void Dense<T>::location(Location new_location, int device_id) {
 
     return;
 
-  };
+  }
 
   // Create a temporary (just increases the pointer count in ._memory so we
   // don't deallocate yet)
@@ -870,7 +870,7 @@ inline void Dense<T>::unlink() {
   // This potentially frees the memory
   _memory = nullptr;
 
-};
+}
 
 /** \brief            Prints the contents of the matrix to std::cout
  */
@@ -925,7 +925,7 @@ inline void Dense<T>::print() const {
 
   }
 
-};
+}
 
 /** \brief            Return true if matrix is on host
  */
@@ -934,7 +934,7 @@ inline bool Dense<T>::is_on_host() const {
 
   return _location == Location::host;
 
-};
+}
 
 /** \brief            Return true if matrix is on GPU
  */
@@ -947,7 +947,7 @@ inline bool Dense<T>::is_on_GPU() const {
   return false;
 #endif
 
-};
+}
 
 /** \brief            Return true if matrix is on MIC
  */
@@ -960,7 +960,7 @@ inline bool Dense<T>::is_on_MIC() const {
   return false;
 #endif
 
-};
+}
 
 /** \brief            Setter for properties
  *
@@ -983,7 +983,7 @@ inline void Dense<T>::set(Property property) {
 
   _properties = _properties | property;
 
-};
+}
 
 /** \brief            Unset properties
  *
@@ -995,7 +995,7 @@ inline void Dense<T>::unset(Property property) {
 
   _properties = _properties & ~(property);
 
-};
+}
 
 
 } /* namespace LinAlg */

@@ -198,7 +198,7 @@ void read_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
   }
 #endif
 
-};
+}
 /** \overload
  *
  *  \param[out]         matrix
@@ -354,7 +354,7 @@ void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
   }
 #endif
 
-};
+}
 /** \overload
  *
  *  \param[out]         matrix
@@ -371,7 +371,7 @@ inline void read_CSR(LinAlg::Dense<T>& matrix, const char* formatstring,
                      Us... formatargs) {
   std::string filename_str = stringformat(formatstring, formatargs...);
   read_CSR(matrix, filename_str);
-};
+}
 /** \overload
  *
  *  \param[out]         matrix
@@ -388,7 +388,7 @@ inline void read_CSR(LinAlg::Sparse<T>& matrix, const char* formatstring,
                      Us... formatargs) {
   std::string filename_str = stringformat(formatstring, formatargs...);
   read_CSR(matrix, filename_str);
-};
+}
 /** \overload
  *
  *  \param[out]         matrix
@@ -401,7 +401,7 @@ template <typename T>
 inline void read_CSR(LinAlg::Dense<T>& matrix, const char* filename) {
   std::string filename_str = filename;
   read_CSR(matrix, filename_str);
-};
+}
 /** \overload
  *
  *  \param[out]         matrix
@@ -414,7 +414,7 @@ template <typename T>
 inline void read_CSR(LinAlg::Sparse<T>& matrix, const char* filename) {
   std::string filename_str = filename;
   read_CSR(matrix, filename_str);
-};
+}
 
 /** \brief              Write a matrix to a file in CSR format.
  *
@@ -576,7 +576,7 @@ void write_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
   }
 #endif
 
-};
+}
 
 /** \overload
  *
@@ -596,7 +596,7 @@ inline void write_CSR(LinAlg::Dense<T>& matrix, const char* formatstring,
                       Us... formatargs) {
   std::string filename_str = stringformat(formatstring, formatargs...);
   write_CSR(matrix, filename_str);
-};
+}
 
 /** \overload
  *
@@ -610,7 +610,7 @@ template <typename T>
 inline void write_CSR(LinAlg::Dense<T>& matrix, const char* filename) {
   std::string filename_str = filename;
   write_CSR(matrix, filename_str);
-};
+}
 
 /** \overload
  *
@@ -630,7 +630,7 @@ inline void write_CSR(LinAlg::Sparse<T>& matrix, const char* formatstring,
                       Us... formatargs) {
   std::string filename_str = stringformat(formatstring, formatargs...);
   write_CSR(matrix, filename_str);
-};
+}
 
 /** \overload
  *
@@ -644,7 +644,7 @@ template <typename T>
 inline void write_CSR(LinAlg::Sparse<T>& matrix, const char* filename) {
   std::string filename_str = filename;
   write_CSR(matrix, filename_str);
-};
+}
 
 } /* namespace LinAlg::Utilities */
 

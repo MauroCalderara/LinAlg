@@ -86,7 +86,7 @@ inline void check_CUDA(cudaError_t code, const char* file, int line) {
 
   }
 
-};
+}
 
 /** \brief            Function to check the return value of CUBLAS calls.
  *
@@ -145,7 +145,7 @@ inline void check_CUBLAS(cublasStatus_t code, const char *file, int line) {
 
   }
 
-};
+}
 
 /** \brief            Function to check the return value of CUSPARSE calls.
  *
@@ -207,7 +207,7 @@ inline void check_CUSPARSE(cusparseStatus_t code, const char *file, int line) {
 
   }
 
-};
+}
 
 #endif /* LINALG_NO_CHECKS */
 

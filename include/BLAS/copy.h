@@ -71,22 +71,22 @@ namespace FORTRAN {
  */
 inline void xCOPY(int n, S_t* x, int incx, S_t* y, int incy) {
   fortran_name(scopy, SCOPY)(&n, x, &incx, y, &incy);
-};
+}
 /** \overload
  */
 inline void xCOPY(int n, D_t* x, int incx, D_t* y, int incy) {
   fortran_name(dcopy, DCOPY)(&n, x, &incx, y, &incy);
-};
+}
 /** \overload
  */
 inline void xCOPY(int n, C_t* x, int incx, C_t* y, int incy) {
   fortran_name(ccopy, CCOPY)(&n, x, &incx, y, &incy);
-};
+}
 /** \overload
  */
 inline void xCOPY(int n, Z_t* x, int incx, Z_t* y, int incy) {
   fortran_name(zcopy, ZCOPY)(&n, x, &incx, y, &incy);
-};
+}
 
 } /* namespace LinAlg::BLAS::FORTRAN */
 

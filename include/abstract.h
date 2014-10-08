@@ -131,7 +131,7 @@ inline void add(T alpha, Dense<T>& A, Dense<T>& B) {
   }
 #endif
 
-};
+}
 
 /** \brief            Matrix-matrix addition
  *
@@ -146,7 +146,7 @@ inline void add(Dense<T>& A, Dense<T>& B) {
 
   add(cast<T>(1.0), A, B);
 
-};
+}
 
 /** \brief            Matrix-matrix multiply
  *
@@ -161,7 +161,7 @@ inline void add(Dense<T>& A, Dense<T>& B) {
 template <typename T>
 inline void multiply(const Dense<T>& A, const Dense<T>& B, Dense<T>& C) {
   BLAS::xGEMM(cast<T>(1.0), A, B, cast<T>(0.0), C);
-};
+}
 
 /** \brief            Matrix-matrix multiply with prefactors
  *
@@ -181,7 +181,7 @@ template <typename T>
 inline void multiply(const T alpha, const Dense<T>& A, const Dense<T>& B,
                      const T beta, Dense<T>& C) {
   BLAS::xGEMM(alpha, A, B, beta, C);
-};
+}
 
 
 /** \brief            Solve a linear system
@@ -213,7 +213,7 @@ inline void solve(Dense<T>& A, Dense<T>& B) {
   Dense<int> pivot(A._rows, 1, Location::host, 0);
   LAPACK::xGESV(A, pivot, B);
 
-};
+}
 
 /** \brief            Solve a linear system
  *
@@ -236,7 +236,7 @@ inline void solve(Dense<T>& A, Dense<I_t>& pivot, Dense<T>& B) {
 
   LAPACK::xGESV(A, pivot, B);
 
-};
+}
 
 
 /** \brief            Invert a matrix in-place
@@ -273,7 +273,7 @@ inline void invert(Dense<T>& A) {
   LAPACK::xGETRF(A, pivot);
   LAPACK::xGETRI(A, pivot, work);
 
-};
+}
 
 /** \brief            Invert a matrix in-place
  *
@@ -299,7 +299,7 @@ inline void invert(Dense<T>& A, Dense<int>& pivot) {
   LAPACK::xGETRF(A, pivot);
   LAPACK::xGETRI(A, pivot, work);
 
-};
+}
 
 /** \brief            Invert a matrix out-of-place
  *
@@ -336,7 +336,7 @@ inline void invert(Dense<T>& A, Dense<T>& C) {
   LAPACK::xGETRF(A, pivot);
   LAPACK::xGETRI(A, pivot, work, C);
 
-};
+}
 
 /** \brief            Invert a matrix out-of-place
  *
@@ -367,7 +367,7 @@ inline void invert(Dense<T>& A, Dense<int>& pivot, Dense<T>& C) {
   LAPACK::xGETRF(A, pivot);
   LAPACK::xGETRI(A, pivot, work, C);
 
-};
+}
 
 } /* namespace LinAlg */
 

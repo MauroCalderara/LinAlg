@@ -38,7 +38,7 @@ inline void goto_line(std::ifstream& stream, unsigned int line) {
 
   }
 
-};
+}
 
 } /* namespace Utilities */
 

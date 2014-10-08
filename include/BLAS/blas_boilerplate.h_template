@@ -66,22 +66,22 @@ namespace FORTRAN {
  */
 inline void xXYZ(...) {
   fortran_name(sxyz, SXYZ)(...);
-};
+}
 /** \overload
  */
 inline void xXYZ(...) {
   fortran_name(dxyz, DXYZ)(...);
-};
+}
 /** \overload
  */
 inline void xXYZ(...) {
   fortran_name(cxyz, CXYZ)(...);
-};
+}
 /** \overload
  */
 inline void xXYZ(...) {
   fortran_name(zxyz, ZXYZ)(...);
-};
+}
 
 } /* namespace FORTRAN */
 
@@ -102,22 +102,22 @@ namespace CUBLAS {
  */
 inline void xXYZ(...) {
   checkCUBLAS(cublasSxyz(...));
-};
+}
 /** \overload
  */
 inline void xXYZ(...) {
   checkCUBLAS(cublasDxyz(...));
-};
+}
 /** \overload
  */
 inline void xXYZ(...) {
   checkCUBLAS(cublasCxyz(...));
-};
+}
 /** \overload
  */
 inline void xXYZ(...) {
   checkCUBLAS(cublasZxyz(...));
-};
+}
 
 } /* namespace CUBLAS */
 

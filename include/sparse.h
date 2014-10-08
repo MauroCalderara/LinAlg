@@ -80,15 +80,15 @@ struct Sparse : Matrix {
                          Location location = Location::host, int device_id = 0);
 
   /// Transpose the matrix (but retain the format)
-  inline void transpose() { _transposed = !_transposed; };
+  inline void transpose() { _transposed = !_transposed; }
 
   /// Get index of first element in arrays
-  inline int first_index() const { return _first_index; };
+  inline int first_index() const { return _first_index; }
   // Set index of first element in arrays
   inline void first_index(int new_first_index);
 
   /// Get location
-  inline Location location() const { return _location; };
+  inline Location location() const { return _location; }
   // Set location
   void location(Location new_location, int device_id = 0);
 
@@ -96,7 +96,7 @@ struct Sparse : Matrix {
   void unlink();
 
   /// Get format
-  inline Format format() const { return _format; };
+  inline Format format() const { return _format; }
 
   // Return true if matrix is on host
   inline bool is_on_host() const;
@@ -106,7 +106,7 @@ struct Sparse : Matrix {
   inline bool is_on_MIC()  const;
 
   // Get properties
-  inline bool is(Property property) const { return (_properties & property); };
+  inline bool is(Property property) const { return (_properties & property); }
 
   // Set properties
   inline void set(Property property);
@@ -115,7 +115,7 @@ struct Sparse : Matrix {
   inline void unset(Property property);
 
   // Returns true if matrix is empty
-  inline bool is_empty() const { return (_size == 0); };
+  inline bool is_empty() const { return (_size == 0); }
 
 
 #ifndef DOXYGEN_SKIP
@@ -145,7 +145,7 @@ struct Sparse : Matrix {
 
   // Whether the matrix is complex or not. Overridden in sparse.cc with
   // specializations for C_t and Z_t:
-  inline bool _is_complex() const { return false; };
+  inline bool _is_complex() const { return false; }
 
 #ifdef HAVE_CUDA
   // The CUSPARSE matrix descriptor
@@ -188,14 +188,14 @@ Sparse<T>::Sparse()
 #ifdef HAVE_MPI
   _row_offset = 0;
 #endif
-};
+}
 
 template <typename T>
 Sparse<T>::~Sparse() {
 #ifdef CONSTRUCTOR_VERBOSE
   std::cout << "Sparse.destructor\n";
 #endif
-};
+}
 
 
 /** \brief              Move constructor
@@ -210,7 +210,7 @@ Sparse<T>::Sparse(Sparse&& other) : Sparse() {
   // Default initialize and swap
   swap(*this, other);
 
-};
+}
 
 /** \brief            Swap function
  *
@@ -324,7 +324,7 @@ Sparse<T>::Sparse(I_t size, I_t n_nonzeros, int first_index, Location location,
   _row_offset = 0;
 #endif
 
-};
+}
 
 /** \brief              Constructor from 3 arrays
  *
@@ -420,7 +420,7 @@ Sparse<T>::Sparse(I_t size, I_t n_nonzeros, T* values, I_t* indices, I_t* edges,
 #ifdef HAVE_MPI
   _row_offset = 0;
 #endif
-};
+}
 
 /** \brief            Cloning from an existing matrix
  *
@@ -464,7 +464,7 @@ inline void Sparse<T>::move_to(Sparse<T>& destination) {
   destination.clone_from(*this);
   unlink();
 
-};
+}
 
 /** \brief            Allocates new empty memory for an already constructed
  *                    matrix.
@@ -549,7 +549,7 @@ inline void Sparse<T>::reallocate(I_t size, I_t n_nonzeros, Location location,
   _size = size;
 
 
-};
+}
 
 /** \brief            Change the index style in the index and edge arrays.
  *
@@ -787,7 +787,7 @@ inline void Sparse<T>::unlink() {
   _indices = nullptr;
   _edges = nullptr;
 
-};
+}
 
 /** \brief            Return true if matrix is on host
   */
@@ -796,7 +796,7 @@ inline bool Sparse<T>::is_on_host() const {
 
   return _location == Location::host;
 
-};
+}
 
 /** \brief            Return true if matrix is on GPU
   */
@@ -809,7 +809,7 @@ inline bool Sparse<T>::is_on_GPU() const {
   return false;
 #endif
 
-};
+}
 
 /** \brief            Return true if matrix is on MIC
   */
@@ -822,7 +822,7 @@ inline bool Sparse<T>::is_on_MIC() const {
   return false;
 #endif
 
-};
+}
 
 /** \brief            Setter for properties
  *
@@ -845,7 +845,7 @@ inline void Sparse<T>::set(Property property) {
 
   _properties = _properties | property;
 
-};
+}
 
 /** \brief            Unset properties
  *
@@ -857,10 +857,8 @@ inline void Sparse<T>::unset(Property property) {
 
   _properties = _properties & ~(property);
 
-};
-
+}
 
 } /* namespace LinAlg */
-
 
 #endif /* LINALG_SPARSE_H_ */

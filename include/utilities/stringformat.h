@@ -50,7 +50,7 @@ inline std::string stringformat(const char* formatstring, Ts... formatargs) {
   // Return a string object constructed from the buffer
   return std::string(buffer.get());
 
-};
+}
 
 } /* namespace LinAlg::Utilities */
 

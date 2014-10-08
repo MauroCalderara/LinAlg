@@ -35,7 +35,7 @@ inline void mic_deallocate(T* device_ptr, int device_id) {
   #pragma offload_transfer target (mic:device_id) \
                            nocopy (device_ptr : alloc_if(0) free_if(1))
 
-};
+}
 
 /** \brief            Allocates memory on the CPU and MIC
  *
@@ -77,7 +77,7 @@ inline std::shared_ptr<T> mic_make_shared(I_t size, int device_id) {
 
   return device_ptr;
 
-};
+}
 
 } /* namespace LinAlg::MIC*/
 

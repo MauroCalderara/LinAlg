@@ -52,7 +52,7 @@ struct MetaData {
 
 
   // Constructors
-  MetaData() : N(META_TYPE_LENGTH) { container.resize(3 * N); };
+  MetaData() : N(META_TYPE_LENGTH) { container.resize(3 * N); }
   template <typename T> MetaData(Dense<T>& matrix);
 
   // Helper routines for the first 3 fields
@@ -88,7 +88,7 @@ struct MetaData {
 template <typename T>
 MetaData::MetaData(Dense<T>& matrix) : MetaData() {
   extract(matrix);
-};
+}
 
 /** \brief            Convert Format to I_t
  *
@@ -112,7 +112,7 @@ inline I_t MetaData::format2int(Format format) {
 
   return 4;
 
-};
+}
 
 /** \brief            Convert I_t to Format
  *
@@ -140,38 +140,38 @@ inline Format MetaData::int2format(I_t i) {
 #endif
   }
 
-};
+}
 
 /** \brief            Convert Type to I_t
  *
  *  \returns          Corresponding integer.
  */
-template <typename T> inline I_t MetaData::type2int()      { return 0; };
+template <typename T> inline I_t MetaData::type2int()      { return 0; }
 /** \overload
  *
  *  \returns          Corresponding integer.
  */
-template <>           inline I_t MetaData::type2int<S_t>() { return 1; };
+template <>           inline I_t MetaData::type2int<S_t>() { return 1; }
 /** \overload
  *
  *  \returns          Corresponding integer.
  */
-template <>           inline I_t MetaData::type2int<D_t>() { return 2; };
+template <>           inline I_t MetaData::type2int<D_t>() { return 2; }
 /** \overload
  *
  *  \returns          Corresponding integer.
  */
-template <>           inline I_t MetaData::type2int<C_t>() { return 3; };
+template <>           inline I_t MetaData::type2int<C_t>() { return 3; }
 /** \overload
  *
  *  \returns          Corresponding integer.
  */
-template <>           inline I_t MetaData::type2int<Z_t>() { return 4; };
+template <>           inline I_t MetaData::type2int<Z_t>() { return 4; }
 /** \overload
  *
  *  \returns          Corresponding integer.
  */
-template <>           inline I_t MetaData::type2int<I_t>() { return 5; };
+template <>           inline I_t MetaData::type2int<I_t>() { return 5; }
 
 
 /** \brief            Convert I_t to Type
@@ -198,7 +198,7 @@ inline Type MetaData::int2type(I_t i) {
       return Type::O;
   }
 
-};
+}
 
 
 /** \brief            Convert Type to string
@@ -207,42 +207,42 @@ inline Type MetaData::int2type(I_t i) {
  */
 template <typename T> inline std::string MetaData::type2str() { 
   return std::string("other");
-};
+}
 /** \overload
  *
  *  \returns          Corresponding string.
  */
 template <>           inline std::string MetaData::type2str<S_t>() {
   return std::string("S_t");
-};
+}
 /** \overload
  *
  *  \returns          Corresponding string.
  */
 template <>           inline std::string MetaData::type2str<D_t>() {
   return std::string("D_t");
-};
+}
 /** \overload
  *
  *  \returns          Corresponding string.
  */
 template <>           inline std::string MetaData::type2str<C_t>() {
   return std::string("C_t");
-};
+}
 /** \overload
  *
  *  \returns          Corresponding string.
  */
 template <>           inline std::string MetaData::type2str<Z_t>() {
   return std::string("Z_t");
-};
+}
 /** \overload
  *
  *  \returns          Corresponding string.
  */
 template <>           inline std::string MetaData::type2str<I_t>() {
   return std::string("I_t");
-};
+}
 
 
 /** \brief            Convert I_t to std::string
@@ -269,7 +269,7 @@ inline std::string MetaData::int2str(I_t i) {
       return std::string("other");
   }
 
-};
+}
 
 
 /** \brief            Convert transposition status to I_t
@@ -283,7 +283,7 @@ inline I_t MetaData::trans2int(bool trans) {
 
   return (trans) ? 1 : 0;
 
-};
+}
 
 /** \brief            Convert I_t to transposition status
  *
@@ -296,7 +296,7 @@ inline bool MetaData::int2trans(I_t i) {
 
   return (i) ? true : false;
 
-};
+}
 
 /** \brief            Set format field
  *
@@ -307,7 +307,7 @@ inline void MetaData::set_format(Format format) {
 
   container[0] = format2int(format);
 
-};
+}
 
 /** \brief            Set type field to the type of the instance of the
  *                    template
@@ -317,7 +317,7 @@ inline void MetaData::set_type() {
 
   container[1] = type2int<T>();
 
-};
+}
 
 /** \brief            Set transposition field
  *
@@ -328,7 +328,7 @@ inline void MetaData::set_transposed(bool trans) {
 
   container[2] = trans2int(trans);
 
-};
+}
 
 /** \brief            Set row field
  *
@@ -339,7 +339,7 @@ inline void MetaData::set_rows(I_t rows) {
 
   container[N] = rows;
 
-};
+}
 
 /** \brief            Set column field
  *
@@ -350,7 +350,7 @@ inline void MetaData::set_cols(I_t cols) {
 
   container[N + 1] = cols;
 
-};
+}
 
 /** \brief            Return a pointer to the array that contains the meta
  *                    data
@@ -359,7 +359,7 @@ inline I_t* MetaData::data() {
 
   return container.data();
 
-};
+}
 
 /** \brief            Return the size of the meta data array
  */
@@ -367,7 +367,7 @@ inline I_t MetaData::size() {
 
   return container.size();
 
-};
+}
 
 
 /** \brief            Extract meta data from a matrix
@@ -385,7 +385,7 @@ void MetaData::extract(const Dense<T>& matrix) {
   container[N] = matrix._rows;
   container[N + 1] = matrix._cols;
 
-};
+}
 
 /** \brief            Apply meta data to a matrix
  *
@@ -422,7 +422,7 @@ void MetaData::apply(Dense<T>& matrix) {
   auto cols = container[N + 1];
   matrix.reallocate(rows, cols, matrix._location, matrix._device_id);
 
-};
+}
 
 } /* namespace LinAlg */
 

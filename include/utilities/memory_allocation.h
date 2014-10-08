@@ -49,7 +49,7 @@ inline std::shared_ptr<T> host_make_shared(I_t size) {
   return std::shared_ptr<T>(host_ptr, [](T* p){ delete[] p; });
 #endif
 
-};
+}
 } /* namespace LinAlg::Utilities */
 
 } /* namespace LinAlg */

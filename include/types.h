@@ -46,32 +46,32 @@ enum class Type {
  *
  *  \returns          Type::O
  */
-template <typename T> inline Type type()      { return Type::O; };
+template <typename T> inline Type type()      { return Type::O; }
 /** \overload
  *
  *  \returns          Type::S
  */
-template <>           inline Type type<S_t>() { return Type::S; };
+template <>           inline Type type<S_t>() { return Type::S; }
 /** \overload
  *
  *  \returns          Type::D
  */
-template <>           inline Type type<D_t>() { return Type::D; };
+template <>           inline Type type<D_t>() { return Type::D; }
 /** \overload
  *
  *  \returns          Type::C
  */
-template <>           inline Type type<C_t>() { return Type::C; };
+template <>           inline Type type<C_t>() { return Type::C; }
 /** \overload
  *
  *  \returns          Type::Z
  */
-template <>           inline Type type<Z_t>() { return Type::Z; };
+template <>           inline Type type<Z_t>() { return Type::Z; }
 /** \overload
  *
  *  \returns          Type::I
  */
-template <>           inline Type type<I_t>() { return Type::I; };
+template <>           inline Type type<I_t>() { return Type::I; }
 
 
 /** \brief            Matrix properties

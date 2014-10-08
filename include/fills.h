@@ -101,7 +101,7 @@ inline void val_diag_offdiag(Dense<T>& matrix, T a, T b) {
 
   LAPACK::xLASET(a, b, matrix);
 
-};
+}
 
 /** \brief            Sets a (square) matrix to unity
  *
@@ -120,7 +120,7 @@ inline void unity(Dense<T>& matrix) {
 
   LAPACK::xLASET(cast<T>(0.0), cast<T>(1.0), matrix);
 
-};
+}
 
 /** \brief            Sets the elements of a matrix to random values using
  *                    LAPACK's xLARNV function
@@ -170,7 +170,7 @@ inline void lapack_rand(Dense<T>& matrix, I_t distribution, I_t* seed) {
 
   LAPACK::xLARNV(distribution, seed, matrix);
 
-};
+}
 
 /** \brief            Sets the elements of a matrix to uniform random values
  *                    using on the 1D (S_t, D_t) or 2D (C_t, Z_t) unit ball 

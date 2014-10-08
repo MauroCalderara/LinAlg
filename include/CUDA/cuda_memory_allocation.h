@@ -47,7 +47,7 @@ inline void cuda_deallocate(T* device_ptr, int device_id) {
 
   checkCUDA(cudaSetDevice(prev_device));
 
-};
+}
 
 /** \brief            Allocate memory on the GPGPU
  *
@@ -84,7 +84,7 @@ inline std::shared_ptr<T> cuda_make_shared(I_t size, int device_id) {
 
   return std::shared_ptr<T>(device_ptr, deleter);
 
-};
+}
 
 } /* namespace LinAlg::CUDA */
 

@@ -56,7 +56,7 @@ BufferHelper::BufferHelper(I_t size, I_t lookahead, BufferType type,
   _buffer_queue.resize(_size);
   _buffer_status.resize(_size);
   for (auto& e : _buffer_status) { e = 0; }
-};
+}
 
 /** \brief            Clear/empty the buffer, resetting it to the default
  *                    state
@@ -100,7 +100,7 @@ void BufferHelper::clear() {
   _initialized = false;
   _last_requested = 0;
 
-};
+}
 
 /** \brief            Wait for an element in the buffer to be loaded
  *
@@ -290,7 +290,7 @@ void BufferHelper::wait(I_t n) {
   std::cout << "]\n";
 #endif
 
-};
+}
 
 
 /** \brief            Preload elements into the buffer
@@ -363,7 +363,7 @@ void BufferHelper::preload(BufferDirection direction) {
 
   }
 
-};
+}
 
 } /* namespace LinAlg::Utilities */
 

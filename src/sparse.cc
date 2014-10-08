@@ -22,10 +22,9 @@ namespace LinAlg {
  *  \return           True if the matrix is of complex data type (C_t, Z_t),
  *                    false otherwise.
  */
-template <> inline bool Sparse<C_t>::_is_complex() const { return true; };
-template <> inline bool Sparse<Z_t>::_is_complex() const { return true; };
+template <> inline bool Sparse<C_t>::_is_complex() const { return true; }
+template <> inline bool Sparse<Z_t>::_is_complex() const { return true; }
 #endif
-
 
 } /* namespace LinAlg */
 

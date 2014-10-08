@@ -83,7 +83,7 @@ inline void xGEAM(cublasHandle_t handle, cublasOperation_t transa,
                   S_t* C, I_t ldc) {
   checkCUBLAS(cublasSgeam(handle, transa, transb, m, n, &alpha, A, lda, &beta, \
                           B, ldb, C, ldc));
-};
+}
 /** \overload
  */
 inline void xGEAM(cublasHandle_t handle, cublasOperation_t transa,
@@ -92,7 +92,7 @@ inline void xGEAM(cublasHandle_t handle, cublasOperation_t transa,
                   D_t* C, I_t ldc) {
   checkCUBLAS(cublasDgeam(handle, transa, transb, m, n, &alpha, A, lda, &beta, \
                           B, ldb, C, ldc));
-};
+}
 /** \overload
  */
 inline void xGEAM(cublasHandle_t handle, cublasOperation_t transa,
@@ -104,7 +104,7 @@ inline void xGEAM(cublasHandle_t handle, cublasOperation_t transa,
                           (cuComplex*)(&alpha), (cuComplex*)(A), lda, \
                           (cuComplex*)(&beta), (cuComplex*)(B), ldb, \
                           (cuComplex*)(C), ldc));
-};
+}
 /** \overload
  */
 inline void xGEAM(cublasHandle_t handle, cublasOperation_t transa,
@@ -117,7 +117,7 @@ inline void xGEAM(cublasHandle_t handle, cublasOperation_t transa,
                           (cuDoubleComplex*)(&beta), \
                           (cuDoubleComplex*)(B), ldb, \
                           (cuDoubleComplex*)(C), ldc));
-};
+}
 /** \overload
  */
 template <typename T>
@@ -127,7 +127,7 @@ inline void xGEAM(int device_id, cublasOperation_t transa,
                   T* C, I_t ldc) {
   xGEAM(LinAlg::CUDA::CUBLAS::handles[device_id], transa, transb, m, n, alpha,
         A, lda, beta, B, ldb, C, ldc);
-};
+}
 
 } /* namespace LinAlg::BLAS::CUBLAS */
 
@@ -187,7 +187,7 @@ inline void xGEAM(const T alpha, const Dense<T>& A, const T beta,
   CUBLAS::xGEAM(handles[device_id], transa, transb, m, n, alpha, A_ptr, lda,
                 beta, B_ptr, ldb, C_ptr, ldc);
 
-};
+}
 
 /** \brief            A CUBLAS routine to copy, transpose and add dense
  *                    matrices on the GPU, asynchronous variant.
@@ -251,7 +251,7 @@ inline void xGEAM_async(const T alpha, const Dense<T>& A, const T beta,
   CUBLAS::xGEAM(stream.cublas_handle, transa, transb, m, n, alpha, A_ptr, lda,
                 beta, B_ptr, ldb, C_ptr, ldc);
 
-};
+}
 /** \overload
  *
  *  \param[in]        alpha
@@ -276,7 +276,7 @@ inline CUDAStream xGEAM_async(const T alpha, const Dense<T>& A, const T beta,
 
   return std::move(stream);
 
-};
+}
 
 #endif /* HAVE_CUDA */
 
