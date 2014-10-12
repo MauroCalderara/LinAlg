@@ -44,7 +44,7 @@ namespace Utilities {
  *                    cusparseXdense2csr could be used
  */
 template <typename T>
-inline void sparse2dense(Sparse<T>& src, IJ start, IJ stop, Dense<T>& dst) {
+inline void sparse2dense(Sparse<T>& src, SubBlock sub_block, Dense<T>& dst) {
 
 #ifndef LINALG_NO_CHECKS
   if (dst._transposed) {
@@ -58,7 +58,8 @@ inline void sparse2dense(Sparse<T>& src, IJ start, IJ stop, Dense<T>& dst) {
                            "CSC format is not supported.");
   }
 
-  if ((start.row > src._size - 1) || (stop.row > src._size)) {
+  if ((sub_block.first_row > src._size - 1) || 
+      (sub_block.last_row > src._size)         ) {
     throw excBadArgument("sparse2dense(): requested row range is not contained "
                          "in the source matrix.");
   }
@@ -66,8 +67,8 @@ inline void sparse2dense(Sparse<T>& src, IJ start, IJ stop, Dense<T>& dst) {
 
   if (src._location == Location::host && dst._location == Location::host) {
 
-    auto rows = stop.row - start.row;
-    auto cols = stop.col - start.col;
+    auto rows = sub_block.last_row - sub_block.first_row;
+    auto cols = sub_block.last_col - sub_block.first_col;
 
     // Check if size fits. If dst is empty, reallocate accordingly
     if (dst.is_empty()) {
@@ -77,7 +78,7 @@ inline void sparse2dense(Sparse<T>& src, IJ start, IJ stop, Dense<T>& dst) {
       Fills::zero(dst);
 
     }
-#ifndef LINALG_NO_CHECKS
+#ifndef LINALG_NO_CHECK
     else if (dst._rows != rows || dst._cols != cols) {
 
       throw excBadArgument("sparse2dense(): matrix dimension mismatch");
@@ -93,21 +94,21 @@ inline void sparse2dense(Sparse<T>& src, IJ start, IJ stop, Dense<T>& dst) {
     auto dst_data = dst._begin();
     auto dst_ld = dst._leading_dimension;
 
-    for (I_t row_in = start.row; row_in < stop.row; ++row_in) {
+    for (I_t row_in = sub_block.first_row; row_in < sub_block.last_row; ++row_in) {
 
       for (I_t index = edges[row_in] - first_index;
            index < edges[row_in + 1] - first_index; ++index) {
 
         I_t col_in = indices[index] - first_index;
 
-        if (col_in < start.col) {
+        if (col_in < sub_block.first_col) {
 
           continue;
 
-        } else if (col_in < stop.col) {
+        } else if (col_in < sub_block.last_col) {
 
-          I_t col_out   = col_in - start.col;
-          I_t row_out   = row_in - start.row;
+          I_t col_out   = col_in - sub_block.first_col;
+          I_t row_out   = row_in - sub_block.first_row;
 
           I_t array_pos;
           if (dst._format == Format::ColMajor) {
@@ -139,8 +140,36 @@ inline void sparse2dense(Sparse<T>& src, IJ start, IJ stop, Dense<T>& dst) {
 
   // if both on GPU: cusparseXcsr2dense
 
-  // if mixed: transfer csr to GPU, call sparse2dense recursively
+  // if mixed: create csr, transfer to GPU, call sparse2dense recursively
 
+}
+
+/** \brief            Add a subblock of a sparse matrix to a dense matrix
+ *
+ *
+ *  \param[in]        src
+ *                    The sparse matrix to extract the subblock from.
+ *
+ *  \param[in]        start
+ *                    Point to start extraction (included, c-numbering), 
+ *                    marking the included upper left corner of the submatrix.
+ *
+ *  \param[in]        stop
+ *                    Point to start extraction (included, c-numbering), 
+ *                    marking the excluded lower right corner of the 
+ *                    submatrix.
+ *
+ *  \param[out]       dst
+ *                    Dense matrix to store the subblock.
+ *
+ *  \todo             If the full matrix is to be converted, mkl_?dnscsr and
+ *                    cusparseXdense2csr could be used
+ */
+template <typename T>
+inline void sparse2dense(Sparse<T>& src, IJ start, IJ stop, Dense<T>& dst) {
+
+  sparse2dense(src, SubBlock(start, stop), dst);
+  
 }
 
 /** \brief            Add a subblock of a sparse matrix to a dense matrix
@@ -171,7 +200,7 @@ template <typename T>
 inline void sparse2dense(Sparse<T>& src, I_t first_row, I_t last_row,
                          I_t first_col, I_t last_col, Dense<T>& dst) {
 
-  sparse2dense(src, IJ(first_row, first_col), IJ(last_row, last_col));
+  sparse2dense(src, SubBlock(first_row, first_col, last_row, last_col), dst);
 
 }
 

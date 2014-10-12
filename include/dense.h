@@ -67,11 +67,13 @@ struct Dense : Matrix {
         Location location = Location::host, int device_id = 0);
 
   // Submatrix creation (from dense)
+  Dense(const Dense<T>& source, SubBlock sub_block);
   Dense(const Dense<T>& source, IJ start, IJ stop);
   Dense(const Dense<T>& source, I_t first_row, I_t last_row, I_t first_col,
         I_t last_col);
 
   // Submatrix creation from ()-operator
+  inline Dense<T> operator()(SubBlock sub_block);
   inline Dense<T> operator()(IJ start, IJ stop);
   inline Dense<T> operator()(I_t first_row, I_t last_row, I_t first_col,
                              I_t last_col);
@@ -79,6 +81,7 @@ struct Dense : Matrix {
   // Explicitly clone
   inline void clone_from(const Dense<T>& source);
   // Explicit cloning as submatrix
+  inline void clone_from(const Dense<T>& source, SubBlock sub_block);
   inline void clone_from(const Dense<T>& source, IJ start, IJ stop);
   inline void clone_from(const Dense<T>& source, I_t first_row, I_t last_row,
                          I_t first_col, I_t last_col);
@@ -414,6 +417,45 @@ Dense<T>::Dense(T* in_array, I_t leading_dimension, I_t rows, I_t cols,
  *                    The matrix from which to construct the new dense
  *                    matrix.
  *
+ *  \param[in]        sub_block
+ *                    Submatrix specification.
+ */
+template <typename T>
+Dense<T>::Dense(const Dense<T>& source, SubBlock sub_block)
+              : _memory(source._memory),
+                _leading_dimension(source._leading_dimension),
+                _format(source._format),
+                _rows(sub_block.last_row - sub_block.first_row),
+                _cols(sub_block.last_col - sub_block.last_col),
+                _location(source._location),
+                _device_id(source._device_id),
+                _transposed(source._transposed) {
+
+#ifdef CONSTRUCTOR_VERBOSE
+  std::cout << "Dense.submatrix_constructor\n";
+#endif
+
+  if (_format == Format::ColMajor) {
+    _offset = source._offset + sub_block.first_col * 
+              _leading_dimension + sub_block.first_row;
+  } else {
+    _offset = source._offset + sub_block.first_row * 
+              _leading_dimension + sub_block.first_col;
+  }
+
+}
+
+/** \brief            Submatrix constructor
+ *
+ *  Create a submatrix from an existing matrix.
+ *  For construction from dense matrices no memory is copied and the ownership
+ *  of the memory of the source matrix is shared with the source and all other
+ *  submatrices.
+ *
+ *  \param[in]        source
+ *                    The matrix from which to construct the new dense
+ *                    matrix.
+ *
  *  \param[in]        start
  *                    Point to mark the upper left corner of the submatrix 
  *                    (included, c-numbering).
@@ -424,26 +466,9 @@ Dense<T>::Dense(T* in_array, I_t leading_dimension, I_t rows, I_t cols,
  */
 template <typename T>
 Dense<T>::Dense(const Dense<T>& source, IJ start, IJ stop)
-              : _memory(source._memory),
-                _leading_dimension(source._leading_dimension),
-                _format(source._format),
-                _rows(stop.row - start.row),
-                _cols(stop.col - stop.col),
-                _location(source._location),
-                _device_id(source._device_id),
-                _transposed(source._transposed) {
-
-#ifdef CONSTRUCTOR_VERBOSE
-  std::cout << "Dense.submatrix_constructor\n";
-#endif
-
-  if (_format == Format::ColMajor) {
-    _offset = source._offset + start.col * _leading_dimension + start.row;
-  } else {
-    _offset = source._offset + start.row * _leading_dimension + start.col;
-  }
-
+              : Dense(source, SubBlock(start, stop)) {
 }
+
 /** \brief            Submatrix constructor
  *
  *  Create a submatrix from an existing matrix.
@@ -479,6 +504,20 @@ Dense<T>::Dense(const Dense<T>& source, I_t first_row, I_t last_row,
 
 /** \brief            Submatrix creation
  *
+ *  \param[in]        sub_block
+ *                    Submatrix specification.
+ *
+ *  \returns          A submatrix with the given coordinates
+ */
+template <typename T>
+inline Dense<T> Dense<T>::operator()(SubBlock sub_block) {
+
+  return Dense<T>(*this, sub_block);
+
+}
+
+/** \brief            Submatrix creation
+ *
  *  \param[in]        start
  *                    Point to mark the upper left corner of the submatrix 
  *                    (included, c-numbering).
@@ -492,7 +531,7 @@ Dense<T>::Dense(const Dense<T>& source, I_t first_row, I_t last_row,
 template <typename T>
 inline Dense<T> Dense<T>::operator()(IJ start, IJ stop) {
 
-  return Dense<T>(*this, start, stop);
+  return Dense<T>(*this, SubBlock(start, stop));
 
 }
 
@@ -520,7 +559,7 @@ template <typename T>
 inline Dense<T> Dense<T>::operator()(I_t first_row, I_t last_row, I_t first_col,
                                      I_t last_col) {
 
-  return Dense<T>(*this, IJ(first_row, first_col), IJ(last_row, last_col));
+  return Dense<T>(*this, SubBlock(first_row, first_col, last_row, last_col));
 
 }
 
@@ -555,6 +594,36 @@ inline void Dense<T>::clone_from(const Dense<T>& source) {
  *  \param[in]        source
  *                    The matrix to clone from.
  *
+ *  \param[in]        sub_block
+ *                    Submatrix specification.
+ *
+ */
+template <typename T>
+inline void Dense<T>::clone_from(const Dense<T>& source, SubBlock sub_block) {
+
+  clone_from(source);
+
+  if (_format == Format::ColMajor) {
+    _offset = source._offset + sub_block.first_col * 
+              _leading_dimension + sub_block.first_row;
+  } else {
+    _offset = source._offset + sub_block.first_col *
+              _leading_dimension + sub_block.first_col;
+  }
+
+  _rows = sub_block.last_row - sub_block.first_row;
+  _cols = sub_block.last_col - sub_block.first_col;
+
+}
+
+/** \brief            Cloning from an existing matrix
+ *
+ *  Applies the parameters of another instance \<source\> to the left hand 
+ *  instance. No memory is copied.
+ *
+ *  \param[in]        source
+ *                    The matrix to clone from.
+ *
  *  \param[in]        start
  *                    Point to mark the upper left corner of the submatrix 
  *                    (included, c-numbering).
@@ -566,16 +635,7 @@ inline void Dense<T>::clone_from(const Dense<T>& source) {
 template <typename T>
 inline void Dense<T>::clone_from(const Dense<T>& source, IJ start, IJ stop) {
 
-  clone_from(source);
-
-  if (_format == Format::ColMajor) {
-    _offset = source._offset + start.col * _leading_dimension + start.row;
-  } else {
-    _offset = source._offset + start.col * _leading_dimension + start.col;
-  }
-
-  _rows = stop.row - start.row;
-  _cols = stop.col - start.col;
+  clone_from(source, SubBlock(start, stop));
 
 }
 
@@ -607,7 +667,7 @@ template <typename T>
 inline void Dense<T>::clone_from(const Dense<T>& source, I_t first_row, 
                                  I_t last_row, I_t first_col, I_t last_col) {
 
-  clone_from(source, IJ(first_row, first_col), IJ(last_row, last_col));
+  clone_from(source, SubBlock(first_row, first_col, last_row, last_col));
 
 }
 

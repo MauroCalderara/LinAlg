@@ -13,6 +13,7 @@
 #define LINALG_TYPES_H_
 
 #include "elementary_types.h"
+#include "exceptions.h"
 
 /** \def              fortran_name(x,y)
  *
@@ -138,6 +139,45 @@ struct IJ {
   IJ(I_t i, I_t j) : row(i), col(j) {}; //< Constructor from row and column
 
 };
+inline IJ operator+(const IJ& left, const IJ& right) {
+  return IJ(left.row + right.row, left.col + right.col);
+}
+inline IJ operator-(const IJ& left, const IJ& right) {
+  return IJ(left.row - right.row, left.col - right.col);
+}
+
+/** \brief            SubBlock, a matrix subblock
+ */
+struct SubBlock {
+
+  // Start values are inclusive, stop values exclusive
+  I_t first_row, first_col, last_row, last_col;
+
+  SubBlock() : first_row(0), first_col(0), last_row(0), last_col(0) {}
+
+  SubBlock(IJ start, IJ stop)
+         : first_row(start.row),
+           first_col(start.col),
+           last_row(stop.row),
+           last_col(stop.col) {
+    #ifndef LINALG_NO_CHECKS
+    if (last_row < first_row || last_col < last_row) {
+      throw excBadArgument("SubBlock(): invalid subblock specification");
+    }
+    #endif
+  }
+
+  SubBlock(I_t first_row, I_t first_col, I_t last_row, I_t last_col)
+         : SubBlock(IJ(first_row, first_col), IJ(last_row, last_col)) {}
+
+  /// Upper left corner (inclusive)
+  inline IJ start() { return IJ(first_row, first_col); }
+
+  /// Lower right corner (exclusive)
+  inline IJ stop() { return IJ(last_row, last_col); }
+
+};
+
 
 
 } /* namespace LinAlg */
