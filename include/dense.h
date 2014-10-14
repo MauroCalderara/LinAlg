@@ -559,7 +559,7 @@ template <typename T>
 inline Dense<T> Dense<T>::operator()(I_t first_row, I_t last_row, I_t first_col,
                                      I_t last_col) {
 
-  return Dense<T>(*this, SubBlock(first_row, first_col, last_row, last_col));
+  return Dense<T>(*this, SubBlock(first_row, last_row, first_col, last_col));
 
 }
 
@@ -667,7 +667,7 @@ template <typename T>
 inline void Dense<T>::clone_from(const Dense<T>& source, I_t first_row, 
                                  I_t last_row, I_t first_col, I_t last_col) {
 
-  clone_from(source, SubBlock(first_row, first_col, last_row, last_col));
+  clone_from(source, SubBlock(first_row, last_row, first_col, last_col));
 
 }
 
@@ -1030,11 +1030,11 @@ inline bool Dense<T>::is_on_MIC() const {
 template <typename T>
 inline void Dense<T>::set(Property property) {
 
-  if (property == Property::Hermitian) {
+  if (property == Property::hermitian) {
 
     if (!_is_complex()) {
 
-      throw excBadArgument("Dense.set(property): can't set Property::Hermitian "
+      throw excBadArgument("Dense.set(property): can't set Property::hermitian "
                            "on real matrices");
 
     }

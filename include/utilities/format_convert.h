@@ -181,11 +181,11 @@ inline void sparse2dense(Sparse<T>& src, IJ start, IJ stop, Dense<T>& dst) {
  *  \param[in]        first_row
  *                    Row to start extraction (included, c-numbering).
  *
- *  \param[in]        first_col
- *                    Colum to start extraction (included, c-numbering).
- *
  *  \param[in]        last_row
  *                    Row to stop extraction (excluded, c-numbering).
+ *
+ *  \param[in]        first_col
+ *                    Colum to start extraction (included, c-numbering).
  *
  *  \param[in]        last_col
  *                    Column to stop extraction (excluded, c-numbering).
@@ -200,7 +200,7 @@ template <typename T>
 inline void sparse2dense(Sparse<T>& src, I_t first_row, I_t last_row,
                          I_t first_col, I_t last_col, Dense<T>& dst) {
 
-  sparse2dense(src, SubBlock(first_row, first_col, last_row, last_col), dst);
+  sparse2dense(src, SubBlock(first_row, last_row, first_col, last_col), dst);
 
 }
 

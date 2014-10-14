@@ -832,12 +832,12 @@ inline bool Sparse<T>::is_on_MIC() const {
 template <typename T>
 inline void Sparse<T>::set(Property property) {
 
-  if (property == Property::Hermitian) {
+  if (property == Property::hermitian) {
 
     if (!_is_complex()) {
 
       throw excBadArgument("Sparse.set(property): can't set "
-                           "Property::Hermitian on real matrices");
+                           "Property::hermitian on real matrices");
 
     }
 

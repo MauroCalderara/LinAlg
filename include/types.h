@@ -81,10 +81,10 @@ template <>           inline Type type<I_t>() { return Type::I; }
  *  members check for internal consistency.
  */
 enum Property {
-  General   = 0x01,
-  Symmetric = 0x02,
-  Hermitian = 0x04,
-  Packed    = 0x08,
+  general   = 0x01,
+  symmetric = 0x02,
+  hermitian = 0x04,
+  packed    = 0x08,
 };
 
 /** \brief            Storage locations
@@ -108,10 +108,10 @@ enum class Location {
 /** \brief            Storage formats
  */
 enum class Format {
-    ColMajor,   //< Column major (Fortran layout: [a_00, a_10, a_20, ...])
-    RowMajor,   //< Row major (C/C++ layout: [a_00, a_01, a_02, ...])
-    CSR,        //< Compressed Sparse Row
-    CSC,        //< Compressed Sparse Column
+  ColMajor,     //< Column major (Fortran layout: [a_00, a_10, a_20, ...])
+  RowMajor,     //< Row major (C/C++ layout: [a_00, a_01, a_02, ...])
+  CSR,          //< Compressed Sparse Row
+  CSC,          //< Compressed Sparse Column
 };
 
 /** \brief            Buffer types
@@ -167,7 +167,8 @@ struct SubBlock {
     #endif
   }
 
-  SubBlock(I_t first_row, I_t first_col, I_t last_row, I_t last_col)
+  /// Matlab style block specification
+  SubBlock(I_t first_row, I_t last_row, I_t first_col, I_t last_col)
          : SubBlock(IJ(first_row, first_col), IJ(last_row, last_col)) {}
 
   /// Upper left corner (inclusive)
