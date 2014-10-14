@@ -78,7 +78,7 @@ inline void sparse2dense(Sparse<T>& src, SubBlock sub_block, Dense<T>& dst) {
       Fills::zero(dst);
 
     }
-#ifndef LINALG_NO_CHECK
+#ifndef LINALG_NO_CHECK
     else if (dst._rows != rows || dst._cols != cols) {
 
       throw excBadArgument("sparse2dense(): matrix dimension mismatch");

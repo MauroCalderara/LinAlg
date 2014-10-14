@@ -273,7 +273,7 @@ void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
 
   if (file_to_read.is_open()) {
 
-    I_t element;
+    I_t element = 0;
 
 #ifndef LINALG_NO_CHECKS
     // Bumping into the end of the file within this loop is an error (as the

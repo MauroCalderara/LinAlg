@@ -68,9 +68,9 @@ extern "C" {
 #ifdef HAVE_MKL
   void fortran_name(scgemm, SCGEMM)(const char* transa, const char* transb, 
                                     const I_t* m, const I_t* n, const I_t* k, 
-                                    const Z_t* alpha, const D_t* A, 
-                                    const I_t* lda, const Z_t* B, 
-                                    const I_t* ldb, const Z_t* beta, Z_t* C, 
+                                    const C_t* alpha, const S_t* A, 
+                                    const I_t* lda, const C_t* B, 
+                                    const I_t* ldb, const C_t* beta, C_t* C, 
                                     const I_t* ldc);
   void fortran_name(dzgemm, DZGEMM)(const char* transa, const char* transb, 
                                     const I_t* m, const I_t* n, const I_t* k, 
