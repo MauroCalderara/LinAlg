@@ -161,7 +161,7 @@ struct SubBlock {
            last_row(stop.row),
            last_col(stop.col) {
     #ifndef LINALG_NO_CHECKS
-    if (last_row < first_row || last_col < last_row) {
+    if (last_row < first_row || last_col < first_col) {
       throw excBadArgument("SubBlock(): invalid subblock specification");
     }
     #endif

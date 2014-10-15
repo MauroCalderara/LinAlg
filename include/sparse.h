@@ -446,6 +446,9 @@ inline void Sparse<T>::clone_from(const Sparse<T>& source) {
 #ifdef HAVE_CUDA
   _cusparse_descriptor = source._cusparse_descriptor;
 #endif
+#ifdef HAVE_MPI
+  _row_offset          = source._row_offset;
+#endif
 
 }
 
