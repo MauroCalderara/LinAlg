@@ -139,11 +139,14 @@ struct IJ {
   IJ(I_t i, I_t j) : row(i), col(j) {}; //< Constructor from row and column
 
 };
-inline IJ operator+(const IJ& left, const IJ& right) {
+inline IJ operator+(const IJ left, const IJ right) {
   return IJ(left.row + right.row, left.col + right.col);
 }
-inline IJ operator-(const IJ& left, const IJ& right) {
+inline IJ operator-(const IJ left, const IJ right) {
   return IJ(left.row - right.row, left.col - right.col);
+}
+inline bool operator==(const IJ left, const IJ right) {
+  return ((left.row == right.row) && (left.col == right.col));
 }
 
 /** \brief            SubBlock, a matrix subblock
@@ -172,12 +175,34 @@ struct SubBlock {
          : SubBlock(IJ(first_row, first_col), IJ(last_row, last_col)) {}
 
   /// Upper left corner (inclusive)
-  inline IJ start() { return IJ(first_row, first_col); }
+  inline IJ start() const { return IJ(first_row, first_col); }
 
   /// Lower right corner (exclusive)
-  inline IJ stop() { return IJ(last_row, last_col); }
+  inline IJ stop() const { return IJ(last_row, last_col); }
+
+  /// Rows
+  inline I_t rows() const { return (last_row - first_row); }
+
+  /// Columns
+  inline I_t cols() const { return (last_col - first_col); }
 
 };
+inline SubBlock transposed(SubBlock block) {
+  return SubBlock(block.first_col, block.last_col,
+                  block.first_row, block.last_row);
+}
+inline bool operator==(const SubBlock left, const SubBlock right) {
+  return ((left.first_row == right.first_row) &&
+          (left.first_col == right.first_col) &&
+          (left.last_row  == right.last_row)  &&
+          (left.last_col  == right.last_col)    );
+}
+inline bool operator!=(const SubBlock left, const SubBlock right) {
+  return ((left.first_row != right.first_row) ||
+          (left.first_col != right.first_col) ||
+          (left.last_row  != right.last_row)  ||
+          (left.last_col  != right.last_col)    );
+}
 
 
 

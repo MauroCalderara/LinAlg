@@ -28,14 +28,8 @@ namespace Utilities {
  *  \param[in]        src
  *                    The sparse matrix to extract the subblock from.
  *
- *  \param[in]        start
- *                    Point to start extraction (included, c-numbering), 
- *                    marking the included upper left corner of the submatrix.
- *
- *  \param[in]        stop
- *                    Point to start extraction (included, c-numbering), 
- *                    marking the excluded lower right corner of the 
- *                    submatrix.
+ *  \param[in]        sub_block
+ *                    Sub block specification.
  *
  *  \param[out]       dst
  *                    Dense matrix to store the subblock.
