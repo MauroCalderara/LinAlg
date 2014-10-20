@@ -197,7 +197,8 @@ Dense<T>::Dense()
                 _cols(0),
                 _location(Location::host),
                 _device_id(0),
-                _transposed(false) {
+                _transposed(false),
+                _properties(0x0) {
 #ifdef CONSTRUCTOR_VERBOSE
   std::cout << "Dense.empty_constructor\n";
 #endif
@@ -212,49 +213,6 @@ Dense<T>::~Dense() {
 #endif
 }
 
-/*  \brief              Copy constructor
- *
- *  Creates a new matrix handle to the same content as the given matrix.
- *
- *  \param              src
- *                      Source matrix.
- */
-/*
-template <typename T>
-Dense<T>::Dense(Dense<T>& src)
-              : _memory(src._memory),
-                _offset(src._offset),
-                _leading_dimension(src._rows),
-                _format(Format::ColMajor),
-                _rows(src._rows),
-                _cols(src._cols),
-                _location(src._location),
-                _device_id(src._device_id),
-                _transposed(src._transposed) {
-
-#ifdef CONSTRUCTOR_VERBOSE
-  std::cout << "Dense.copy_constructor\n";
-#endif
-
-}
-*/
-
-/* \brief              Copy const constructor
- *
- *  Creates a new matrix with the content of the given matrix.
- *
- *  \param              src
- *                      Matrix from which to copy the elements.
- */
-/*
-template <typename T>
-Dense<T>::Dense(const Dense<T>& other) : Dense(const_cast<Dense<T>&>(other)) {
-#ifdef CONSTRUCTOR_VERBOSE
-  std::cout << "Dense.copy_const_constructor\n";
-#endif
-}
-*/
-
 /** \brief              Move constructor
  */
 template <typename T>
@@ -268,25 +226,6 @@ Dense<T>::Dense(Dense<T>&& other) : Dense() {
   swap(*this, other);
 
 }
-
-/*  \brief              Assignment operator, creates a copy of the handle
- *                      'other' and assigns it to the left hand side. No data is
- *                      copied, the left hand side's data is potentially
- *                      deleted.
- */
-/*
-template <typename T>
-Dense<T>& Dense<T>::operator=(Dense<T> other) {
-
-  // Since we passed 'other' by value, it is already a copy that can later be
-  // thrown away.
-  swap(*this, other);
-  return *this;
-
-  // Here 'other' (that is: what used to be 'this') gets destroyed.
-}
-*/
-
 
 /** \brief              Swap function
  *
@@ -316,6 +255,7 @@ void swap(Dense<U>& first, Dense<U>& second) {
   swap(first._location, second._location);
   swap(first._device_id, second._device_id);
   swap(first._transposed, second._transposed);
+  swap(first._properties, second._properties);
 
 }
 
@@ -395,7 +335,8 @@ Dense<T>::Dense(T* in_array, I_t leading_dimension, I_t rows, I_t cols,
                 _cols(cols),
                 _location(location),
                 _device_id(device_id),
-                _transposed(false) {
+                _transposed(false),
+                _properties(0x0) {
 
 #ifdef CONSTRUCTOR_VERBOSE
   std::cout << "Dense.constructor_from_array\n";
@@ -441,6 +382,18 @@ Dense<T>::Dense(const Dense<T>& source, SubBlock sub_block)
   } else {
     _offset = source._offset + sub_block.first_row * 
               _leading_dimension + sub_block.first_col;
+  }
+
+  if ((sub_block.first_row == sub_block.first_col) &&
+      (sub_block.last_row  == sub_block.last_col )   ) {
+  
+    if (source.is(Property::symmetric)) {
+      set(Property::symmetric);
+    }
+    if (source.is(Property::hermitian)) {
+      set(Property::hermitian);
+    }
+  
   }
 
 }
@@ -583,6 +536,7 @@ inline void Dense<T>::clone_from(const Dense<T>& source) {
   _location          = source._location;
   _device_id         = source._device_id;
   _transposed        = source._transposed;
+  _properties        = source._properties;
 
 }
 
@@ -926,6 +880,7 @@ inline void Dense<T>::unlink() {
   _location = Location::host;
   _device_id = 0;
   _transposed = false;
+  _properties = 0x0;
 
   // This potentially frees the memory
   _memory = nullptr;

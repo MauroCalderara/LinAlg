@@ -181,7 +181,8 @@ Sparse<T>::Sparse()
                   _location(Location::host),
                   _device_id(0),
                   _transposed(false),
-                  _format(Format::CSR) {
+                  _format(Format::CSR),
+                  _properties(0x0) {
 #ifdef CONSTRUCTOR_VERBOSE
   std::cout << "Sparse.empty_constructor\n";
 #endif
@@ -248,6 +249,7 @@ void swap(Sparse<U>& first, Sparse<U>& second) {
 #ifdef HAVE_MPI
   swap(first._row_offset, second._row_offset);
 #endif
+  swap(first._properties, second._properties);
 
 }
 
@@ -288,7 +290,8 @@ Sparse<T>::Sparse(I_t size, I_t n_nonzeros, int first_index, Location location,
                 _location(location),
                 _device_id(device_id),
                 _transposed(false),
-                _format(format) {
+                _format(format),
+                _properties(0x0) {
 
 #ifndef LINALG_NO_CHECKS
   if (format != Format::CSR && format != Format::CSC) {
@@ -380,7 +383,8 @@ Sparse<T>::Sparse(I_t size, I_t n_nonzeros, T* values, I_t* indices, I_t* edges,
                   _location(location),
                   _device_id(device_id),
                   _transposed(false),
-                  _format(format) {
+                  _format(format),
+                  _properties(0x0) {
 
 #ifndef LINALG_NO_CHECKS
   if (format != Format::CSR && format != Format::CSC) {
@@ -449,6 +453,7 @@ inline void Sparse<T>::clone_from(const Sparse<T>& source) {
 #ifdef HAVE_MPI
   _row_offset          = source._row_offset;
 #endif
+  _properties          = source._properties;
 
 }
 
@@ -784,6 +789,7 @@ inline void Sparse<T>::unlink() {
 #ifdef HAVE_MPI
   _row_offset = 0;
 #endif
+  _properties = 0x0;
 
   // This frees the memory
   _values = nullptr;
