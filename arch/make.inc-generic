@@ -1,8 +1,16 @@
 # Variables with extra flags
+ifneq ("$(wildcard ../arch/extraflags.inc)", "")
+include ../arch/extraflags.inc
+else
 include arch/extraflags.inc
+endif
+
+# Compiler wrapper (e.g. for profiling)
+CXX_PRE = scorep
+CXX_PRE_ARGS = --user --nocompiler --thread=pthread --mpp=mpi --mutex=pthread:default --cuda
 
 # Compiler
-CXX = gcc
+CXX = $(CXX_PRE) $(CXX_PRE_ARGS) gcc
 CXX_FLAGS = -fPIC -pthread -std=c++11 $(GCC_EXTRA_FLAGS)
 CXX_LINKER_FLAGS = -pthread -lstdc++
 

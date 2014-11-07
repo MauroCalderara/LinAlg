@@ -1,14 +1,21 @@
 # Variables with extra flags
+ifneq ("$(wildcard ../arch/extraflags.inc)", "")
+include ../arch/extraflags.inc
+else
 include arch/extraflags.inc
+endif
+
+# Compiler wrapper (e.g. for profiling)
+CXX_PRE = scorep
+CXX_PRE_ARGS = --user --nocompiler --thread=pthread --mpp=mpi --mutex=pthread:default --cuda
 
 # Compiler
-CXX = CC
-CXX_FLAGS = -fPIC -pthread -std=c++11 $(GCC_EXTRA_FLAGS)
+CXX = $(CXX_PRE) $(CXX_PRE_ARGS) CC
+CXX_FLAGS = -fPIC -pthread -std=c++11 -g $(GCC_EXTRA_FLAGS)
 CXX_LINKER_FLAGS = -pthread -lstdc++
 
 # Flags to change behavior of the LinAlg library
-LINALG_FLAGS = -DLINALG_NO_CHECKS
-LINALG_FLAGS =
+LINALG_FLAGS = -DUSE_POSIX_THREADS -lpthread
 
 # Cuda
 CUDA_FLAGS = -DHAVE_CUDA
@@ -19,11 +26,14 @@ CUDA_LIBS = -L$(CUDATOOLKIT_HOME)/lib64 -lcudart -lcublas -lcusparse
 MKL_FLAGS = -DHAVE_MKL
 MKL_ROOT = $(MKLROOT)
 MKL_INCLUDE = -I$(MKL_ROOT)/include
-MKL_LIBS = -L$(MKL_ROOT)/lib/intel64 -Wl,--start-group -lmkl_intel_ilp64 \
-		   -lmkl_core -lmkl_gnu_thread -Wl,--end-group -ldl -lpthread -lm
+#MKL_LIBS = -L$(MKL_ROOT)/lib/intel64 -Wl,--start-group -lmkl_intel_ilp64 \
+#		   -lmkl_core -lmkl_gnu_thread -Wl,--end-group -ldl -lpthread -lm
+MKL_LIBS  = -L$(MKL_ROOT)/lib/intel64/ -lmkl_gf_lp64 -lmkl_gnu_thread \
+	        -lmkl_core -Wl,-rpath,$(MKL_ROOT)/lib/intel64/
 
 # MAGMA
-MAGMA_FLAGS = -DHAVE_MAGMA -DUSE_MAGMA_GESV -DUSE_MAGMA_GETRF -DUSE_MAGMA_GETRI -DADD_
+MAGMA_FLAGS = -DHAVE_MAGMA -DUSE_MAGMA_GESV -DUSE_MAGMA_GETRF \
+              -DUSE_MAGMA_GETRI -DADD_
 MAGMA_HOME = /scratch/daint/camauro/libs/magma/1.5.0
 MAGMA_INCLUDE = -I$(MAGMA_HOME)/include
 MAGMA_LIBS = -L$(MAGMA_HOME)/lib -lmagma
