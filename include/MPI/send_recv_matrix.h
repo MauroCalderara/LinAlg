@@ -23,6 +23,7 @@
 #include <utility>    // std::move
 
 #include "../types.h"
+#include "../profiling.h"
 #include "../exceptions.h"
 #include "../streams.h"
 #include "../utilities/timer.h"  // LinAlg::Utilities::timer
@@ -70,6 +71,8 @@ namespace MPI {
 template <typename T>
 void send_matrix(Dense<T>& matrix, MPI_Comm communicator, int receiving_rank,
                  int tag) {
+
+  PROFILING_FUNCTION_HEADER
 
   if (matrix.is_empty()) {
     return;
@@ -143,6 +146,8 @@ void send_matrix(Dense<T>& matrix, MPI_Comm communicator, int receiving_rank,
 template <typename T>
 void send_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
                        int receiving_rank, int tag, MPIStream& stream) {
+
+  PROFILING_FUNCTION_HEADER
 
   if (matrix.is_empty()) {
     return;
@@ -237,6 +242,8 @@ template <typename T>
 inline MPIStream send_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
                                    int receiving_rank, int tag) {
 
+  PROFILING_FUNCTION_HEADER
+
   MPIStream stream;
 
   send_matrix_async(matrix, communicator, receiving_rank, tag, stream);
@@ -264,6 +271,8 @@ inline MPIStream send_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
 template <typename T>
 void receive_matrix(Dense<T>& matrix, MPI_Comm communicator, int sending_rank,
                     int tag) {
+
+  PROFILING_FUNCTION_HEADER
 
   if (matrix.is_empty()) {
     return;
@@ -345,6 +354,8 @@ void receive_matrix(Dense<T>& matrix, MPI_Comm communicator, int sending_rank,
 template <typename T>
 void receive_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
                           int sending_rank, int tag, MPIStream& stream) {
+
+  PROFILING_FUNCTION_HEADER
 
   if (matrix.is_empty()) {
     return;
@@ -429,6 +440,8 @@ void receive_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
 template <typename T>
 inline MPIStream receive_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
                                       int sending_rank, int tag) {
+
+  PROFILING_FUNCTION_HEADER
 
   MPIStream stream;
   receive_matrix_async(matrix, communicator, sending_rank, tag, stream);

@@ -15,6 +15,8 @@
 #include <fstream>    // std::fstream
 #include <limits>     // std::numeric_limits
 
+#include "../profiling.h"
+
 namespace LinAlg {
 
 namespace Utilities {
@@ -29,6 +31,8 @@ namespace Utilities {
  *                    stream will return the contents of line number \<line\>.
  */
 inline void goto_line(std::ifstream& stream, unsigned int line) {
+
+  PROFILING_FUNCTION_HEADER
 
   stream.seekg(std::ios::beg);
 

@@ -28,6 +28,7 @@
 #endif
 
 #include "../types.h"
+#include "../profiling.h"
 #include "../exceptions.h"
 #include "../dense.h"
 
@@ -77,22 +78,38 @@ namespace FORTRAN {
  *  See [DAXPY](http://www.mathkeisan.com/usersguide/man/daxpy.html)
  */
 inline void xAXPY(I_t n, S_t alpha, S_t* x, I_t incx, S_t* y, I_t incy) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(saxpy, SAXPY)(&n, &alpha, x, &incx, y, &incy);
+
 }
 /** \overload
  */
 inline void xAXPY(I_t n, D_t alpha, D_t* x, I_t incx, D_t* y, I_t incy) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(daxpy, DAXPY)(&n, &alpha, x, &incx, y, &incy);
+
 }
 /** \overload
  */
 inline void xAXPY(I_t n, C_t alpha, C_t* x, I_t incx, C_t* y, I_t incy) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(caxpy, CAXPY)(&n, &alpha, x, &incx, y, &incy);
+
 }
 /** \overload
  */
 inline void xAXPY(I_t n, Z_t alpha, Z_t* x, I_t incx, Z_t* y, I_t incy) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(zaxpy, ZAXPY)(&n, &alpha, x, &incx, y, &incy);
+
 }
 
 } /* namespace FORTRAN */
@@ -122,25 +139,41 @@ namespace CUBLAS {
  */
 inline void xAXPY(cublasHandle_t handle, I_t n, S_t alpha, S_t* x, I_t incx,
                   S_t* y, I_t incy) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasSaxpy(handle, n, &alpha, x, incx, y, incy));
+
 }
 /** \overload
  */
 inline void xAXPY(cublasHandle_t handle, I_t n, D_t alpha, D_t* x, I_t incx,
                   D_t* y, I_t incy) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasDaxpy(handle, n, &alpha, x, incx, y, incy));
+
 }
 /** \overload
  */
 inline void xAXPY(cublasHandle_t handle, I_t n, C_t alpha, C_t* x, I_t incx,
                   C_t* y, I_t incy) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasCaxpy(handle, n, &alpha, x, incx, y, incy));
+
 }
 /** \overload
  */
 inline void xAXPY(cublasHandle_t handle, I_t n, Z_t alpha, Z_t* x, I_t incx,
                   Z_t* y, I_t incy) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasZaxpy(handle, n, &alpha, x, incx, y, incy));
+
 }
 
 } /* namespace CUBLAS */

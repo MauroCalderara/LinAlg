@@ -21,7 +21,8 @@
  *        bindings to the <NAME> BLAS backend
  */
 
-#include "../types.h"      // need LinAlg::size_t before MKL header
+#include "../types.h"
+#include "../profiling.h"
 
 #include "../utilities/checks.h"
 #include "../dense.h"
@@ -70,22 +71,38 @@ namespace FORTRAN {
  *  See [DCOPY](http://www.mathkeisan.com/usersguide/man/dcopy.html)
  */
 inline void xCOPY(int n, S_t* x, int incx, S_t* y, int incy) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(scopy, SCOPY)(&n, x, &incx, y, &incy);
+
 }
 /** \overload
  */
 inline void xCOPY(int n, D_t* x, int incx, D_t* y, int incy) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(dcopy, DCOPY)(&n, x, &incx, y, &incy);
+
 }
 /** \overload
  */
 inline void xCOPY(int n, C_t* x, int incx, C_t* y, int incy) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(ccopy, CCOPY)(&n, x, &incx, y, &incy);
+
 }
 /** \overload
  */
 inline void xCOPY(int n, Z_t* x, int incx, Z_t* y, int incy) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(zcopy, ZCOPY)(&n, x, &incx, y, &incy);
+
 }
 
 } /* namespace LinAlg::BLAS::FORTRAN */

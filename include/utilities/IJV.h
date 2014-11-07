@@ -17,6 +17,7 @@
 #include <sstream>    // std::istringstream
 
 #include "../types.h"
+#include "../profiling.h"
 #include "../exceptions.h"
 #include "stringformat.h"
 #include "../dense.h"
@@ -45,6 +46,8 @@ namespace Utilities {
  */
 template <typename T>
 void write_IJV_data(LinAlg::Dense<T>& matrix, std::string filename) {
+
+  PROFILING_FUNCTION_HEADER
 
   auto rows              = matrix._rows;
   auto columns           = matrix._cols;
@@ -110,6 +113,8 @@ void write_IJV_data(LinAlg::Dense<T>& matrix, std::string filename) {
 }
 template <typename T>
 void write_IJV_data(LinAlg::Sparse<T>& matrix, std::string filename) {
+
+  PROFILING_FUNCTION_HEADER
 
   auto size              = matrix._size;
   auto first_index       = matrix._first_index;
@@ -181,6 +186,8 @@ void write_IJV_data(LinAlg::Sparse<T>& matrix, std::string filename) {
 template <typename T>
 inline void write_IJV(LinAlg::Dense<T>& matrix, std::string filename) {
 
+  PROFILING_FUNCTION_HEADER
+
   if (matrix._location != Location::host) {
 
     // Create a temporary matrix located in main memory and try again
@@ -248,6 +255,8 @@ inline void write_IJV(LinAlg::Dense<T>& matrix, std::string filename) {
  */
 template <typename T>
 inline void write_IJV(LinAlg::Sparse<T>& matrix, std::string filename) {
+
+  PROFILING_FUNCTION_HEADER
 
   std::ofstream file_to_write(filename, std::ios_base::trunc);
 

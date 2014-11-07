@@ -15,6 +15,7 @@
 #ifdef HAVE_MIC
 
 #include "../exceptions.h"   // LinAlg::excLinAlg
+#include "../profiling.h"
 
 namespace LinAlg {
 
@@ -31,6 +32,8 @@ namespace MIC {
  */
 template <typename T>
 inline void mic_deallocate(T* device_ptr, int device_id) {
+
+  PROFILING_FUNCTION_HEADER
 
   #pragma offload_transfer target (mic:device_id) \
                            nocopy (device_ptr : alloc_if(0) free_if(1))
@@ -62,6 +65,8 @@ inline void mic_deallocate(T* device_ptr, int device_id) {
  */
 template <typename T>
 inline std::shared_ptr<T> mic_make_shared(I_t size, int device_id) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   if (size < 1) {

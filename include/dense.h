@@ -200,18 +200,18 @@ Dense<T>::Dense()
                 _device_id(0),
                 _transposed(false),
                 _properties(0x0) {
-#ifdef CONSTRUCTOR_VERBOSE
-  std::cout << "Dense.empty_constructor\n";
-#endif
+ 
+  PROFILING_FUNCTION_HEADER
+
 }
 
 /*  \brief              Destructor
  */
 template <typename T>
 Dense<T>::~Dense() {
-#ifdef CONSTRUCTOR_VERBOSE
-  std::cout << "Dense.destructor\n";
-#endif
+ 
+  PROFILING_FUNCTION_HEADER
+
   unlink();
 }
 
@@ -220,9 +220,7 @@ Dense<T>::~Dense() {
 template <typename T>
 Dense<T>::Dense(Dense<T>&& other) : Dense() {
 
-#ifdef CONSTRUCTOR_VERBOSE
-  std::cout << "Dense.move_constructor\n";
-#endif
+  PROFILING_FUNCTION_HEADER
 
   // Default initialize using the default initialization and swap
   swap(*this, other);
@@ -247,6 +245,8 @@ Dense<T>::Dense(Dense<T>&& other) : Dense() {
  */
 template <typename U>
 void swap(Dense<U>& first, Dense<U>& second) {
+
+  PROFILING_FUNCTION_HEADER
 
   using std::swap;
   swap(first._memory, second._memory);
@@ -285,9 +285,7 @@ template <typename T>
 Dense<T>::Dense(I_t rows, I_t cols, Location location, int device_id)
               : Dense() {
 
-#ifdef CONSTRUCTOR_VERBOSE
-  std::cout << "Dense.allocating_constructor\n";
-#endif
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   if (rows == 0 || cols == 0) {
@@ -340,9 +338,7 @@ Dense<T>::Dense(T* in_array, I_t leading_dimension, I_t rows, I_t cols,
                 _transposed(false),
                 _properties(0x0) {
 
-#ifdef CONSTRUCTOR_VERBOSE
-  std::cout << "Dense.constructor_from_array\n";
-#endif
+  PROFILING_FUNCTION_HEADER
 
   // Create a shared_ptr that will not deallocate upon destruction.
   _memory = std::shared_ptr<T>(in_array, [](T* in_array){});
@@ -374,9 +370,7 @@ Dense<T>::Dense(const Dense<T>& source, SubBlock sub_block)
                 _device_id(source._device_id),
                 _transposed(source._transposed) {
 
-#ifdef CONSTRUCTOR_VERBOSE
-  std::cout << "Dense.submatrix_constructor\n";
-#endif
+  PROFILING_FUNCTION_HEADER
 
   if (_format == Format::ColMajor) {
     _offset = source._offset + sub_block.first_col * 
@@ -529,6 +523,8 @@ inline Dense<T> Dense<T>::operator()(I_t first_row, I_t last_row, I_t first_col,
 template <typename T>
 inline void Dense<T>::clone_from(const Dense<T>& source) {
 
+  PROFILING_FUNCTION_HEADER
+
   _memory            = source._memory;
   _offset            = source._offset;
   _format            = source._format;
@@ -556,6 +552,8 @@ inline void Dense<T>::clone_from(const Dense<T>& source) {
  */
 template <typename T>
 inline void Dense<T>::clone_from(const Dense<T>& source, SubBlock sub_block) {
+
+  PROFILING_FUNCTION_HEADER
 
   clone_from(source);
 
@@ -639,6 +637,8 @@ inline void Dense<T>::clone_from(const Dense<T>& source, I_t first_row,
 template <typename T>
 inline void Dense<T>::move_to(Dense<T>& destination) {
 
+  PROFILING_FUNCTION_HEADER
+
   destination.clone_from(*this);
   unlink();
 
@@ -666,6 +666,8 @@ inline void Dense<T>::move_to(Dense<T>& destination) {
 template <typename T>
 inline void Dense<T>::reallocate(I_t rows, I_t cols, Location location,
                                  int device_id) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   if (rows == 0 || cols == 0) {
@@ -735,6 +737,8 @@ template <typename T>
 template <typename U>
 inline void Dense<T>::reallocate_like(Dense<U>& other) {
 
+  PROFILING_FUNCTION_HEADER
+
   reallocate(other._rows, other._cols, other._location, other._device_id);
   _transposed = other._transposed;
 
@@ -745,6 +749,8 @@ template <typename T>
 template <typename U>
 inline void Dense<T>::reallocate_like(Dense<U>& other, Location location,
                                       int device_id) {
+
+  PROFILING_FUNCTION_HEADER
 
   reallocate(other._rows, other._cols, location, device_id);
   _transposed = other._transposed;
@@ -763,6 +769,8 @@ inline void Dense<T>::reallocate_like(Dense<U>& other, Location location,
  */
 template <typename T>
 inline void Dense<T>::operator<<(const Dense<T>& source) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifdef WARN_COPY
   std::cout << "Warning: matrix data copy\n";
@@ -823,6 +831,8 @@ inline void Dense<T>::operator<<(const Dense<T>& source) {
 template <typename T>
 void Dense<T>::location(Location new_location, int device_id) {
 
+  PROFILING_FUNCTION_HEADER
+
   if (new_location == Location::host) {
     device_id = 0;
   }
@@ -875,6 +885,8 @@ void Dense<T>::location(Location new_location, int device_id) {
 template <typename T>
 inline void Dense<T>::unlink() {
 
+  PROFILING_FUNCTION_HEADER
+
   _offset = 0;
   _leading_dimension = 0;
   _rows = 0;
@@ -893,6 +905,8 @@ inline void Dense<T>::unlink() {
  */
 template <typename T>
 inline void Dense<T>::print() const {
+
+  PROFILING_FUNCTION_HEADER
 
   if (is_empty()) {
     return;
@@ -987,6 +1001,8 @@ inline bool Dense<T>::is_on_MIC() const {
 template <typename T>
 inline void Dense<T>::set(Property property) {
 
+  PROFILING_FUNCTION_HEADER
+
   if (property == Property::hermitian) {
 
     if (!_is_complex()) {
@@ -1010,12 +1026,12 @@ inline void Dense<T>::set(Property property) {
 template <typename T>
 inline void Dense<T>::unset(Property property) {
 
+  PROFILING_FUNCTION_HEADER
+
   _properties = _properties & ~(property);
 
 }
 
-
 } /* namespace LinAlg */
-
 
 #endif /* LINALG_DENSE_H_ */

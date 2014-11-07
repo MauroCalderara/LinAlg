@@ -36,6 +36,7 @@
 
 
 #include "../types.h"
+#include "../profiling.h"
 #include "../exceptions.h"
 #include "../utilities/checks.h"
 #include "../dense.h"
@@ -98,25 +99,41 @@ namespace FORTRAN {
  */
 inline void xGESV(I_t n, I_t nrhs, S_t* A, I_t lda, int* ipiv, S_t* B, int ldb,
                   int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(sgesv, SGESV)(&n, &nrhs, A, &lda, ipiv, B, &ldb, info);
+
 }
 /** \overload
  */
 inline void xGESV(I_t n, I_t nrhs, D_t* A, I_t lda, int* ipiv, D_t* B, int ldb,
                   int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(dgesv, DGESV)(&n, &nrhs, A, &lda, ipiv, B, &ldb, info);
+
 }
 /** \overload
  */
 inline void xGESV(I_t n, I_t nrhs, C_t* A, I_t lda, int* ipiv, C_t* B, int ldb,
                   int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(cgesv, CGESV)(&n, &nrhs, A, &lda, ipiv, B, &ldb, info);
+
 }
 /** \overload
  */
 inline void xGESV(I_t n, I_t nrhs, Z_t* A, I_t lda, int* ipiv, Z_t* B, int ldb,
                   int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(zgesv, ZGESV)(&n, &nrhs, A, &lda, ipiv, B, &ldb, info);
+
 }
 
 } /* namespace LinAlg::LAPACK::FORTRAN */
@@ -152,25 +169,41 @@ namespace MAGMA {
  */
 inline void xGESV(I_t n, I_t nrhs, S_t* A, I_t lda, int* ipiv, S_t* B, int ldb,
                   int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   magma_sgesv_gpu(n, nrhs, A, lda, ipiv, B, ldb, info);
+
 }
 /** \overload
  */
 inline void xGESV(I_t n, I_t nrhs, D_t* A, I_t lda, int* ipiv, D_t* B, int ldb,
                   int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   magma_dgesv_gpu(n, nrhs, A, lda, ipiv, B, ldb, info);
+
 }
 /** \overload
  */
 inline void xGESV(I_t n, I_t nrhs, C_t* A, I_t lda, int* ipiv, C_t* B, int ldb,
                   int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   magma_cgesv_gpu(n, nrhs, A, lda, ipiv, B, ldb, info);
+
 }
 /** \overload
  */
 inline void xGESV(I_t n, I_t nrhs, Z_t* A, I_t lda, int* ipiv, Z_t* B, int ldb,
                   int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   magma_zgesv_gpu(n, nrhs, A, lda, ipiv, B, ldb, info);
+
 }
 
 } /* namespace LinAlg::LAPACK::MAGMA */
@@ -199,6 +232,8 @@ using LinAlg::Utilities::check_dimensions;
  */
 template <typename T>
 inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   check_format(Format::ColMajor, A, "xGESV(A, ipiv, B), A");

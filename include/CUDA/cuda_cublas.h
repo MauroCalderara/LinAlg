@@ -19,6 +19,7 @@
 #include <cublas_v2.h>
 
 #include "../types.h"
+#include "../profiling.h"
 #include "cuda_checks.h"
 
 namespace LinAlg {
@@ -37,6 +38,8 @@ extern bool _handles_are_initialized;
 /** \brief            A wrapper to initialize the global CUBLAS handles
  */
 inline void init() {
+
+  PROFILING_FUNCTION_HEADER
 
   int device_count;
   checkCUDA(cudaGetDeviceCount(&device_count));
@@ -63,6 +66,8 @@ inline void init() {
  */
 inline bool is_initialized() {
 
+  PROFILING_FUNCTION_HEADER
+
   return ((handles.empty()) ? false : true);
 
 }
@@ -70,6 +75,8 @@ inline bool is_initialized() {
 /** \brief            Destroy the global CUBLAS handles
  */
 inline void destroy() {
+
+  PROFILING_FUNCTION_HEADER
 
   for (unsigned int device = 0; device < handles.size(); ++device) {
 

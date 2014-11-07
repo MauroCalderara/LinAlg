@@ -16,6 +16,7 @@
 #include <tuple>        // std::tuple
 
 #include "types.h"
+#include "profiling.h"
 #include "utilities/CSR.h"
 #include "utilities/stringformat.h"
 
@@ -45,6 +46,8 @@ namespace Utilities {
  *  \endcode
  */
 std::tuple<I_t, I_t, I_t, bool> parse_CSR_header(std::string filename) {
+
+  PROFILING_FUNCTION_HEADER
 
   using std::ifstream;
   using std::string;
@@ -165,6 +168,8 @@ std::tuple<I_t, I_t, I_t, bool> parse_CSR_header(std::string filename) {
  *  \endcode
  */
 std::tuple<I_t, I_t, I_t, bool> parse_CSR_body(std::string filename) {
+
+  PROFILING_FUNCTION_HEADER
 
   using std::ifstream;
   using std::string;

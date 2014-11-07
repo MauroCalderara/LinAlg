@@ -31,6 +31,7 @@
 #include <utility>    // std::move
 
 #include "../types.h"
+#include "../profiling.h"
 #include "../exceptions.h"
 #include "../utilities/checks.h"
 #include "../streams.h"
@@ -81,8 +82,12 @@ inline void xGEAM(cublasHandle_t handle, cublasOperation_t transa,
                   cublasOperation_t transb, I_t m, I_t n, const S_t alpha,
                   const S_t* A, I_t lda, const S_t beta, const S_t* B, I_t ldb,
                   S_t* C, I_t ldc) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasSgeam(handle, transa, transb, m, n, &alpha, A, lda, &beta, \
                           B, ldb, C, ldc));
+
 }
 /** \overload
  */
@@ -90,8 +95,12 @@ inline void xGEAM(cublasHandle_t handle, cublasOperation_t transa,
                   cublasOperation_t transb, I_t m, I_t n, const D_t alpha,
                   const D_t* A, I_t lda, const D_t beta, const D_t* B, I_t ldb,
                   D_t* C, I_t ldc) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasDgeam(handle, transa, transb, m, n, &alpha, A, lda, &beta, \
                           B, ldb, C, ldc));
+
 }
 /** \overload
  */
@@ -100,10 +109,13 @@ inline void xGEAM(cublasHandle_t handle, cublasOperation_t transa,
                   const C_t* A, I_t lda, const C_t beta, const C_t* B, I_t ldb,
                   C_t* C, I_t ldc) {
 
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasCgeam(handle, transa, transb, m, n, \
                           (cuComplex*)(&alpha), (cuComplex*)(A), lda, \
                           (cuComplex*)(&beta), (cuComplex*)(B), ldb, \
                           (cuComplex*)(C), ldc));
+
 }
 /** \overload
  */
@@ -111,12 +123,16 @@ inline void xGEAM(cublasHandle_t handle, cublasOperation_t transa,
                   cublasOperation_t transb, I_t m, I_t n, const Z_t alpha,
                   const Z_t* A, I_t lda, const Z_t beta, const Z_t* B, I_t ldb,
                   Z_t* C, I_t ldc) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasZgeam(handle, transa, transb, m, n, \
                           (cuDoubleComplex*)(&alpha), \
                           (cuDoubleComplex*)(A), lda, \
                           (cuDoubleComplex*)(&beta), \
                           (cuDoubleComplex*)(B), ldb, \
                           (cuDoubleComplex*)(C), ldc));
+
 }
 /** \overload
  */
@@ -155,6 +171,8 @@ using LinAlg::CUDA::CUBLAS::handles;
 template <typename T>
 inline void xGEAM(const T alpha, const Dense<T>& A, const T beta,
                   const Dense<T>& B, Dense<T>& C) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   check_device(A, B, C, "xGEAM()");
@@ -211,6 +229,8 @@ inline void xGEAM(const T alpha, const Dense<T>& A, const T beta,
 template <typename T>
 inline void xGEAM_async(const T alpha, const Dense<T>& A, const T beta,
                         const Dense<T>& B, Dense<T>& C, CUDAStream& stream) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   check_device(A, B, C, "xGEAM()");
@@ -269,6 +289,8 @@ inline void xGEAM_async(const T alpha, const Dense<T>& A, const T beta,
 template <typename T>
 inline CUDAStream xGEAM_async(const T alpha, const Dense<T>& A, const T beta,
                               const Dense<T>& B, Dense<T>&C) {
+
+  PROFILING_FUNCTION_HEADER
 
   CUDAStream stream;
 

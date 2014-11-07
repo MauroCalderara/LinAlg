@@ -14,6 +14,7 @@
 #define LINALG_LINALG_H_
 
 #include "types.h"
+#include "profiling.h"
 #include "exceptions.h"
 #include "streams.h"
 #include "matrix.h"

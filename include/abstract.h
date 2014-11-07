@@ -35,6 +35,7 @@
 #define LINALG_ABSTRACT_H_
 
 #include "types.h"
+#include "profiling.h"
 #include "exceptions.h"
 #include "utilities/utilities.h"
 #include "BLAS/blas.h"      // the bindings to the various BLAS libraries
@@ -62,6 +63,8 @@ namespace LinAlg {
  */
 template <typename T>
 inline void add(T alpha, Dense<T>& A, Dense<T>& B) {
+
+  PROFILING_FUNCTION_HEADER
 
   using Utilities::check_format;
   using Utilities::check_input_transposed;
@@ -180,6 +183,9 @@ inline void multiply(const Dense<T>& A, const Dense<T>& B, Dense<T>& C) {
 template <typename T>
 inline void multiply(const T alpha, const Dense<T>& A, const Dense<T>& B,
                      const T beta, Dense<T>& C) {
+
+  PROFILING_FUNCTION_HEADER
+
   BLAS::xGEMM(alpha, A, B, beta, C);
 }
 
@@ -210,6 +216,9 @@ inline void solve(Dense<T>& A, Dense<T>& B) {
   //    allocated on the CPU
   //  - for the CUBLAS (GETRF + 2*TRSM) implementation the pivot vector is
   //    ignored
+
+  PROFILING_FUNCTION_HEADER
+
   Dense<int> pivot(A._rows, 1, Location::host, 0);
   LAPACK::xGESV(A, pivot, B);
 
@@ -233,6 +242,8 @@ inline void solve(Dense<T>& A, Dense<T>& B) {
  */
 template <typename T>
 inline void solve(Dense<T>& A, Dense<I_t>& pivot, Dense<T>& B) {
+
+  PROFILING_FUNCTION_HEADER
 
   LAPACK::xGESV(A, pivot, B);
 
@@ -259,6 +270,8 @@ inline void solve(Dense<T>& A, Dense<I_t>& pivot, Dense<T>& B) {
  */
 template <typename T>
 inline void invert(Dense<T>& A) {
+
+  PROFILING_FUNCTION_HEADER
 
   // Note: MAGMA needs ipiv to be on the host
 #ifdef USE_MAGMA_GETRF
@@ -292,6 +305,8 @@ inline void invert(Dense<T>& A) {
 template <typename T>
 inline void invert(Dense<T>& A, Dense<int>& pivot) {
 
+  PROFILING_FUNCTION_HEADER
+
   Dense<T>   work;
 
   // We assume that pivoting factorization is faster for all backends 
@@ -324,6 +339,8 @@ inline void invert(Dense<T>& A, Dense<int>& pivot) {
  */
 template <typename T>
 inline void invert(Dense<T>& A, Dense<T>& C) {
+
+  PROFILING_FUNCTION_HEADER
 
   // Note: MAGMA needs ipiv to be on the host
 #ifdef USE_MAGMA_GETRF
@@ -361,6 +378,8 @@ inline void invert(Dense<T>& A, Dense<T>& C) {
  */
 template <typename T>
 inline void invert(Dense<T>& A, Dense<int>& pivot, Dense<T>& C) {
+
+  PROFILING_FUNCTION_HEADER
 
   Dense<T>   work;
 

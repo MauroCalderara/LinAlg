@@ -66,22 +66,38 @@ namespace FORTRAN {
  *  See [DLARNV](http://www.mathkeisan.com/usersguide/man/dlarnv.html)
  */
 inline void xLARNV(I_t idist, I_t* iseed, I_t n, S_t* x){
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(slarnv, SLARNV)(&idist, iseed, &n, x);
+
 }
 /** \overload
  */
 inline void xLARNV(I_t idist, I_t* iseed, I_t n, D_t* x){
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(dlarnv, DLARNV)(&idist, iseed, &n, x);
+
 }
 /** \overload
  */
 inline void xLARNV(I_t idist, I_t* iseed, I_t n, C_t* x){
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(clarnv, CLARNV)(&idist, iseed, &n, x);
+
 }
 /** \overload
  */
 inline void xLARNV(I_t idist, I_t* iseed, I_t n, Z_t* x){
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(zlarnv, ZLARNV)(&idist, iseed, &n, x);
+
 }
 
 } /* namespace FORTRAN */
@@ -103,6 +119,8 @@ inline void xLARNV(I_t idist, I_t* iseed, I_t n, Z_t* x){
  */
 template <typename T>
 inline void xLARNV(I_t idist, I_t* iseed, Dense<T>& X) {
+
+  PROFILING_FUNCTION_HEADER
 
   if (X.is_empty()) {
     return;

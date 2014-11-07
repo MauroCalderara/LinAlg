@@ -18,10 +18,6 @@
 #include <iostream>   // std::cout;
 #endif
 
-#ifdef CONSTRUCTOR_VERBOSE
-#include <iostream>
-#endif
-
 #ifdef HAVE_CUDA
 #include <cuda_runtime.h> // various CUDA routines
 #include <cusparse_v2.h>
@@ -29,6 +25,7 @@
 #endif
 
 #include "types.h"
+#include "profiling.h"
 #include "matrix.h"
 #include "exceptions.h"
 
@@ -183,20 +180,22 @@ Sparse<T>::Sparse()
                   _transposed(false),
                   _format(Format::CSR),
                   _properties(0x0) {
-#ifdef CONSTRUCTOR_VERBOSE
-  std::cout << "Sparse.empty_constructor\n";
-#endif
+
+  PROFILING_FUNCTION_HEADER
+
 #ifdef HAVE_MPI
   _row_offset = 0;
 #endif
+
 }
 
 template <typename T>
 Sparse<T>::~Sparse() {
-#ifdef CONSTRUCTOR_VERBOSE
-  std::cout << "Sparse.destructor\n";
-#endif
+
+  PROFILING_FUNCTION_HEADER
+
   unlink();
+
 }
 
 
@@ -205,9 +204,7 @@ Sparse<T>::~Sparse() {
 template <typename T>
 Sparse<T>::Sparse(Sparse&& other) : Sparse() {
 
-#ifdef CONSTRUCTOR_VERBOSE
-  std::cout << "Sparse.move_constructor\n";
-#endif
+  PROFILING_FUNCTION_HEADER
 
   // Default initialize and swap
   swap(*this, other);
@@ -232,6 +229,8 @@ Sparse<T>::Sparse(Sparse&& other) : Sparse() {
  */
 template <typename U>
 void swap(Sparse<U>& first, Sparse<U>& second) {
+
+  PROFILING_FUNCTION_HEADER
 
   using std::swap;
   swap(first._n_nonzeros, second._n_nonzeros);
@@ -293,6 +292,8 @@ Sparse<T>::Sparse(I_t size, I_t n_nonzeros, int first_index, Location location,
                 _transposed(false),
                 _format(format),
                 _properties(0x0) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   if (format != Format::CSR && format != Format::CSC) {
@@ -387,6 +388,8 @@ Sparse<T>::Sparse(I_t size, I_t n_nonzeros, T* values, I_t* indices, I_t* edges,
                   _format(format),
                   _properties(0x0) {
 
+  PROFILING_FUNCTION_HEADER
+
 #ifndef LINALG_NO_CHECKS
   if (format != Format::CSR && format != Format::CSC) {
 
@@ -425,6 +428,7 @@ Sparse<T>::Sparse(I_t size, I_t n_nonzeros, T* values, I_t* indices, I_t* edges,
 #ifdef HAVE_MPI
   _row_offset = 0;
 #endif
+
 }
 
 /** \brief            Cloning from an existing matrix
@@ -437,6 +441,8 @@ Sparse<T>::Sparse(I_t size, I_t n_nonzeros, T* values, I_t* indices, I_t* edges,
  */
 template <typename T>
 inline void Sparse<T>::clone_from(const Sparse<T>& source) {
+
+  PROFILING_FUNCTION_HEADER
 
   _n_nonzeros          = source._n_nonzeros;
   _size                = source._size;
@@ -470,6 +476,8 @@ inline void Sparse<T>::clone_from(const Sparse<T>& source) {
 template <typename T>
 inline void Sparse<T>::move_to(Sparse<T>& destination) {
 
+  PROFILING_FUNCTION_HEADER
+
   destination.clone_from(*this);
   unlink();
 
@@ -497,6 +505,8 @@ inline void Sparse<T>::move_to(Sparse<T>& destination) {
 template <typename T>
 inline void Sparse<T>::reallocate(I_t size, I_t n_nonzeros, Location location,
                                   int device_id) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   if (size < 0 || n_nonzeros < 0) {
@@ -573,6 +583,8 @@ inline void Sparse<T>::reallocate(I_t size, I_t n_nonzeros, Location location,
 template <typename T>
 inline void Sparse<T>::first_index(int new_first_index) {
 
+  PROFILING_FUNCTION_HEADER
+
   if (new_first_index == _first_index) {
     return;
   }
@@ -639,6 +651,8 @@ inline void Sparse<T>::first_index(int new_first_index) {
  */
 template <typename T>
 void Sparse<T>::location(Location new_location, int device_id) {
+
+  PROFILING_FUNCTION_HEADER
 
   if (new_location == Location::host) {
     device_id = 0;
@@ -779,6 +793,8 @@ void Sparse<T>::location(Location new_location, int device_id) {
  */
 template <typename T>
 inline void Sparse<T>::unlink() {
+
+  PROFILING_FUNCTION_HEADER
 
   _n_nonzeros = 0;
   _size = 0;

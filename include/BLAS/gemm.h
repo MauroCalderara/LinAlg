@@ -32,6 +32,7 @@
 #ifdef HAVE_MKL
 #include <mkl.h>    // need to have types.h before mkl.h
 #endif
+#include "../profiling.h"
 #include "../exceptions.h"
 #include "../utilities/checks.h"
 #include "../dense.h"
@@ -122,13 +123,20 @@ namespace FORTRAN {
  */
 inline void xGEMM(char transa, char transb, int m, int n, int k, S_t alpha,
                   S_t* A, int lda, S_t* B, int ldb, S_t beta, S_t* C, int ldc) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(sgemm, SGEMM)(&transa, &transb, &m, &n, &k, &alpha, A, &lda, B,
                              &ldb, &beta, C, &ldc);
+
 }
 /** \overload
  */
 inline void xGEMM(char transa, char transb, int m, int n, int k, D_t alpha,
                   D_t* A, int lda, D_t* B, int ldb, D_t beta, D_t* C, int ldc) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(dgemm, DGEMM)(&transa, &transb, &m, &n, &k, &alpha, A, &lda, B,
                              &ldb, &beta, C, &ldc);
 }
@@ -136,15 +144,23 @@ inline void xGEMM(char transa, char transb, int m, int n, int k, D_t alpha,
  */
 inline void xGEMM(char transa, char transb, int m, int n, int k, C_t alpha,
                   C_t* A, int lda, C_t* B, int ldb, C_t beta, C_t* C, int ldc) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(cgemm, CGEMM)(&transa, &transb, &m, &n, &k, &alpha, A, &lda, B,
                              &ldb, &beta, C, &ldc);
+
 }
 /** \overload
  */
 inline void xGEMM(char transa, char transb, int m, int n, int k, Z_t alpha,
                   Z_t* A, int lda, Z_t* B, int ldb, Z_t beta, Z_t* C, int ldc) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(zgemm, ZGEMM)(&transa, &transb, &m, &n, &k, &alpha, A, &lda, B,
                              &ldb, &beta, C, &ldc);
+
 }
 
 } /* namespace FORTRAN */
@@ -184,13 +200,21 @@ namespace MKL {
  */
 inline void xGEMM(char transa, char transb, int m, int n, int k, C_t alpha,
                   S_t* A, int lda, C_t* B, int ldb, C_t beta, C_t* C, int ldc) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(scgemm, SCGEMM)(&transa, &transb, &m, &n, &k, &alpha, A, &lda, B,
                                &ldb, &beta, C, &ldc);
+
 }
 inline void xGEMM(char transa, char transb, int m, int n, int k, Z_t alpha,
                   D_t* A, int lda, Z_t* B, int ldb, Z_t beta, Z_t* C, int ldc) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(dzgemm, DZGEMM)(&transa, &transb, &m, &n, &k, &alpha, A, &lda, B,
                                &ldb, &beta, C, &ldc);
+
 }
 
 } /* namespace LinAlg::BLAS::MKL */
@@ -237,8 +261,12 @@ inline void xGEMM(cublasHandle_t handle, cublasOperation_t transa,
                   cublasOperation_t transb, I_t m, I_t n, I_t k,
                   const S_t* alpha, const S_t* A, I_t lda, const S_t* B,
                   I_t ldb, const S_t* beta, S_t* C, I_t ldc) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasSgemm(handle, transa, transb, m, n, k, alpha, A, lda, B, \
                           ldb, beta, C, ldc));
+
 }
 /** \overload
  */
@@ -246,8 +274,12 @@ inline void xGEMM(cublasHandle_t handle, cublasOperation_t transa,
                   cublasOperation_t transb, I_t m, I_t n, I_t k,
                   const D_t* alpha, const D_t* A, I_t lda, const D_t* B,
                   I_t ldb, const D_t* beta, D_t* C, I_t ldc) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasDgemm(handle, transa, transb, m, n, k, alpha, A, lda, B, \
                           ldb, beta, C, ldc));
+
 }
 /** \overload
  */
@@ -255,10 +287,14 @@ inline void xGEMM(cublasHandle_t handle, cublasOperation_t transa,
                   cublasOperation_t transb, I_t m, I_t n, I_t k,
                   const C_t* alpha, const C_t* A, I_t lda, const C_t* B,
                   I_t ldb, const C_t* beta, C_t* C, I_t ldc) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasCgemm(handle, transa, transb, m, n, k, \
                           (const cuComplex*)alpha, (const cuComplex*)A, lda, \
                           (const cuComplex*)B, ldb, (const cuComplex*)beta, \
                           (cuComplex*)C, ldc));
+
 }
 /** \overload
  */
@@ -266,12 +302,16 @@ inline void xGEMM(cublasHandle_t handle, cublasOperation_t transa,
                   cublasOperation_t transb, I_t m, I_t n, I_t k,
                   const Z_t* alpha, const Z_t* A, I_t lda, const Z_t* B,
                   I_t ldb, const Z_t* beta, Z_t* C, I_t ldc) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasZgemm(handle, transa, transb, m, n, k, \
                           (const cuDoubleComplex*)alpha, \
                           (const cuDoubleComplex*)A, lda, \
                           (const cuDoubleComplex*)B, ldb, \
                           (const cuDoubleComplex*)beta, \
                           (cuDoubleComplex*)C, ldc));
+
 }
 
 } /* namespace LinAlg::BLAS::CUBLAS */
@@ -301,6 +341,8 @@ using LinAlg::CUDA::CUBLAS::handles;
 template <typename T>
 inline void xGEMM(const T alpha, const Dense<T>& A, const Dense<T>& B,
                   const T beta, Dense<T>& C) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   check_device(A, B, C, "xGEMM(alpha, A, B, beta, C)");
@@ -361,6 +403,8 @@ inline void xGEMM(const T alpha, const Dense<U>& A, const Dense<V>& B,
   // This is the most general case that is only supported on the CPU if we 
   // have MKL support
 
+  PROFILING_FUNCTION_HEADER
+
 #ifndef LINALG_NO_CHECKS
   check_device(A, B, C, "xGEMM(alpha, A, B, beta, C)");
   check_output_transposed(C, "xGEMM(alpha, A, B, beta, C)");
@@ -417,6 +461,8 @@ inline void xGEMM(const T alpha, const Dense<U>& A, const Dense<V>& B,
 template <typename T, typename U>
 inline void xGEMM(const T alpha, const Dense<T>& A, const Dense<U>& B,
                   const T beta, Dense<T>& C) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   check_device(A, B, C, "xGEMM(alpha, A, B, beta, C)");

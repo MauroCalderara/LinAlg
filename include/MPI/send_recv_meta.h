@@ -23,6 +23,7 @@
 #include <utility>    // std::move
 
 #include "../types.h"
+#include "../profiling.h"
 #include "../exceptions.h"
 #include "../streams.h"
 #include "../metadata.h"   // LinAlg::MetaData
@@ -66,6 +67,8 @@ void send_meta_async(MetaData meta, MPI_Comm communicator, int receiving_rank,
 inline MPIStream send_meta_async(MetaData meta, MPI_Comm communicator,
                                  int receiving_rank, int tag) {
 
+  PROFILING_FUNCTION_HEADER
+
   MPIStream stream;
 
   send_meta_async(meta, communicator, receiving_rank, tag, stream);
@@ -91,6 +94,8 @@ inline MPIStream send_meta_async(MetaData meta, MPI_Comm communicator,
 template <typename T>
 inline void send_meta(Dense<T>& matrix, MPI_Comm communicator,
                       int receiving_rank, int tag) {
+
+  PROFILING_FUNCTION_HEADER
 
   MetaData meta(matrix);
 
@@ -118,8 +123,13 @@ inline void send_meta(Dense<T>& matrix, MPI_Comm communicator,
 template <typename T>
 inline void send_meta_async(Dense<T>& matrix, MPI_Comm communicator,
                             int receiving_rank, int tag, MPIStream& stream) {
+
+  PROFILING_FUNCTION_HEADER
+
   MetaData meta(matrix);
+
   send_meta_async(meta, communicator, receiving_rank, tag, stream);
+
 }
 /** \overload
  *
@@ -140,6 +150,8 @@ inline void send_meta_async(Dense<T>& matrix, MPI_Comm communicator,
 template <typename T>
 inline MPIStream send_meta_async(Dense<T>& matrix, MPI_Comm communicator,
                             int receiving_rank, int tag) {
+
+  PROFILING_FUNCTION_HEADER
 
   MPIStream stream;
 
@@ -184,6 +196,8 @@ void receive_meta_async(MetaData& meta, MPI_Comm communicator,
 inline MPIStream receive_meta_async(MetaData& meta, MPI_Comm communicator,
                                     int sending_rank, int tag) {
 
+  PROFILING_FUNCTION_HEADER
+
   MPIStream stream;
 
   receive_meta_async(meta, communicator, sending_rank, tag, stream);
@@ -211,6 +225,8 @@ inline MPIStream receive_meta_async(MetaData& meta, MPI_Comm communicator,
 template <typename T>
 inline void receive_meta(Dense<T>& matrix, MPI_Comm communicator,
                          int sending_rank, int tag) {
+
+  PROFILING_FUNCTION_HEADER
 
   MetaData meta = receive_meta(communicator, sending_rank, tag);
 

@@ -24,6 +24,7 @@
 #endif
 
 #include "../types.h"
+#include "../profiling.h"
 
 namespace LinAlg {
 
@@ -33,6 +34,8 @@ namespace Utilities {
  */
 template <typename T>
 inline std::shared_ptr<T> host_make_shared(I_t size) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   if (size < 1) {
@@ -50,6 +53,7 @@ inline std::shared_ptr<T> host_make_shared(I_t size) {
 #endif
 
 }
+
 } /* namespace LinAlg::Utilities */
 
 } /* namespace LinAlg */

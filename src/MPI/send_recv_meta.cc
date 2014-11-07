@@ -13,6 +13,7 @@
 
 #include <mpi.h>      // all MPI stuff
 
+#include "profiling.h"
 #include "exceptions.h"
 #include "streams.h"
 #include "MPI/send_recv.h"      // The function overloads for MPI_*send/*recv
@@ -39,6 +40,8 @@ namespace MPI {
  */
 void send_meta(MetaData& meta, MPI_Comm communicator, int receiving_rank,
                int tag) {
+
+  PROFILING_FUNCTION_HEADER
 
   auto internal_tag = MPI_TAG_OFFSET * tag;
 
@@ -85,6 +88,8 @@ void send_meta_async(MetaData meta, MPI_Comm communicator,
   // Note: we don't pass by reference to ensure we have a valid copy of the
   // meta data.
 
+  PROFILING_FUNCTION_HEADER
+
   if (stream.synchronous_operation) {
 
     send_meta(meta, communicator, receiving_rank, tag);
@@ -125,6 +130,8 @@ void send_meta_async(MetaData meta, MPI_Comm communicator,
  *                    The meta data
  */
 MetaData receive_meta(MPI_Comm communicator, int sending_rank, int tag) {
+
+  PROFILING_FUNCTION_HEADER
 
   MetaData meta;
 
@@ -173,6 +180,8 @@ MetaData receive_meta(MPI_Comm communicator, int sending_rank, int tag) {
  */
 void receive_meta_async(MetaData& meta, MPI_Comm communicator,
                         int sending_rank, int tag, MPIStream& stream) {
+
+  PROFILING_FUNCTION_HEADER
 
   if (stream.synchronous_operation) {
 

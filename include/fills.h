@@ -16,6 +16,7 @@
 #include <random>         // std::mt19337, std::uniform_real_distribution
 #include <ctime>          // std::time
 
+#include "profiling.h"
 #include "dense.h"
 #include "sparse.h"
 #include "LAPACK/lapack.h"
@@ -39,13 +40,17 @@ namespace Fills {
 template <typename T>
 inline void val(Dense<T>& matrix, T value) {
 
-  LAPACK::xLASET(value, value, matrix);
+  PROFILING_FUNCTION_HEADER
+
+  LAPACK::xLASET(value, value, matrix);   // doesn't work, somehow
 
 }
 /** \overload
  */
 template <typename T>
 inline void val(Sparse<T>& matrix, T value) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECK
   if (matrix.location() != Location::host) {
@@ -99,6 +104,8 @@ inline void zero(Sparse<T>& matrix) {
 template <typename T>
 inline void val_diag_offdiag(Dense<T>& matrix, T a, T b) {
 
+  PROFILING_FUNCTION_HEADER
+
   LAPACK::xLASET(a, b, matrix);
 
 }
@@ -111,6 +118,8 @@ inline void val_diag_offdiag(Dense<T>& matrix, T a, T b) {
  */
 template <typename T>
 inline void unity(Dense<T>& matrix) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifdef LINALG_NO_CHECKS
   if (matrix.rows() != matrix.cols()) {
@@ -143,6 +152,8 @@ inline void unity(Dense<T>& matrix) {
  */
 template <typename T>
 inline void lapack_rand(Dense<T>& matrix, I_t distribution, I_t* seed) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifdef LINALG_NO_CHECKS
   if (distribution < 1 || distribution > 5) {
@@ -181,6 +192,8 @@ inline void lapack_rand(Dense<T>& matrix, I_t distribution, I_t* seed) {
  */
 template <typename T>
 inline void lapack_urand(Dense<T>& matrix) {
+
+  PROFILING_FUNCTION_HEADER
 
   std::mt19937 random_engine;
   random_engine.seed(std::time(0));

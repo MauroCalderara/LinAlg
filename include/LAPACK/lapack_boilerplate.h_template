@@ -35,6 +35,7 @@
 
 
 #include "../types.h"
+#include "../profiling.h"
 #include "../exceptions.h"
 #include "../utilities/checks.h"
 #include "../dense.h"
@@ -74,22 +75,38 @@ namespace FORTRAN {
  *  See [DXYZ](http://www.mathkeisan.com/usersguide/man/dxyz.html)
  */
 inline void xXYZ(...) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(sxyz, SXYZ)(...);
+
 }
 /** \overload
  */
 inline void xXYZ(...) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(dxyz, DXYZ)(...);
+
 }
 /** \overload
  */
 inline void xXYZ(...) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(cxyz, CXYZ)(...);
+
 }
 /** \overload
  */
 inline void xXYZ(...) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(zxyz, ZXYZ)(...);
+
 }
 
 } /* namespace FORTRAN */
@@ -111,22 +128,38 @@ namespace CUBLAS {
  *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
 inline void xXYZ(...) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasSxyz(...));
+
 }
 /** \overload
  */
 inline void xXYZ(...) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasDxyz(...));
+
 }
 /** \overload
  */
 inline void xXYZ(...) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasCxyz(...));
+
 }
 /** \overload
  */
 inline void xXYZ(...) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasZxyz(...));
+
 }
 
 } /* namespace LinAlg::LAPACK::CUBLAS */
@@ -147,22 +180,38 @@ namespace MAGMA {
  *  See [DXYZ](http://www.mathkeisan.com/usersguide/man/dxyz.html)
  */
 inline void xXYZ(...) {
+
+  PROFILING_FUNCTION_HEADER
+
   magma_sxyz(...);
+
 }
 /** \overload
  */
 inline void xXYZ(...) {
+
+  PROFILING_FUNCTION_HEADER
+
   magma_dxyz(...);
+
 }
 /** \overload
  */
 inline void xXYZ(...) {
+
+  PROFILING_FUNCTION_HEADER
+
   magma_cxyz(...);
+
 }
 /** \overload
  */
 inline void xXYZ(...) {
+
+  PROFILING_FUNCTION_HEADER
+
   magma_zxyz(...);
+
 }
     
 } /* namespace LinAlg::LAPACK::MAGMA */
@@ -184,6 +233,8 @@ using LinAlg::Utilities::check_input_transposed;
  */
 template <typename T>
 inline void xXYZ(Dense<T>& X, Dense<int>& Y) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   check_device(X, Y, "xXYZ()");

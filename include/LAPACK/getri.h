@@ -37,6 +37,7 @@
 
 
 #include "../types.h"
+#include "../profiling.h"
 #include "../exceptions.h"
 #include "../utilities/checks.h"
 #include "../dense.h"
@@ -94,25 +95,41 @@ namespace FORTRAN {
  */
 inline void xGETRI(I_t n, S_t* A, I_t lda, int* ipiv, S_t* work, int lwork,
                    int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(sgetri, SGETRI)(&n, A, &lda, ipiv, work, &lwork, info);
+
 }
 /** \overload
  */
 inline void xGETRI(I_t n, D_t* A, I_t lda, int* ipiv, D_t* work, int lwork,
                    int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(dgetri, DGETRI)(&n, A, &lda, ipiv, work, &lwork, info);
+
 }
 /** \overload
  */
 inline void xGETRI(I_t n, C_t* A, I_t lda, int* ipiv, C_t* work, int lwork,
                    int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(cgetri, CGETRI)(&n, A, &lda, ipiv, work, &lwork, info);
+
 }
 /** \overload
  */
 inline void xGETRI(I_t n, Z_t* A, I_t lda, int* ipiv, Z_t* work, int lwork,
                    int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(zgetri, ZGETRI)(&n, A, &lda, ipiv, work, &lwork, info);
+
 }
 
 } /* namespace LinAlg::LAPACK::FORTRAN */
@@ -146,32 +163,48 @@ namespace CUBLAS {
  */
 inline void xGETRI(cublasHandle_t handle, I_t n, S_t* A, I_t lda, int* ipiv,
                    S_t* C, I_t ldc, int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasSgetriBatched(handle, n, &A, lda, ipiv, &C, ldc, info, 1));
+
 }
 /** \overload
  */
 inline void xGETRI(cublasHandle_t handle, I_t n, D_t* A, I_t lda, int* ipiv,
                    D_t* C, I_t ldc, int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasDgetriBatched(handle, n, &A, lda, ipiv, &C, ldc, info, 1));
+
 }
 /** \overload
  */
 inline void xGETRI(cublasHandle_t handle, I_t n, C_t* A, I_t lda, int* ipiv,
                    C_t* C, I_t ldc, int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasCgetriBatched(handle, n, \
                                   reinterpret_cast<cuComplex**>(&A), lda, \
                                   ipiv, reinterpret_cast<cuComplex**>(&C), \
                                   ldc, info, 1));
+
 }
 /** \overload
  */
 inline void xGETRI(cublasHandle_t handle, I_t n, Z_t* A, I_t lda, int* ipiv,
                    Z_t* C, I_t ldc, int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasZgetriBatched(handle, n, \
                                   reinterpret_cast<cuDoubleComplex**>(&A), lda,\
                                   ipiv, \
                                   reinterpret_cast<cuDoubleComplex**>(&C), \
                                   ldc, info, 1));
+
 }
 
 /** \brief            Invert multiple matrices in LU decomposed format
@@ -203,38 +236,54 @@ inline void xGETRI(cublasHandle_t handle, I_t n, Z_t* A, I_t lda, int* ipiv,
 inline void xGETRI_batched(cublasHandle_t handle, I_t n, S_t* Aarray[], I_t lda,
                            int* PivotArray, S_t* Carray[], I_t ldc,
                            int* infoArray, I_t batchSize) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasSgetriBatched(handle, n, Aarray, lda, PivotArray, Carray, \
                                   ldc, infoArray, batchSize));
+
 }
 /** \overload
  */
 inline void xGETRI_batched(cublasHandle_t handle, I_t n, D_t* Aarray[], I_t lda,
                            int* PivotArray, D_t* Carray[], I_t ldc,
                            int* infoArray, I_t batchSize) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasDgetriBatched(handle, n, Aarray, lda, PivotArray, Carray, \
                                   ldc, infoArray, batchSize));
+
 }
 /** \overload
  */
 inline void xGETRI_batched(cublasHandle_t handle, I_t n, C_t* Aarray[], I_t lda,
                            int* PivotArray, C_t* Carray[], I_t ldc,
                            int* infoArray, I_t batchSize) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasCgetriBatched(handle, n, \
                                   reinterpret_cast<cuComplex**>(Aarray), lda, \
                                   PivotArray, \
                                   reinterpret_cast<cuComplex**>(Carray), \
                                   ldc, infoArray, batchSize));
+
 }
 /** \overload
  */
 inline void xGETRI_batched(cublasHandle_t handle, I_t n, Z_t* Aarray[], I_t lda,
                            int* PivotArray, Z_t* Carray[], I_t ldc,
                            int* infoArray, I_t batchSize) {
+
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasZgetriBatched(handle, n, \
                                   reinterpret_cast<cuDoubleComplex**>(Aarray), \
                                   lda, PivotArray, \
                                   reinterpret_cast<cuDoubleComplex**>(Carray), \
                                   ldc, infoArray, batchSize));
+
 }
 
 } /* namespace LinAlg::LAPACK::CUBLAS */
@@ -265,25 +314,41 @@ namespace MAGMA {
  */
 inline void xGETRI(I_t n, S_t* A, I_t lda, int* ipiv, S_t* work, int lwork,
                    int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   magma_sgetri_gpu(n, A, lda, ipiv, work, lwork, info);
+
 }
 /** \overload
  */
 inline void xGETRI(I_t n, D_t* A, I_t lda, int* ipiv, D_t* work, int lwork,
                    int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   magma_dgetri_gpu(n, A, lda, ipiv, work, lwork, info);
+
 }
 /** \overload
  */
 inline void xGETRI(I_t n, C_t* A, I_t lda, int* ipiv, C_t* work, int lwork,
                    int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   magma_cgetri_gpu(n, A, lda, ipiv, work, lwork, info);
+
 }
 /** \overload
  */
 inline void xGETRI(I_t n, Z_t* A, I_t lda, int* ipiv, Z_t* work, int lwork,
                    int* info) {
+
+  PROFILING_FUNCTION_HEADER
+
   magma_zgetri_gpu(n, A, lda, ipiv, work, lwork, info);
+
 }
 
 #ifndef DOXYGEN_SKIP
@@ -341,6 +406,8 @@ using LinAlg::Utilities::check_input_transposed;
  */
 template <typename T>
 inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   // Check A
@@ -522,8 +589,12 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
  */
 template <typename T>
 inline void xGETRI(Dense<T>& A, Dense<int>& ipiv) {
+
+  PROFILING_FUNCTION_HEADER
+
   Dense<T> work;
   xGETRI(A, ipiv, work);
+
 }
 
 /** \brief            Compute the inverse using the LU decomposition of a
@@ -574,6 +645,8 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv) {
 template <typename T>
 inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
                        Dense<T>& C) {
+
+  PROFILING_FUNCTION_HEADER
 
   if (C.is_empty()) {
     C.reallocate(A._rows, A._cols, A._location, A._device_id);
@@ -779,8 +852,12 @@ inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
  */
 template <typename T>
 inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& C) {
+
+  PROFILING_FUNCTION_HEADER
+
   Dense<T>   work;
   xGETRI(A, ipiv, work, C);
+
 }
 
 } /* namespace LinAlg::LAPACK */

@@ -89,25 +89,41 @@ namespace FORTRAN {
  */
 inline void xLASET(const char* uplo, const I_t m, const I_t n, const S_t alpha,
                    const S_t beta, S_t* A, const I_t lda) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(slaset, SLASET)(uplo, &m, &n, &alpha, &beta, A, &lda);
+
 }
 /** \overload
  */
 inline void xLASET(const char* uplo, const I_t m, const I_t n, const D_t alpha,
                    const D_t beta, D_t* A, const I_t lda) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(dlaset, DLASET)(uplo, &m, &n, &alpha, &beta, A, &lda);
+
 }
 /** \overload
  */
 inline void xLASET(const char* uplo, const I_t m, const I_t n, const C_t alpha,
                    const C_t beta, C_t* A, const I_t lda) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(claset, CLASET)(uplo, &m, &n, &alpha, &beta, A, &lda);
+
 }
 /** \overload
  */
 inline void xLASET(const char* uplo, const I_t m, const I_t n, const Z_t alpha,
                    const Z_t beta, Z_t* A, const I_t lda) {
+
+  PROFILING_FUNCTION_HEADER
+
   fortran_name(zlaset, ZLASET)(uplo, &m, &n, &alpha, &beta, A, &lda);
+
 }
 
 } /* namespace FORTRAN */
@@ -137,25 +153,41 @@ namespace MAGMA {
  */
 inline void xLASET(magma_uplo_t uplo, I_t m, I_t n, S_t alpha, S_t beta, S_t* A,
                    I_t lda) {
+
+  PROFILING_FUNCTION_HEADER
+
   magmablas_slaset(uplo, m, n, alpha, beta, A, lda);
+
 }
 /** \overload
  */
 inline void xLASET(magma_uplo_t uplo, I_t m, I_t n, D_t alpha, D_t beta, D_t* A,
                    I_t lda) {
+
+  PROFILING_FUNCTION_HEADER
+
   magmablas_dlaset(uplo, m, n, alpha, beta, A, lda);
+
 }
 /** \overload
  */
 inline void xLASET(magma_uplo_t uplo, I_t m, I_t n, C_t alpha, C_t beta, C_t* A,
                    I_t lda) {
+
+  PROFILING_FUNCTION_HEADER
+
   magmablas_claset(uplo, m, n, alpha, beta, A, lda);
+
 }
 /** \overload
  */
 inline void xLASET(magma_uplo_t uplo, I_t m, I_t n, Z_t alpha, Z_t beta, Z_t* A,
                    I_t lda) {
+
+  PROFILING_FUNCTION_HEADER
+
   magmablas_zlaset(uplo, m, n, alpha, beta, A, lda);
+
 }
     
 } /* namespace LinAlg::LAPACK::MAGMA */
@@ -176,6 +208,8 @@ using LinAlg::Utilities::check_input_transposed;
  */
 template <typename T>
 inline void xLASET(T alpha, T beta, Dense<T>& A) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   check_input_transposed(A, "xLASET(alpha, beta, A), A:");

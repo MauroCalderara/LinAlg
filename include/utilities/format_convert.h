@@ -13,6 +13,7 @@
 #define LINALG_UTILITIES_FORMAT_CONVERT_H_
 
 #include "../types.h"
+#include "../profiling.h"
 #include "../exceptions.h"
 #include "../dense.h"
 #include "../sparse.h"
@@ -39,6 +40,8 @@ namespace Utilities {
  */
 template <typename T>
 inline void sparse2dense(Sparse<T>& src, SubBlock sub_block, Dense<T>& dst) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   if (dst._transposed) {

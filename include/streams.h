@@ -36,6 +36,7 @@
 #endif
 
 #include "types.h"
+#include "profiling.h"
 #include "exceptions.h"
 
 namespace LinAlg {
@@ -146,6 +147,8 @@ struct Stream : StreamBase {
  */
 inline Stream::Stream() : StreamBase() {
 
+  PROFILING_FUNCTION_HEADER
+
   // These here can't be in the initializer list since we have delegating 
   // constructors
   thread_alive = false;
@@ -184,6 +187,8 @@ inline Stream::Stream(Streams stream_spec) : Stream() {
  */
 inline void Stream::start() {
 
+  PROFILING_FUNCTION_HEADER
+
   if (synchronous_operation) {
   
     return;
@@ -220,6 +225,8 @@ inline void Stream::start() {
  */
 inline Stream::~Stream() {
 
+  PROFILING_FUNCTION_HEADER
+
   stop();
   clear();
 
@@ -232,6 +239,8 @@ inline Stream::~Stream() {
 // The routine for the worker thread
 #ifndef DOXYGEN_SKIP
 inline void Stream::worker() {
+
+  PROFILING_FUNCTION_HEADER
 
   // Buffer so we can release the lock before executing
   std::function<void()> current_task;
@@ -307,6 +316,8 @@ inline void Stream::worker() {
  */
 inline I_t Stream::add(std::function<void()> task) {
 
+  PROFILING_FUNCTION_HEADER
+
   I_t my_ticket;
 
   if (synchronous_operation || !thread_alive) {
@@ -370,6 +381,8 @@ inline I_t Stream::add(std::function<void()> task) {
  */
 inline void Stream::sync(I_t ticket) {
 
+  PROFILING_FUNCTION_HEADER
+
   if (next_in_queue > ticket) {
 
     return;
@@ -425,6 +438,8 @@ inline void Stream::sync() {
  */
 inline void Stream::stop() {
 
+  PROFILING_FUNCTION_HEADER
+
   if (!synchronous_operation && thread_alive) {
 
 #   ifdef USE_POSIX_THREADS
@@ -464,6 +479,8 @@ inline void Stream::stop() {
 /** \brief            Remove all tasks from the stream
  */
 inline void Stream::clear() {
+
+  PROFILING_FUNCTION_HEADER
 
   // Locking blocks if there's no other thread
   if (!synchronous_operation && thread_alive) {
@@ -519,6 +536,8 @@ struct CUDAStream : StreamBase {
  */
 inline CUDAStream::CUDAStream() {
 
+  PROFILING_FUNCTION_HEADER
+
   checkCUDA(cudaGetDevice(&device_id));
   checkCUDA(cudaStreamCreate(&cuda_stream));
   checkCUBLAS(cublasCreate(&cublas_handle));
@@ -531,6 +550,8 @@ inline CUDAStream::CUDAStream() {
 inline CUDAStream::CUDAStream(Streams stream_spec)
                      : StreamBase(stream_spec) {
 
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasCreate(&cublas_handle));
 
 }
@@ -542,6 +563,8 @@ inline CUDAStream::CUDAStream(Streams stream_spec)
  */
 inline CUDAStream::CUDAStream(int device_id)
                      : device_id(device_id) {
+
+  PROFILING_FUNCTION_HEADER
 
   int prev_device;
   checkCUDA(cudaGetDevice(&prev_device));
@@ -557,6 +580,8 @@ inline CUDAStream::CUDAStream(int device_id)
 // Destructor
 inline CUDAStream::~CUDAStream() {
 
+  PROFILING_FUNCTION_HEADER
+
   checkCUBLAS(cublasDestroy(cublas_handle));
 
   if (!synchronous_operation) {
@@ -571,6 +596,8 @@ inline CUDAStream::~CUDAStream() {
  *                    are processed)
  */
 inline void CUDAStream::sync() {
+
+  PROFILING_FUNCTION_HEADER
 
   if (synchronized || synchronous_operation) {
 
@@ -614,17 +641,25 @@ struct MPIStream : StreamBase {
 /** \brief            Constructor for an asynchronous stream
  */
 inline MPIStream::MPIStream() {
+
+  PROFILING_FUNCTION_HEADER
+
 }
 
 /** \brief            Constructor for a synchronous stream
  */
 inline MPIStream::MPIStream(Streams stream_spec) : StreamBase(stream_spec) {
+
+  PROFILING_FUNCTION_HEADER
+
 }
 
 
 // Internal helper function to append to the stream
 #ifndef DOXYGEN_SKIP
 inline I_t MPIStream::add_operations(I_t i) {
+
+  PROFILING_FUNCTION_HEADER
 
   auto current = requests.size();
   requests.resize(current + i);
@@ -639,6 +674,8 @@ inline I_t MPIStream::add_operations(I_t i) {
  *                    are processed)
  */
 inline void MPIStream::sync() {
+
+  PROFILING_FUNCTION_HEADER
 
   if (synchronized) {
 

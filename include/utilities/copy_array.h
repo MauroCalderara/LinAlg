@@ -18,6 +18,7 @@
 #endif
 
 #include "../types.h"
+#include "../profiling.h"
 #include "../exceptions.h"
 #include "../streams.h"
 #include "../BLAS/blas.h"
@@ -33,23 +34,43 @@ namespace Utilities {
  */
 template <typename T>
 inline void copy_1Darray_host(T* src_array, I_t length, T* dst_array) {
+
+  PROFILING_FUNCTION_HEADER
+
   for (I_t i = 0; i < length; ++i) dst_array[i] = src_array[i];
+
 }
 template <>
 inline void copy_1Darray_host(S_t* src_array, I_t length, S_t* dst_array){
+
+  PROFILING_FUNCTION_HEADER
+
   LinAlg::BLAS::FORTRAN::xCOPY(length, src_array, 1, dst_array, 1);
+
 }
 template <>
 inline void copy_1Darray_host(D_t* src_array, I_t length, D_t* dst_array){
+
+  PROFILING_FUNCTION_HEADER
+
   LinAlg::BLAS::FORTRAN::xCOPY(length, src_array, 1, dst_array, 1);
+
 }
 template <>
 inline void copy_1Darray_host(C_t* src_array, I_t length, C_t* dst_array){
+
+  PROFILING_FUNCTION_HEADER
+
   LinAlg::BLAS::FORTRAN::xCOPY(length, src_array, 1, dst_array, 1);
+
 }
 template <>
 inline void copy_1Darray_host(Z_t* src_array, I_t length, Z_t* dst_array){
+
+  PROFILING_FUNCTION_HEADER
+
   LinAlg::BLAS::FORTRAN::xCOPY(length, src_array, 1, dst_array, 1);
+
 }
 
 #endif /* DOXYGEN_SKIP */
@@ -88,6 +109,8 @@ template <typename T>
 void copy_1Darray(T* src_array, I_t length, T* dst_array,
                   Location src_location, int src_device_id,
                   Location dst_location, int dst_device_id) {
+
+  PROFILING_FUNCTION_HEADER
 
   if (src_location == Location::host && dst_location == Location::host) {
 
@@ -231,6 +254,8 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
                   I_t src_ld, Location src_location, int src_device_id,
                   I_t rows, I_t cols, Format dst_format, T* dst_array,
                   I_t dst_ld, Location dst_location, int dst_device_id) {
+
+  PROFILING_FUNCTION_HEADER
 
   if (rows == 0 || cols == 0) {
     return;

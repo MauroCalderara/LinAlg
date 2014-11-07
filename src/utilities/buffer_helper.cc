@@ -13,6 +13,7 @@
 #include <functional>   // std::function
 
 #include "types.h"
+#include "profiling.h"
 #include "utilities/buffer_helper.h"
 
 namespace LinAlg {
@@ -64,6 +65,8 @@ BufferHelper::BufferHelper(I_t size, I_t lookahead, BufferType type,
                            _initialized(false),
                            _last_requested(0) {
 
+  PROFILING_FUNCTION_HEADER
+
   _stream = new Stream; 
   _buffer_tickets.resize(_size);
   _buffer_status.resize(_size);
@@ -85,6 +88,8 @@ BufferHelper::BufferHelper(I_t size, I_t lookahead, BufferType type,
                            _initialized(false),
                            _last_requested(0) {
 
+  PROFILING_FUNCTION_HEADER
+
   _buffer_tickets.resize(_size);
   _buffer_status.resize(_size);
   for (auto& element : _buffer_status) { element = 0; }
@@ -94,7 +99,11 @@ BufferHelper::BufferHelper(I_t size, I_t lookahead, BufferType type,
 /** \brief            Destructor
  */
 BufferHelper::~BufferHelper() {
+
+  PROFILING_FUNCTION_HEADER
+
   clear();
+
 }
 
 /** \brief            Clear/empty the buffer, resetting it to the default
@@ -112,6 +121,8 @@ BufferHelper::~BufferHelper() {
  *                    before the call to clear are synchronized as well.
  */
 void BufferHelper::clear() {
+
+  PROFILING_FUNCTION_HEADER
 
   if (!_initialized) return;
 
@@ -170,6 +181,8 @@ void BufferHelper::clear() {
  *                    The element to wait for.
  */
 void BufferHelper::wait(I_t n) {
+
+  PROFILING_FUNCTION_HEADER
 
   if (_type == BufferType::OnePass || _type == BufferType::TwoPass) {
 
@@ -390,6 +403,8 @@ void BufferHelper::wait(I_t n) {
  *                    ... size - \<prefetch\>
  */
 void BufferHelper::preload(BufferDirection direction) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   if (_initialized == true) {

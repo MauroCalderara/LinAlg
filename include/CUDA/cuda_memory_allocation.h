@@ -21,6 +21,7 @@
 #include <cusparse_v2.h>
 
 #include "../types.h"
+#include "../profiling.h"
 #include "cuda_checks.h"
 
 namespace LinAlg {
@@ -38,6 +39,8 @@ namespace CUDA {
  */
 template <typename T>
 inline void cuda_deallocate(T* device_ptr, int device_id) {
+
+  PROFILING_FUNCTION_HEADER
 
   auto prev_device = device_id;
   checkCUDA(cudaGetDevice(&prev_device));
@@ -62,6 +65,8 @@ inline void cuda_deallocate(T* device_ptr, int device_id) {
  */
 template <typename T>
 inline std::shared_ptr<T> cuda_make_shared(I_t size, int device_id) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   if (size < 1) {

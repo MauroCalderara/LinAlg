@@ -20,6 +20,7 @@
 #include <utility>    // std::move
 
 #include "../types.h"
+#include "../profiling.h"
 #include "../exceptions.h"
 #include "stringformat.h"
 #include "misc.h"           // Utilities::goto_line
@@ -67,6 +68,8 @@ std::tuple<I_t, I_t, I_t, bool> parse_CSR_body(std::string filename);
  */
 template <typename T>
 void read_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   if (matrix._location != Location::host) {
@@ -209,6 +212,8 @@ void read_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
  */
 template <typename T>
 void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   if (matrix._location != Location::host) {
@@ -432,6 +437,8 @@ inline void read_CSR(LinAlg::Sparse<T>& matrix, const char* filename) {
 template <typename T>
 void write_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
 
+  PROFILING_FUNCTION_HEADER
+
   if (matrix._location != Location::host) {
 
     // Create a temporary matrix located in main memory and try again
@@ -517,6 +524,8 @@ void write_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
  */
 template <typename T>
 void write_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
+
+  PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
   if (matrix._location != Location::host) {
