@@ -23,6 +23,7 @@
                                          // CUDA::cuda_deallocate
 #endif
 
+#include "profiling.h"
 #include "types.h"
 #include "matrix.h"
 #include "exceptions.h"
@@ -211,6 +212,7 @@ Dense<T>::~Dense() {
 #ifdef CONSTRUCTOR_VERBOSE
   std::cout << "Dense.destructor\n";
 #endif
+  unlink();
 }
 
 /** \brief              Move constructor

@@ -196,6 +196,7 @@ Sparse<T>::~Sparse() {
 #ifdef CONSTRUCTOR_VERBOSE
   std::cout << "Sparse.destructor\n";
 #endif
+  unlink();
 }
 
 
