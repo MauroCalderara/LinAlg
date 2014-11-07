@@ -10,11 +10,10 @@
  *  \version          $Revision$
  */
 
-#include <future>       // std::future, std::async
 #include <functional>   // std::function
 
 #include "types.h"
-#include "utilities/buffer.h"
+#include "utilities/buffer_helper.h"
 
 namespace LinAlg {
 
@@ -42,61 +41,124 @@ namespace Utilities {
  *                    Functor the buffer uses to unload an element from the
  *                    buffer. The functor must not return a value and take
  *                    the index of the element to unload as single argument.
+ *
+ *  \param[in]        stream
+ *                    OPTIONAL: The stream to be used by the buffer. If a 
+ *                    stream is specified it is assumed to be managed 
+ *                    externally (started, stopped, cleared etc.). If no 
+ *                    stream is specified, the buffer manages its own stream.
+ *                    To create a buffer that works in the same thread as the 
+ *                    one that constructs it, create a synchronous stream and 
+ *                    pass it to the constructor as argument. Default: the 
+ *                    buffer creates and manages its own, asynchronous stream.
  */
 BufferHelper::BufferHelper(I_t size, I_t lookahead, BufferType type,
                            std::function<void(I_t)> loader,
                            std::function<void(I_t)> deleter)
-                         : _size(size),
+                         : _manage_stream(true),
+                           _size(size),
                            _lookahead(lookahead),
                            _loader(loader),
                            _deleter(deleter),
-                           _type(type) {
-  _initialized = false;
-  _last_requested = 0;
-  _buffer_queue.resize(_size);
+                           _type(type),
+                           _initialized(false),
+                           _last_requested(0) {
+
+  _stream = new Stream; 
+  _buffer_tickets.resize(_size);
   _buffer_status.resize(_size);
-  for (auto& e : _buffer_status) { e = 0; }
+  for (auto& element : _buffer_status) { element = 0; }
+
+}
+/** \overload
+ */
+BufferHelper::BufferHelper(I_t size, I_t lookahead, BufferType type,
+                           std::function<void(I_t)> loader,
+                           std::function<void(I_t)> deleter, Stream& stream)
+                         : _stream(&stream),
+                           _manage_stream(false),
+                           _size(size),
+                           _lookahead(lookahead),
+                           _loader(loader),
+                           _deleter(deleter),
+                           _type(type),
+                           _initialized(false),
+                           _last_requested(0) {
+
+  _buffer_tickets.resize(_size);
+  _buffer_status.resize(_size);
+  for (auto& element : _buffer_status) { element = 0; }
+
+}
+
+/** \brief            Destructor
+ */
+BufferHelper::~BufferHelper() {
+  clear();
 }
 
 /** \brief            Clear/empty the buffer, resetting it to the default
- *                    state
+ *                    state. All transfers that have been requested are worked 
+ *                    off, including the corresponding deleter. Transfers that 
+ *                    have not yet been requested (either by the user or by 
+ *                    prefetching) are left as they are.
+ *                    
+ *  \note             In order to ensure all tasks are performed in the order 
+ *                    of their queueing in the stream, the deletion of the 
+ *                    last requested element is also performed via the stream 
+ *                    of the buffer. Thus if the buffer uses a shared stream 
+ *                    and operations unrelated to the buffer have been queued 
+ *                    in said shared stream, all tasks that have been queued 
+ *                    before the call to clear are synchronized as well.
  */
 void BufferHelper::clear() {
 
   if (!_initialized) return;
 
-  if (_type == BufferType::TwoPass) {
+  if (_type == BufferType::TwoPass || _type == BufferType::OnePass) {
 
-    // For all requests (in the right order), wait till they're done and then
-    // call the deleter.
+    // For all requests either in flight (status == 1) or already synchronized
+    // (status == 2) queue the corresponding deleter and synchronize on the 
+    // last of them. This ensures that deleters are called in the right order 
+    // and after the corresponding loaders.
+    I_t last_deleter_ticket = 0;
     if (_direction == BufferDirection::increasing) {
 
       for (I_t i = 0; i < _size; ++i) {
 
-        if (_buffer_status[i] != 0) {
-          _buffer_queue[i].get();
-          _deleter(i);
-          _buffer_status[i] = 0;
+        if (_buffer_status[i] > 0) {
+          last_deleter_ticket = _stream->add(std::bind(_deleter, i));
+          verbose_print("added _deleter(%d) -> ticket=%d\n", i, 
+                        last_deleter_ticket); 
         }
 
       }
 
-    } else {
+    } else if (_direction == BufferDirection::decreasing) {
 
-      for (I_t i = _size; i < 0; --i) {
+      // i - 1 covers all elements of _buffer_status
+      for (I_t i = _size; i > 0; --i) {
 
-        if (_buffer_status[i - 1] != 0) {
-          _buffer_queue[i - 1].get();
-          _deleter(i - 1);
-          _buffer_status[i - 1] = 0;
-        }
+        if (_buffer_status[i - 1] > 0) {
+          last_deleter_ticket = _stream->add(std::bind(_deleter, i - 1));
+          verbose_print("added _deleter(%d) -> ticket=%d\n", i - 1, 
+                        last_deleter_ticket); 
+        } 
 
       }
 
     }
 
+    verbose_print("synchronizing ticket %d\n", last_deleter_ticket);
+    _stream->sync(last_deleter_ticket);
+
+    for (auto& element : _buffer_status) { element = 0; }
+
   }
 
+  if (_manage_stream) {
+    delete _stream;
+  }
   _initialized = false;
   _last_requested = 0;
 
@@ -118,15 +180,21 @@ void BufferHelper::wait(I_t n) {
       // Set direction in which to buffer the next elements
       if (n == 0) {
 
-        _initialized = true;
         _direction = BufferDirection::increasing;
         _last_requested = -1;
+        if (_manage_stream) {
+          _stream->start();
+        }
+        _initialized = true;
 
       } else if (n == _size - 1) {
 
-        _initialized = true;
         _direction = BufferDirection::decreasing;
         _last_requested = _size;
+        if (_manage_stream) {
+          _stream->start();
+        }
+        _initialized = true;
 
       } else {
 
@@ -150,7 +218,7 @@ void BufferHelper::wait(I_t n) {
                                 "only valid after reaching the end of the "
                                 "buffer");
         }
-      } else {
+      } else if (_direction == BufferDirection::decreasing) {
         if (n < _last_requested + 1) {
           throw excBufferHelper("BufferHelper.wait(): with this buffer type "
                                 "(OnePass) requests for previous blocks are "
@@ -162,28 +230,35 @@ void BufferHelper::wait(I_t n) {
       // If the requested element is being deleted, wait for the deletion to
       // complete
       if (_buffer_status[n] == -1) {
-        printf("BUFFER: WARNING: element %d still in deletion when waiting\n", n);
-        _buffer_queue[n].get();
+        printf("BUFFER: WARNING: element %d still in deletion when waiting\n", 
+               n);
+        verbose_print("synchronizing ticket %d\n", _buffer_tickets[n]);
+        _stream->sync(_buffer_tickets[n]);
         _buffer_status[n] = 0;
       }
 
       // If the requested one is not in flight, make it fly
       if (_buffer_status[n] == 0) {
         printf("BUFFER: WARNING: element %d not in flight when waiting\n", n);
-        _buffer_queue[n] = std::async(std::launch::async, _loader, n);
+        _buffer_tickets[n] = _stream->add(std::bind(_loader, n));
+        verbose_print("added _loader(%d) -> ticket=%d\n", n,
+                      _buffer_tickets[n]);
         _buffer_status[n] = 1;
       }
 
       // If it is in flight, wait for it
       if (_buffer_status[n] == 1) {
-        _buffer_queue[n].get();
+        verbose_print("synchronizing ticket %d\n", _buffer_tickets[n]);
+        _stream->sync(_buffer_tickets[n]);
         _buffer_status[n] = 2;
       }
 
       // Prefetch the next ones
       for (I_t i = n; (i < n + _lookahead + 1) && (i < _size); ++i) {
         if (_buffer_status[i] == 0) {
-          _buffer_queue[i] = std::async(std::launch::async, _loader, i);
+          _buffer_tickets[i] = _stream->add(std::bind(_loader, i));
+          verbose_print("added _loader(%d) -> ticket=%d\n", i, 
+                        _buffer_tickets[i]);
           _buffer_status[i] = 1;
         }
       }
@@ -195,9 +270,10 @@ void BufferHelper::wait(I_t n) {
           !((n > _size - _lookahead) && two_pass)) {
 
         _buffer_status[_last_requested] = -1;
-        _buffer_queue[_last_requested] = std::async(std::launch::async,
-                                                    _deleter,
-                                                    _last_requested);
+        _buffer_tickets[_last_requested] = _stream->add(std::bind(_deleter, 
+                                                            _last_requested));
+        verbose_print("added _deleter(%d) -> ticket=%d\n", _last_requested, 
+                      _buffer_tickets[_last_requested]);
       }
 
       // Once we reached the end we change direction
@@ -234,29 +310,36 @@ void BufferHelper::wait(I_t n) {
       // If the requested element is being deleted, wait for the deletion to
       // complete
       if (_buffer_status[n] == -1) {
-        printf("BUFFER: WARNING: element %d still in deletion when waiting\n", n);
-        _buffer_queue[n].get();
+        printf("BUFFER: WARNING: element %d still in deletion when waiting\n", 
+               n);
+        verbose_print("synchronizing ticket %d\n", _buffer_tickets[n]);
+        _stream->sync(_buffer_tickets[n]);
         _buffer_status[n] = 0;
       }
 
       // If the requested one is not in flight, make it fly
       if (_buffer_status[n] == 0) {
         printf("BUFFER: WARNING: element %d not in flight when waiting\n", n);
-        _buffer_queue[n] = std::async(std::launch::async, _loader, n);
+        _buffer_tickets[n] = _stream->add(std::bind(_loader, n));
+        verbose_print("added _loader(%d) -> ticket=%d\n", n, 
+                      _buffer_tickets[n]);
         _buffer_status[n] = 1;
       }
 
       // If it is in flight, wait for it
       if (_buffer_status[n] == 1) {
-        _buffer_queue[n].get();
+        verbose_print("synchronizing ticket %d\n", _buffer_tickets[n]);
+        _stream->sync(_buffer_tickets[n]);
         _buffer_status[n] = 2;
       }
 
       // Prefetch the next ones
       for (I_t i = n; (i > n - _lookahead - 1) && (i >= 0); --i) {
         if (_buffer_status[i] == 0) {
+          _buffer_tickets[i] = _stream->add(std::bind(_loader, i));
+          verbose_print("added _loader(%d) -> ticket=%d\n", i, 
+                        _buffer_tickets[i]);
           _buffer_status[i] = 1;
-          _buffer_queue[i] = std::async(std::launch::async, _loader, i);
         }
       }
 
@@ -266,9 +349,10 @@ void BufferHelper::wait(I_t n) {
       if (_last_requested != _size &&
           !((n < _lookahead) && two_pass)) {
         _buffer_status[_last_requested] = -1;
-        _buffer_queue[_last_requested] = std::async(std::launch::async,
-                                                    _deleter,
-                                                    _last_requested);
+        _buffer_tickets[_last_requested] = _stream->add(std::bind(_deleter,
+                                                             _last_requested));
+        verbose_print("added _deleter(%d) -> ticket=%d\n", _last_requested, 
+                      _buffer_tickets[_last_requested]);
       }
 
       // Once we reached the end we change direction
@@ -283,7 +367,7 @@ void BufferHelper::wait(I_t n) {
 
   }
 
-#ifdef BUFFER_DISPLAY
+#ifdef BUFFER_HELPER_DISPLAY
   // Visualization
   std::cout << "Buffer status: [|";
   for (const auto& e : _buffer_status) { std::cout << e << "|"; }
@@ -323,13 +407,16 @@ void BufferHelper::preload(BufferDirection direction) {
     if (_direction == BufferDirection::increasing) {
 
       // Initialize buffer
-      _initialized = true;
       _last_requested = -1;
+      if (_manage_stream) _stream->start();
+      _initialized = true;
 
       // Preload the next buffers
       for (I_t i = 0; (i < _lookahead + 1) && (i < _size); ++i) {
         if (_buffer_status[i] == 0) {
-          _buffer_queue[i] = std::async(_loader, i);
+          _buffer_tickets[i] = _stream->add(std::bind(_loader, i));
+          verbose_print("added _loader(%d) -> ticket=%d\n", i, 
+                        _buffer_tickets[i]);
           _buffer_status[i] = 1;
         }
 #ifndef LINALG_NO_CHECKS
@@ -340,15 +427,18 @@ void BufferHelper::preload(BufferDirection direction) {
 #endif
       }
 
-    } else {
+    } else if (_direction == BufferDirection::decreasing) {
 
-      _initialized = true;
       _last_requested = _size;
+      if (_manage_stream) _stream->start();
+      _initialized = true;
 
       for (I_t i = _size - 1; (i > _size - 1 - _lookahead - 1) && (i >= 0);
            --i) {
         if (_buffer_status[i] == 0) {
-          _buffer_queue[i] = std::async(std::launch::async, _loader, i);
+          _buffer_tickets[i] = _stream->add(std::bind(_loader, i));
+          verbose_print("added _loader(%d) -> ticket=%d\n", i,
+                        _buffer_tickets[i]);
           _buffer_status[i] = 1;
         }
 #ifndef LINALG_NO_CHECKS

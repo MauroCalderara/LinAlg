@@ -21,12 +21,22 @@
 #include "../streams.h"
 
 #ifndef DOXYGEN_SKIP
-// If BUFFER_DISPLAY is defined, the buffer will print it's status during
+
+// If BUFFER_HELPER_DISPLAY is defined, the buffer will print it's status during
 // operations
-//#define BUFFER_DISPLAY
-#ifdef BUFFER_DISPLAY
+//#define BUFFER_HELPER_DISPLAY
+#ifdef BUFFER_HELPER_DISPLAY
 #include <iostream>     // std::cout
 #endif
+
+// If BUFFER_HELPER_VERBOSE is defined, the buffer will print information 
+// about adding tasks to the queue and syncing with them
+#define BUFFER_HELPER_VERBOSE
+#ifdef BUFFER_HELPER_VERBOSE
+#include <string>       // std::string
+#include <cstdio>       // std::printf
+#endif
+
 #endif /* DOXYGEN_SKIP */
 
 namespace LinAlg {
@@ -41,26 +51,43 @@ struct BufferHelper {
   BufferHelper(I_t size, I_t lookahead, BufferType type,
                std::function<void(I_t)> loader,
                std::function<void(I_t)> deleter);
+  BufferHelper(I_t size, I_t lookahead, BufferType type,
+               std::function<void(I_t)> loader,
+               std::function<void(I_t)> deleter, Stream& stream);
+  ~BufferHelper();
 
   void clear();
   void wait(I_t n);
   void preload(BufferDirection direction);
 
 #ifndef DOXYGEN_SKIP
-  // The idea being that you don't need to access these.
-  I_t _size;
-  I_t _lookahead;
+  // The idea being that you typically don't need to access these.
+  Stream*                  _stream;
+  bool                     _manage_stream;
+  I_t                      _size;
+  I_t                      _lookahead;
   std::function<void(I_t)> _loader;
   std::function<void(I_t)> _deleter;
-  BufferType _type;
-  BufferDirection _direction;
+  BufferType               _type;
+  BufferDirection          _direction;
 
-  bool _initialized;
-  int  _last_requested;
-  std::vector<std::future<void>> _buffer_queue;
-  std::vector<int> _buffer_status;    // -1 deleting, 0 clear,
-                                      // 1 in flight, 2 loaded
-#endif
+  bool                     _initialized;
+  int                      _last_requested;
+  std::vector<I_t>         _buffer_tickets;
+  std::vector<int>         _buffer_status;    // -1 deleting, 0 clear,
+                                              // 1 in flight, 2 loaded
+# ifndef BUFFER_HELPER_VERBOSE
+  template <typename... Us>
+  void verbose_print(const char* formatstring, Us... formatargs) { return; }
+# else 
+  template <typename... Us>
+  void verbose_print(const char* formatstring, Us... formatargs) {
+    using LinAlg::Utilities::stringformat;
+    std::string line = "BUFFER: " + stringformat(formatstring, formatargs...);
+    std::printf("%s", line.c_str());
+  }
+# endif /* not BUFFER_HELPER_VERBOSE */
+#endif /* not DOXYGEN_SKIP */
 
 };
 
