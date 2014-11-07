@@ -398,6 +398,14 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
     // If work is empty, we have to allocate it optimally
     if (lwork == 0) {
 
+#     ifdef HAVE_MKL
+
+      T work_ptr[1];
+      FORTRAN::xGETRI(n, A_ptr, lda, ipiv_ptr, work_ptr, -1, &info);
+      lwork = work_ptr[0];
+
+#     else
+
       using LinAlg::Type;
       using LinAlg::LAPACK::FORTRAN::ILAENV;
 
@@ -415,11 +423,13 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
           lwork = ILAENV(1, "zgetri", "", n, -1, -1, -1);
           break;
         default:
-#ifndef LINALG_NO_CHECKS
+#         ifndef LINALG_NO_CHECKS
           throw excBadArgument("xGETRI(): unsupported data type");
-#endif /* LINALG_NO_CHECKS */
+#         endif
           break;
       }
+
+#     endif /* HAVE_MKL */
 
       work.reallocate(lwork, 1);
 

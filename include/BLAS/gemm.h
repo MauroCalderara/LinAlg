@@ -315,7 +315,9 @@ inline void xGEMM(const T alpha, const Dense<T>& A, const Dense<T>& B,
 #endif
 
   auto location = A._location;
+#if defined(HAVE_CUDA) || defined(HAVE_MIC)
   auto device_id = A._device_id;
+#endif
   auto m = A.rows();
   auto n = B.cols();
   auto k = B.rows();
