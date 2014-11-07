@@ -215,6 +215,22 @@ class excMallocError : public excLinAlg {
 #endif
 };
 
+/** \exception        excSystemError
+ *
+ *  \brief            Exception to signal that there was a system error.
+ */
+class excSystemError : public excLinAlg {
+#ifndef DOXYGEN_SKIP
+ public:
+  template <typename... Ts>
+  excSystemError(const char* userfmtstr, Ts... args)
+               : excLinAlg(userfmtstr, args...) {}
+  excSystemError(const char* userstring) : excLinAlg(userstring) {}
+  excSystemError(std::string string) : excLinAlg(string) {}
+  const char* prefix() const { return "LinAlg system error - "; }
+#endif
+};
+
 /** \exception        excBadFile
  *
  *  \brief            Exception to signal that a file has invalid syntax.
@@ -233,7 +249,8 @@ class excBadFile : public excLinAlg {
 
 /** \exception        excBufferHelper
  *
- *  \brief            Exception to signal that a file has invalid syntax.
+ *  \brief            Exception to signal that a problem in the BufferHelper 
+ *                    occurred
  */
 class excBufferHelper : public excLinAlg {
 #ifndef DOXYGEN_SKIP
