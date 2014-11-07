@@ -13,7 +13,7 @@
 #define LINALG_UTILITIES_UTILITIES_H_
 
 // Keep this in alphabetical order
-#include "buffer.h"
+#include "buffer_helper.h"
 #include "checks.h"
 #include "copy_array.h"
 #include "CSR.h"
