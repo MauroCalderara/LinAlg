@@ -41,14 +41,20 @@ template <typename... Ts>
 inline std::string stringformat(const char* formatstring, Ts... formatargs) {
 
   // Create a buffer, use std::unique_ptr for memory management
-  std::unique_ptr<char> buffer(new char[LINALG_STRINGFORMAT_BUFFER]);
+  //std::unique_ptr<char> buffer(new char[LINALG_STRINGFORMAT_BUFFER]);
+  auto buffer = new char[LINALG_STRINGFORMAT_BUFFER];
 
   // Use snprintf to avoid buffer overflows
-  std::snprintf(buffer.get(), LINALG_STRINGFORMAT_BUFFER, formatstring,
+  //std::snprintf(buffer.get(), LINALG_STRINGFORMAT_BUFFER, formatstring,
+  //              formatargs...);
+  std::snprintf(buffer, LINALG_STRINGFORMAT_BUFFER, formatstring,
                 formatargs...);
 
   // Return a string object constructed from the buffer
-  return std::string(buffer.get());
+  std::string buffer_string(buffer);
+  delete[] buffer;
+
+  return buffer_string;
 
 }
 
