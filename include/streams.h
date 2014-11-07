@@ -24,11 +24,16 @@
 #endif
 
 #include <functional> // std::function
+#include <queue>      // std::deque
+#include <atomic>     // std::atomic
+
+#ifdef USE_POSIX_THREADS
+#include <pthread.h>
+#else /* use C++11 threads */
 #include <thread>     // std::thread
 #include <mutex>      // std::mutex
-#include <queue>      // std::deque
 #include <condition_variable>
-#include <atomic>     // std::atomic
+#endif
 
 #include "types.h"
 #include "exceptions.h"
@@ -63,6 +68,8 @@ struct StreamBase {
 
   }
 
+  virtual ~StreamBase() {}
+
 #ifndef DOXYGEN_SKIP
   virtual inline void sync() = 0;
 
@@ -75,61 +82,150 @@ struct StreamBase {
 /** Generic stream:
  *
  *  Tasks are std::function<void()> objects. Each stream has one worker thread
- *  assigned that walks fetches tasks from the head of a deque. Appending
- *  tasks is pushing to the front to the queue. Tasks are processed in the
- *  order of being pushed to the queue.
+ *  assigned that fetches tasks from the tail of a deque. Appending tasks is 
+ *  pushing to the front to the queue. Tasks are processed in the order of 
+ *  being pushed to the queue.
  */
 struct Stream : StreamBase {
 
-#ifndef DOXYGEN_SKIP
+# ifndef DOXYGEN_SKIP
+
+#   ifdef USE_POSIX_THREADS
+
+  pthread_mutex_t                   lock;
+  pthread_cond_t                    cv;
+  pthread_t                         worker_thread;
+  // Pthreads expect a C-style pointer to a void* function and support passing 
+  // void* arguments to it. Thus unlike in the C++11 thread case below passing 
+  // a std::function object doesn't work. So we create a static wrapper that 
+  // expects a pointer to the class instance as argument, internally casts it 
+  // to a Stream* pointer and then calls the corresponding worker function.  
+  // This is neither elegant nor type safe but seems to be the idiomatic way 
+  // of dealing with this situation in C++
+  static void* worker_wrapper(void* instance) {
+    ((Stream*)instance)->worker();
+    return nullptr;
+  }
+
+#   else /* use C++11 threads */
+
   std::mutex                        lock;
   std::condition_variable           cv;
   std::thread                       worker_thread;
+
+#   endif /* USE_POSIX_THREADS */
+
   std::deque<std::function<void()>> queue;
   std::atomic<I_t> next_in_queue;
+  bool thread_alive;
 
   inline void worker();
   I_t next_ticket;             // next_ticket = next_in_queue -> no work;
   bool terminate;
-#endif
+
+# endif /* not DOXYGEN_SKIP */
 
   Stream();
   Stream(Streams stream_spec);
   ~Stream();
 
+  inline void start();
   inline I_t  add(std::function<void()> task);
   inline void sync(I_t ticket);
   inline void sync();
-  inline void destroy();
+  inline void stop();
+  inline void clear();
 
 };
 
 /** \brief            Constructor for a stream
+ *
+ *  Note that this constructor doesn't spawn a thread to avoid having 
+ *  lingering threads for classes with streams as members. Use start() to 
+ *  create the worker thread and 'activate' the queue.
  */
-inline Stream::Stream()
-             : StreamBase(),
-               next_ticket(0),
-               terminate(false) {
+inline Stream::Stream() : StreamBase() {
+
+  // These here can't be in the initializer list since we have delegating 
+  // constructors
+  thread_alive = false;
+  next_ticket  = 0;
+  terminate    = false;
 
   next_in_queue.store(0);
 
-  // Start the worker thread
-  worker_thread = std::thread(&Stream::worker, this);
+# ifdef USE_POSIX_THREADS
+  auto error = pthread_cond_init(&cv, NULL);
+# ifndef LINALG_NO_CHECKS
+  if (error != 0) {
+    throw excSystemError("Unable to initialize condition variable, error = %d",
+                         error);
+  }
+# endif
+# endif
 
 }
 
-/** \brief            Constructor for aa stream without a worker thread
+/** \brief            Constructor for a stream without a worker thread
  *                    (causes synchronous execution on all routines that use
  *                    this stream)
  */
-inline Stream::Stream(Streams stream_spec) : StreamBase(stream_spec) {
+// Note: we delegate to Stream() and not to StreamBase(stream_spec) in order 
+// to avoid reproducing the constructor above
+inline Stream::Stream(Streams stream_spec) : Stream() {
+
+  synchronous_operation = (stream_spec == Streams::Synchronous) ? true : false;
+
+}
+
+/** \brief            Enables the stream by creating the worker thread
+ *
+ *  For synchronous streams, no worker thread is spawned.
+ */
+inline void Stream::start() {
+
+  if (synchronous_operation) {
+  
+    return;
+  
+  } else {
+
+    // Start the worker thread
+#   ifdef USE_POSIX_THREADS
+
+    // See in the class definition why we need the wrapper for the worker 
+    // function
+    printf("CREATING POSIX THREAD\n");
+    auto error = pthread_create(&worker_thread, NULL, 
+                                &Stream::worker_wrapper, this);
+#   ifndef LINALG_NO_CHECKS
+    if (error != 0) {
+      throw excSystemError("Unable to spawn thread, error = %d", error);
+    }
+#   endif
+
+#   else /* use C++11 threads */
+
+    worker_thread = std::thread(&Stream::worker, this);
+
+#   endif
+
+    thread_alive = true;
+
+  }
+
 }
 
 /** \brief            Terminate the stream
  */
 inline Stream::~Stream() {
 
-  destroy();
+  stop();
+  clear();
+
+#ifdef USE_POSIX_THREADS
+  pthread_cond_destroy(&cv);
+#endif
 
 }
 
@@ -138,42 +234,61 @@ inline Stream::~Stream() {
 inline void Stream::worker() {
 
   // Buffer so we can release the lock before executing
-  std::function<void()> my_task;
+  std::function<void()> current_task;
 
   while (!terminate) {
 
-    {
+#ifdef USE_POSIX_THREADS
+    // No RAII handler for pthreads
+#else
+    { // RAII scope for thread_lock
+#endif
 
-      // Aquire the lock
-      std::unique_lock<std::mutex> thread_lock(lock);
+    // Safely examine the condition. The lock prevents other threads to modify 
+    // it while we check the condition.
+#   ifdef USE_POSIX_THREADS
+    pthread_mutex_lock(&lock);
+#   else
+    std::unique_lock<std::mutex> thread_lock(lock);
+#   endif
 
-      if (queue.empty()) {
+    if (queue.empty()) {
 
-        // If the queue is empty we wait (releases the lock)
-        cv.wait(thread_lock, [this](){ return (!queue.empty() || terminate); });
+      // If the queue is empty we wait (releases the lock while waiting and 
+      // reacquires it when the condition becomes true)
+#     ifdef USE_POSIX_THREADS
+      while (queue.empty() && !terminate) pthread_cond_wait(&cv, &lock);
+#     else 
+      cv.wait(thread_lock, [this](){ return (!queue.empty() || terminate); });
+#     endif
 
-        if (terminate) {
+      if (terminate) return;
 
-          return;
+    }
 
-        }
+    // Fetch work
+    current_task = queue.back();
+    queue.pop_back();
 
-      }
-
-      // Fetch work
-      my_task = queue.back();
-      queue.pop_back();
-
-    } // Release lock (implicitly)
+#   ifdef USE_POSIX_THREADS
+    // Release the lock
+    pthread_mutex_unlock(&lock);
+#   else
+    } // Implicit release of thread_lock at the end of the scope block
+#   endif
 
     // Execute the task
-    my_task();
+    current_task();
 
-    // Increment counter (atomically)
+    // Atomically increment counter (next_in_queue is an atomic variable)
     ++next_in_queue;
 
     // Signal to waiters
+#   ifdef USE_POSIX_THREADS
+    pthread_cond_signal(&cv);
+#   else
     cv.notify_all();
+#   endif
 
   }
 
@@ -192,19 +307,34 @@ inline void Stream::worker() {
  */
 inline I_t Stream::add(std::function<void()> task) {
 
-#ifndef LINALG_NO_CHECKS
-  if (synchronous_operation) {
-
-    throw excBadArgument("Stream.add(): Can only add to asynchronous Streams");
-
-  }
-#endif
-
   I_t my_ticket;
 
-  {
+  if (synchronous_operation || !thread_alive) {
 
+    // No worker thread, no locking required
+    my_ticket = next_ticket;
+
+    queue.push_front(task);
+
+    ++next_ticket;
+  
+  } else {
+
+    // Do the locking dance
+
+#ifdef USE_POSIX_THREADS
+    // No RAII handler for pthreads
+#else
+    { // RAII scope for adder_lock
+#endif
+
+    // Safely examine the condition. The lock prevents other threads to modify 
+    // it while we check the condition.
+#   ifdef USE_POSIX_THREADS
+    pthread_mutex_lock(&lock);
+#   else
     std::unique_lock<std::mutex> adder_lock(lock);
+#   endif
 
     my_ticket = next_ticket;
 
@@ -212,9 +342,21 @@ inline I_t Stream::add(std::function<void()> task) {
 
     ++next_ticket;
 
-  }
+#   ifdef USE_POSIX_THREADS
+    // Release the lock
+    pthread_mutex_unlock(&lock);
+#   else
+    } // Implicit release of adder_lock at the end of the scope block
+#   endif
 
-  cv.notify_all();
+    // Notify the worker thread
+#   ifdef USE_POSIX_THREADS
+    pthread_cond_signal(&cv);
+#   else
+    cv.notify_all();
+#   endif
+
+  }
 
   return my_ticket;
 
@@ -234,11 +376,36 @@ inline void Stream::sync(I_t ticket) {
 
   } else {
 
-    std::unique_lock<std::mutex> sync_lock(lock);
+    if (synchronous_operation || !thread_alive) {
+    
+      // Work off the queue in the current thread (no locking required)
 
-    cv.wait(sync_lock, [this, ticket](){ return next_in_queue > ticket; });
+      std::function<void()> current_task;
 
-    return;
+      while (next_in_queue < ticket + 1) {
+
+        current_task = queue.back();
+        current_task();
+
+        ++next_in_queue;
+        queue.pop_back();
+      
+      }
+    
+    } else {
+
+      // Acquire the lock, check the condition, wait till next_in_queue is 
+      // larger than the requested ticket (release the lock in the mean time)
+#     ifdef USE_POSIX_THREADS
+      pthread_mutex_lock(&lock);
+      while (next_in_queue < ticket + 1) pthread_cond_wait(&cv, &lock);
+      pthread_mutex_unlock(&lock);
+#     else 
+      std::unique_lock<std::mutex> sync_lock(lock);
+      cv.wait(sync_lock, [this, ticket](){ return next_in_queue > ticket; });
+#     endif
+
+    }
 
   }
 
@@ -249,45 +416,83 @@ inline void Stream::sync(I_t ticket) {
  */
 inline void Stream::sync() {
 
-  if (queue.empty()) {
-
-    return;
-
-  } else {
-
-    std::unique_lock<std::mutex> sync_lock(lock);
-
-    cv.wait(sync_lock, [this](){ return queue.empty(); });
-
-    return;
-
-  }
+  sync(next_ticket - 1);
 
 }
 
-/** \brief            Signal the worker thread to exit
+/** \brief            Signal the worker thread to exit, thereby stopping the 
+ *                    queue
  */
-inline void Stream::destroy() {
+inline void Stream::stop() {
 
-  {
+  if (!synchronous_operation && thread_alive) {
+
+#   ifdef USE_POSIX_THREADS
+
+    pthread_mutex_lock(&lock);
+
+    terminate = true;
+
+    pthread_mutex_unlock(&lock);
+
+    pthread_cond_signal(&cv);
+
+    pthread_join(worker_thread, NULL);
+
+#   else /* C++11 threads */
+
+    {
 
     std::unique_lock<std::mutex> terminate_lock(lock);
 
     terminate = true;
 
+    }
+
+    cv.notify_all();
+
+    worker_thread.join();
+
+#   endif
+
   }
 
-  cv.notify_all();
+  thread_alive = false;
 
-  worker_thread.join();
+}
+
+/** \brief            Remove all tasks from the stream
+ */
+inline void Stream::clear() {
+
+  // Locking blocks if there's no other thread
+  if (!synchronous_operation && thread_alive) {
+#   ifdef USE_POSIX_THREADS
+    pthread_mutex_lock(&lock);
+#   else
+    std::unique_lock<std::mutex> clear_lock(lock);
+#   endif
+  }
+
+  // Remove all tasks from the queue
+  queue.clear();
+
+  // This signals that no work is available
+  next_ticket = next_in_queue;
+
+# ifdef USE_POSIX_THREADS
+  if (!synchronous_operation && thread_alive) {
+    pthread_mutex_unlock(&lock);
+  }
+# else 
+  // Implicit release of clear_lock when going out of scope
+# endif
 
 }
 
 
-
-
 #ifdef HAVE_CUDA
-/** \brief              Class to encapsulate a CUDA stream
+/** \brief            Class to encapsulate a CUDA stream
  *
  *  The stream is bound to a device and includes a cublasHandle and
  *  cusparseHandle associated with the stream. The stream is ordered but can't
@@ -307,7 +512,6 @@ struct CUDAStream : StreamBase {
   CUDAStream(int device_id);
   ~CUDAStream();
   inline void sync();
-  inline void destroy();
 
 };
 
@@ -353,7 +557,13 @@ inline CUDAStream::CUDAStream(int device_id)
 // Destructor
 inline CUDAStream::~CUDAStream() {
 
-  destroy();
+  checkCUBLAS(cublasDestroy(cublas_handle));
+
+  if (!synchronous_operation) {
+
+    checkCUDA(cudaStreamDestroy(cuda_stream));
+
+  }
 
 }
 
@@ -373,19 +583,6 @@ inline void CUDAStream::sync() {
 
 }
 
-/** \brief            Destroy the stream
- */
-inline void CUDAStream::destroy() {
-
-  checkCUBLAS(cublasDestroy(cublas_handle));
-
-  if (synchronous_operation) {
-
-    checkCUDA(cudaStreamDestroy(cuda_stream));
-
-  }
-
-}
 
 #endif /* HAVE_CUDA */
 
