@@ -23,7 +23,7 @@
 #include "../profiling.h"
 #include "../exceptions.h"
 #include "stringformat.h"
-#include "misc.h"           // Utilities::goto_line
+#include "misc.h"           // Utilities::go_to_line
 #include "../dense.h"
 #include "../sparse.h"
 #include "../fills.h"
@@ -141,7 +141,7 @@ void read_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
 
       // Skip the first three lines
       line_num = 4;
-      goto_line(file_to_read, line_num);
+      go_to_line(file_to_read, line_num);
 
       // Read the data
       if (file_is_complex) {
@@ -302,7 +302,7 @@ void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
       double imag = 0;
 
       // Skip header (already parsed).
-      goto_line(file_to_read, 4);
+      go_to_line(file_to_read, 4);
 
       // Read data
       edges[0] = first_index;
