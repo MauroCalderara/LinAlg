@@ -58,7 +58,9 @@ inline void go_to_line(std::ifstream& stream, unsigned int line) {
  *                    The vector to store the file's content.
  */
 template <typename T>
-void read_vector(std::string filename, std::vector<T>& vector) {
+void read_vector(const std::string filename, std::vector<T>& vector) {
+
+  PROFILING_FUNCTION_HEADER
 
   std::ifstream file(filename);
 
@@ -82,6 +84,38 @@ void read_vector(std::string filename, std::vector<T>& vector) {
   }
 
 }
+
+/** \brief            A routine to write a vector to a file
+ *
+ *  \param[in]        filename
+ *                    The name of the file to write the vector to. Entries are 
+ *                    separated by newlines.
+ *
+ *  \param[in]        vector
+ *                    The vector containing the data to write.
+ */
+template <typename T>
+void write_vector(const std::string filename, const std::vector<T>& vector) {
+
+  PROFILING_FUNCTION_HEADER
+
+  std::ofstream file(filename);
+
+  if (file.is_open()) {
+  
+    for (const auto& element : vector) file << element << std::endl;
+
+    file.close();
+  
+  } else {
+  
+    throw excBadArgument("write_vector(): unable to open file (%s) for "
+                         "writing.", filename.c_str());
+  
+  }
+
+}
+
 
 } /* namespace Utilities */
 
