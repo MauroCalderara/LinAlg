@@ -19,6 +19,7 @@
 
 #include "../profiling.h"
 #include "../exceptions.h"
+#include "stringformat.h"
 
 namespace LinAlg {
 
@@ -49,18 +50,24 @@ inline void go_to_line(std::ifstream& stream, unsigned int line) {
 
 /** \brief            A routine to read a vector from a file
  *
- *  \param[in]        filename
- *                    The name of the file to read from. Contents can be 
- *                    whitespace separated or one per line. The type is 
- *                    inferred from the type of the vector argument.
- *
  *  \param[in|out]    vector
  *                    The vector to store the file's content.
+ *
+ *  \param[in]        formatstring
+ *                    The name of the file to read from. Contents can be 
+ *                    whitespace separated or one per line. The type is inferred 
+ *                    from the type of the vector argument.
+ *
+ *  \param[in]        formatargs
+ *                    Formatting arguments for the formatstring.
  */
-template <typename T>
-void read_vector(const std::string filename, std::vector<T>& vector) {
+template <typename T, typename... Us>
+inline void read_vector(std::vector<T>& vector, const char* formatstring, 
+                        Us... formatargs) {
 
   PROFILING_FUNCTION_HEADER
+
+  auto filename = stringformat(formatstring, formatargs...);
 
   std::ifstream file(filename);
 
@@ -85,25 +92,32 @@ void read_vector(const std::string filename, std::vector<T>& vector) {
 
 }
 
+
 /** \brief            A routine to write a vector to a file
- *
- *  \param[in]        filename
- *                    The name of the file to write the vector to. Entries are 
- *                    separated by newlines.
  *
  *  \param[in]        vector
  *                    The vector containing the data to write.
+ *
+ *  \param[in]        formatstring
+ *                    The name of the file to write the vector to. Entries are 
+ *                    separated by newlines.
+ *
+ *  \param[in]        formatargs
+ *                    Formatting arguments for the formatstring.
  */
-template <typename T>
-void write_vector(const std::string filename, const std::vector<T>& vector) {
+template <typename T, typename... Us>
+inline void write_vector(const std::vector<T>& vector, 
+                         const char* formatstring, Us... formatargs) {
 
   PROFILING_FUNCTION_HEADER
+
+  auto filename = stringformat(formatstring, formatargs...);
 
   std::ofstream file(filename);
 
   if (file.is_open()) {
   
-    for (const auto& element : vector) file << element << std::endl;
+    for (const auto element : vector) file << element << std::endl;
 
     file.close();
   
@@ -115,7 +129,6 @@ void write_vector(const std::string filename, const std::vector<T>& vector) {
   }
 
 }
-
 
 } /* namespace Utilities */
 
