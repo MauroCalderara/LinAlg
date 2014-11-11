@@ -209,9 +209,40 @@ inline void check_dimensions(I_t rows, I_t columns, Dense<T>& A,
 
   if (A.rows() != rows || A.cols() != columns) {
 
-    auto message = stringformat("%s: matrix has wrong dimensions is %dx%d, "
+    auto message = stringformat("%s: matrix has wrong dimensions: is %dx%d, "
                                 "should be %dx%d)", caller_name, A.rows(),
                                 A.cols(), rows, columns);
+
+    throw excBadArgument(message);
+
+  }
+
+}
+
+/*  \brief            Checks if a matrix has certain minimal dimensions. Throws 
+ *                    an exception if it does not.
+ *
+ *  \param[in]        rows
+ *                    Minimal number of rows.
+ *
+ *  \param[in]        cols
+ *                    Minimal number of columns.
+ *
+ *  \param[in]        A
+ *                    Matrix to check.
+ *
+ *  \param[in]        caller_name
+ *                    Name of the calling routine.
+ */
+template <typename T>
+inline void check_minimal_dimensions(I_t rows, I_t columns, Dense<T>& A,
+                                     const char* caller_name) {
+
+  if (A.rows() < rows || A.cols() < columns) {
+
+    auto message = stringformat("%s: matrix has too small dimensions: is "
+                                "%dx%d, should be at least %dx%d)", 
+                                caller_name, A.rows(), A.cols(), rows, columns);
 
     throw excBadArgument(message);
 

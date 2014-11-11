@@ -216,6 +216,7 @@ using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_format;
 using LinAlg::Utilities::check_input_transposed;
 using LinAlg::Utilities::check_dimensions;
+using LinAlg::Utilities::check_minimal_dimensions;
 
 /** \brief            xGESV
  *
@@ -239,7 +240,7 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
   check_format(Format::ColMajor, A, "xGESV(A, ipiv, B), A");
   check_format(Format::ColMajor, B, "xGESV(A, ipiv, B), B");
   check_dimensions(A.rows(), B.cols(), B, "xGESV(A, ipiv, B), B");
-  check_dimensions(A.rows(), 1, ipiv, "xGESV(A, ipiv, B), ipiv");
+  check_minimal_dimensions(A.rows(), 1, ipiv, "xGESV(A, ipiv, B), ipiv");
   check_input_transposed(A, "xGESV(A, ipiv, B), A (even though A^T could be "
                          "implemented)");
   check_input_transposed(B, "xGESV(A, ipiv, B), B");
