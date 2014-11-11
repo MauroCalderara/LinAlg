@@ -158,13 +158,19 @@ inline Stream::Stream() : StreamBase() {
   next_in_queue.store(0);
 
 # ifdef USE_POSIX_THREADS
-  auto error = pthread_cond_init(&cv, NULL);
-# ifndef LINALG_NO_CHECKS
+  auto error = pthread_mutex_init(&lock, NULL);
+#   ifndef LINALG_NO_CHECKS
+  if (error != 0) {
+    throw excSystemError("Unable to initialize mutex, error = %d", error);
+  }
+#   endif
+  error = pthread_cond_init(&cv, NULL);
+#   ifndef LINALG_NO_CHECKS
   if (error != 0) {
     throw excSystemError("Unable to initialize condition variable, error = %d",
                          error);
   }
-# endif
+#   endif
 # endif
 
 }
@@ -230,8 +236,20 @@ inline Stream::~Stream() {
   stop();
   clear();
 
-#ifdef USE_POSIX_THREADS
-  pthread_cond_destroy(&cv);
+# ifdef USE_POSIX_THREADS
+  auto error = pthread_mutex_destroy(&lock);
+#   ifndef LINALG_NO_CHECKS
+  if (error != 0) {
+    throw excSystemError("Unable to destroy mutex, error = %d", error);
+  }
+#   endif
+  error = pthread_cond_destroy(&cv);
+#   ifndef LINALG_NO_CHECKS
+  if (error != 0) {
+    throw excSystemError("Unable to destroy condition variable, error = %d", 
+                         error);
+  }
+#   endif
 #endif
 
 }
