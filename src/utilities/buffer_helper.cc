@@ -102,11 +102,11 @@ BufferHelper::~BufferHelper() {
 
   PROFILING_FUNCTION_HEADER
 
-  clear();
+  flush();
 
 }
 
-/** \brief            Clear/empty the buffer, resetting it to the default
+/** \brief            Flush/empty the buffer, resetting it to the default
  *                    state. All transfers that have been requested are worked 
  *                    off, including the corresponding deleter. Transfers that 
  *                    have not yet been requested (either by the user or by 
@@ -118,9 +118,9 @@ BufferHelper::~BufferHelper() {
  *                    of the buffer. Thus if the buffer uses a shared stream 
  *                    and operations unrelated to the buffer have been queued 
  *                    in said shared stream, all tasks that have been queued 
- *                    before the call to clear are synchronized as well.
+ *                    before the call to flush() are synchronized as well.
  */
-void BufferHelper::clear() {
+void BufferHelper::flush() {
 
   PROFILING_FUNCTION_HEADER
 

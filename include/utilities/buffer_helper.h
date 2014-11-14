@@ -56,7 +56,7 @@ struct BufferHelper {
                std::function<void(I_t)> deleter, Stream& stream);
   ~BufferHelper();
 
-  void clear();
+  void flush();
   void wait(I_t n);
   void preload(BufferDirection direction);
 
