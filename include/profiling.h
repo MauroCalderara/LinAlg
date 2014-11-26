@@ -41,6 +41,12 @@
 //
 //  PROFILING_PHASE_END(name)
 //    designates the end of a phase
+//
+//  PROFILING_PAUSE
+//    pauses profiling
+//
+//  PROFILING_RESUME
+//    resumes profiling
 
 
 #ifdef SCOREP_USER_ENABLE
@@ -74,6 +80,9 @@
                              SCOREP_USER_REGION_TYPE_PHASE)
 #  define PROFILING_PHASE_END(name) \
     SCOREP_USER_REGION_END(PROFILING_NAME_TO_HANDLE(name))
+#  define PROFILING_PAUSE SCOREP_RECORDING_OFF()
+#  define PROFILING_RESUME SCOREP_RECORDING_ON()
+
 
 #endif // SCOREP_USER_ENABLE
 
@@ -87,6 +96,8 @@
 #  define PROFILING_REGION_END(name)
 #  define PROFILING_PHASE_BEGIN(name)
 #  define PROFILING_PHASE_END(name)
+#  define PROFILING_PAUSE
+#  define PROFILING_RESUME
 #endif // not SCOREP_USER_ENABLE && not SOME_OTHER_PROFILING_LIB
 
 
