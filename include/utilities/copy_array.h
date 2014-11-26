@@ -257,9 +257,7 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
 
   PROFILING_FUNCTION_HEADER
 
-  if (rows == 0 || cols == 0) {
-    return;
-  }
+  if (rows == 0 || cols == 0) return;
 
 #ifndef LINALG_NO_CHECKS
   if ((src_format != Format::ColMajor && src_format != Format::RowMajor) ||
@@ -438,6 +436,5 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
 } /* namespace LinAlg::Utilities */
 
 } /* namespace LinAlg */
-
 
 #endif /* LINALG_UTILITIES_COPY_ARRAY_H_ */

@@ -187,6 +187,7 @@ inline void multiply(const T alpha, const Dense<T>& A, const Dense<T>& B,
   PROFILING_FUNCTION_HEADER
 
   BLAS::xGEMM(alpha, A, B, beta, C);
+
 }
 
 
