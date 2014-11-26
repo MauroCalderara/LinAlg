@@ -19,7 +19,9 @@
 #include "profiling.h"
 #include "dense.h"
 #include "sparse.h"
-#include "LAPACK/lapack.h"
+#include "utilities/set_array.h"
+#include "LAPACK/laset.h"
+#include "LAPACK/larnv.h"
 
 namespace LinAlg {
 
@@ -38,17 +40,19 @@ namespace Fills {
  *                    the requiested value.
  */
 template <typename T>
-inline void val(Dense<T>& matrix, T value) {
+inline void val(Dense<T>& matrix, const T value) {
 
   PROFILING_FUNCTION_HEADER
 
-  LAPACK::xLASET(value, value, matrix);   // doesn't work, somehow
+  Utilities::set_2Darray(matrix._begin(), matrix._location, matrix._device_id,
+                         matrix._leading_dimension, matrix._rows, matrix._cols,
+                         value, matrix._format);
 
 }
 /** \overload
  */
 template <typename T>
-inline void val(Sparse<T>& matrix, T value) {
+inline void val(Sparse<T>& matrix, const T value) {
 
   PROFILING_FUNCTION_HEADER
 
@@ -63,6 +67,51 @@ inline void val(Sparse<T>& matrix, T value) {
   auto n_nonzeros = matrix._n_nonzeros;
 
   std::fill_n(begin, n_nonzeros, value);
+
+}
+/** \brief            Fills a submatrix with a value
+ *
+ *  \param[in,out]    matrix
+ *                    Matrix to operate on.
+ *
+ *  \param[in]        subblock
+ *                    Specification of the subblock to operate on.
+ *
+ *  \param[in]        value
+ *                    Value to set
+ */
+template <typename T>
+inline void val(Dense<T>& matrix, const SubBlock subblock, const T value) {
+
+  PROFILING_FUNCTION_HEADER
+
+  auto begin     = matrix._begin();
+  auto format    = matrix._format;
+  auto location  = matrix._location;
+  auto device_id = matrix._device_id;
+  auto ld        = matrix._leading_dimension;
+  auto row       = subblock.first_row;
+  auto col       = subblock.first_col;
+
+  T* array;
+  I_t rows, cols;
+
+  if (format == Format::ColMajor) {
+
+    array = begin + ld * col + row;
+    rows  = matrix._rows;
+    cols  = matrix._cols;
+
+  } else /* if (format == Format::RowMajor) */ {
+
+    array = begin + ld * row + col;
+    rows  = matrix._cols;
+    cols  = matrix._rows;
+
+  }
+
+  Utilities::set_2Darray(array, location, device_id, ld, rows, cols, value, 
+                         format);
 
 }
 
@@ -88,6 +137,20 @@ inline void zero(Sparse<T>& matrix) {
   val(matrix, cast<T>(0.0));
 
 }
+/** \brief            Fills a submatrix with zeros
+ *
+ *  \param[in,out]    matrix
+ *                    Matrix to operate on.
+ *
+ *  \param[in]        subblock
+ *                    Specification of the subblock to operate on.
+ */
+template <typename T>
+inline void zero(Dense<T>& matrix, const SubBlock subblock) {
+
+  val(matrix, subblock, cast<T>(0.0));
+
+}
 
 /** \brief            Sets diagonal elements to value a, offdiagonal elements
  *                    to value b
@@ -102,7 +165,7 @@ inline void zero(Sparse<T>& matrix) {
  *                    Value to set the offdiagonal elements to.
  */
 template <typename T>
-inline void val_diag_offdiag(Dense<T>& matrix, T a, T b) {
+inline void val_diag_offdiag(Dense<T>& matrix, const T a, const T b) {
 
   PROFILING_FUNCTION_HEADER
 
@@ -151,7 +214,7 @@ inline void unity(Dense<T>& matrix) {
  *
  */
 template <typename T>
-inline void lapack_rand(Dense<T>& matrix, I_t distribution, I_t* seed) {
+inline void lapack_rand(Dense<T>& matrix, const I_t distribution, I_t* seed) {
 
   PROFILING_FUNCTION_HEADER
 
