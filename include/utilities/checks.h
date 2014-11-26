@@ -17,6 +17,10 @@
 #include "../streams.h"
 #include "stringformat.h"
 
+#ifdef HAVE_CUDA
+#include "../CUDA/cuda.h"    // GPU::
+#endif
+
 namespace LinAlg {
 
 namespace Utilities {
@@ -150,6 +154,33 @@ inline void check_stream(Dense<T>& A, CUDAStream stream,
     throw excBadArgument(message);
 
   }
+}
+
+/*  \brief            Checks if the cublas handles are initialized, raises an 
+ *                    exception if not.
+ *
+ *  \param[in]        caller_name
+ *                    Name of the calling routine
+ */
+inline void check_gpu_handles(const char* caller_name) {
+
+  if (!GPU::_handles_are_initialized) {
+
+    std::string message = caller_name;
+#   ifdef HAVE_MAGMA
+    message = message + ": CUBLAS/CUSPARSE/MAGMA handles are not initialized, "
+              "call LinAlg::GPU::init() before calling any "
+              "CUBLAS/CUSPARSE/MAGMA routines";
+#   else
+    message = message + ": CUBLAS/CUSPARSE handles are not initialized, call "
+              "LinAlg::GPU::init() before calling any CUBLAS/CUSPARSE "
+              "routines";
+#   endif
+  
+    throw CUDA::excCUDAError(message);
+  
+  }
+
 }
 #endif /* HAVE_CUDA */
 
