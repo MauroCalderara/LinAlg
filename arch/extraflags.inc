@@ -19,6 +19,9 @@ GCC_EXTRA_FLAGS += -Wno-unused-parameter
 # This is required by score-p
 GCC_EXTRA_FLAGS += -Wno-unused-variable
 
+# This is required in some uses of SubBlock w/ -O2
+GCC_EXTRA_FLAGS += -Wno-strict-overflow
+
 # Stop compilation at first error
 #GCC_EXTRA_FLAGS += -Wfatal-errors
 
