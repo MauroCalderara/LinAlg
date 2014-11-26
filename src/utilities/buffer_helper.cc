@@ -138,9 +138,12 @@ void BufferHelper::flush() {
       for (I_t i = 0; i < _size; ++i) {
 
         if (_buffer_status[i] > 0) {
+
           last_deleter_ticket = _stream->add(std::bind(_deleter, i));
+
           verbose_print("added _deleter(%d) -> ticket=%d\n", i, 
                         last_deleter_ticket); 
+
         }
 
       }
@@ -151,9 +154,12 @@ void BufferHelper::flush() {
       for (I_t i = _size; i > 0; --i) {
 
         if (_buffer_status[i - 1] > 0) {
+
           last_deleter_ticket = _stream->add(std::bind(_deleter, i - 1));
+
           verbose_print("added _deleter(%d) -> ticket=%d\n", i - 1, 
                         last_deleter_ticket); 
+
         } 
 
       }
@@ -167,9 +173,7 @@ void BufferHelper::flush() {
 
   }
 
-  if (_manage_stream) {
-    delete _stream;
-  }
+  if (_manage_stream) delete _stream;
   _initialized = false;
   _last_requested = 0;
 

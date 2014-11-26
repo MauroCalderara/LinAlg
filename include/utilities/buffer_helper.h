@@ -31,7 +31,7 @@
 
 // If BUFFER_HELPER_VERBOSE is defined, the buffer will print information 
 // about adding tasks to the queue and syncing with them
-#define BUFFER_HELPER_VERBOSE
+//#define BUFFER_HELPER_VERBOSE
 #ifdef BUFFER_HELPER_VERBOSE
 #include <string>       // std::string
 #include <cstdio>       // std::printf
