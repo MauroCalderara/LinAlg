@@ -38,6 +38,8 @@
 #include "types.h"
 #include "profiling.h"
 #include "exceptions.h"
+#include "dense.h"
+#include "sparse.h"
 
 namespace LinAlg {
 
@@ -239,9 +241,9 @@ inline Stream::~Stream() {
 # ifdef USE_POSIX_THREADS
   auto error = pthread_mutex_destroy(&lock);
 #   ifndef LINALG_NO_CHECKS
-  if (error != 0) {
-    throw excSystemError("Unable to destroy mutex, error = %d", error);
-  }
+  //if (error != 0) {
+  //  throw excSystemError("Unable to destroy mutex, error = %d", error);
+  //}
 #   endif
   error = pthread_cond_destroy(&cv);
 #   ifndef LINALG_NO_CHECKS
@@ -524,6 +526,60 @@ inline void Stream::clear() {
 # endif
 
 }
+
+
+#ifndef DOXYGEN_SKIP
+/*  \brief            Helper class to bundle some matrix with a function.  
+ *                    Effectively it is a function object that holds a matrix. 
+ *
+ *  \note             This class is neccessary only because Dense<T> and 
+ *                    Sparse<T> explicitly don't have a copy constructor (see
+ *                    in dense.h for an explanation). Otherwise matrices could 
+ *                    be passed to lambda functions and std::bind calls by copy.
+ *                    This class on the other hand is both copyable and 
+ *                    callable, thereby solving the problem.
+ *
+ *                    This is probably not required anymore with C++14's 
+ *                    'identifier initializer' lambda captures...
+ *
+ *                    All in all this definitely smells like bad design. Maybe 
+ *                    it'd be better to provide copy constructors for Dense<T> 
+ *                    and Sparse<T> in the first place ...
+ */
+template <typename T>
+struct DenseMatrixFunctionBundle {
+
+  Dense<T>               bundled_matrix;
+  std::function<void()>  bundled_function;
+
+  /*  \param[in]      matrix
+   *                  Matrix to bundle with the function
+   *
+   *  \param[in]      function
+   *                  Function object that takes a reference to a matrix as 
+   *                  single argument. This function object would typically be 
+   *                  created using a lambda function.
+   *
+   *  \example        See MPI/send_receive_matrix.h
+   */
+  DenseMatrixFunctionBundle(Dense<T>& matrix, T function) 
+                         : bundled_function(function) {
+    bundled_matrix.clone_from(matrix);
+  }
+
+  // Make the object copyable
+  DenseMatrixFunctionBundle(const DenseMatrixFunctionBundle& other) {
+    bundled_matrix.clone_from(other.bundled_matrix);
+    bundled_function = other.bundled_function;
+  }
+
+  ~DenseMatrixFunctionBundle() { bundled_matrix.unlink(); }
+
+  // Call operator
+  inline void operator()() { bundled_function(bundled_matrix); }
+
+};
+#endif /* not DOXYGEN_SKIP */
 
 
 #ifdef HAVE_CUDA
