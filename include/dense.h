@@ -365,7 +365,7 @@ Dense<T>::Dense(const Dense<T>& source, SubBlock sub_block)
                 _leading_dimension(source._leading_dimension),
                 _format(source._format),
                 _rows(sub_block.last_row - sub_block.first_row),
-                _cols(sub_block.last_col - sub_block.last_col),
+                _cols(sub_block.last_col - sub_block.first_col),
                 _location(source._location),
                 _device_id(source._device_id),
                 _transposed(source._transposed) {
@@ -448,7 +448,8 @@ Dense<T>::Dense(const Dense<T>& source, IJ start, IJ stop)
 template <typename T>
 Dense<T>::Dense(const Dense<T>& source, I_t first_row, I_t last_row,
                 I_t first_col, I_t last_col)
-              : Dense(source, IJ(first_row, first_col), IJ(last_row, last_col)){
+              : Dense(source, 
+                      SubBlock(first_row, last_row, first_col, last_col)){
 }
 
 /** \brief            Submatrix creation
@@ -672,14 +673,16 @@ inline void Dense<T>::reallocate(I_t rows, I_t cols, Location location,
 #ifndef LINALG_NO_CHECKS
   if (rows == 0 || cols == 0) {
     throw excBadArgument("Dense.reallocate(): rows or cols must not be zero, "
-                         "use unlin() instead");
+                         "use unlink() instead");
   }
 #endif
 
   // Allocation for main memory
   if (location == Location::host) {
 
-    _memory = Utilities::host_make_shared<T>(rows * cols);
+    _memory            = Utilities::host_make_shared<T>(rows * cols);
+    _leading_dimension = (_format == Format::ColMajor) ? rows : cols;
+    device_id          = 0;
 
   }
 
@@ -688,8 +691,20 @@ inline void Dense<T>::reallocate(I_t rows, I_t cols, Location location,
   // throws we won't leak memory.
   else if (location == Location::GPU) {
 
+    // OLD:
+    // Linear allocation
     using CUDA::cuda_make_shared;
-    _memory = cuda_make_shared<T>(rows * cols, device_id);
+    _memory            = cuda_make_shared<T>(rows * cols, device_id);
+    _leading_dimension = (_format == Format::ColMajor) ? rows : cols;
+
+    // NEW:
+    // Optimized allocation, potentially with a leading dimension (which is 
+    // automatically set by this call via the reference to _leading_dimension)
+    // Doesn't yet work though
+    //using CUDA::cuda_make_shared_2D;
+    //_memory    = cuda_make_shared_2D<T>(rows, cols, device_id, _format, 
+    //                                    _leading_dimension);
+    //_device_id = device_id;
 
   }
 #endif
@@ -701,17 +716,17 @@ inline void Dense<T>::reallocate(I_t rows, I_t cols, Location location,
 
     // NOTE: the MIC seems not to support 'MIC only' memory such that there must
     // always be a corresponding block of memory on the host itself.
-    _memory = mic_make_shared<T>(rows * cols, device_id);
+    _memory            = mic_make_shared<T>(rows * cols, device_id);
+    _leading_dimension = (_format == Format::ColMajor) ? rows : cols;
 
   }
 #endif
 
-  _offset = 0;
-  _leading_dimension = (_format == Format::ColMajor) ? rows : cols;
-  _device_id = 0;
-  _location = location;
-  _cols = cols;
-  _rows = rows;
+  _offset    = 0;
+  _device_id = device_id;
+  _location  = location;
+  _cols      = cols;
+  _rows      = rows;
 
 }
 
