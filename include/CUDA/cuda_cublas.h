@@ -32,9 +32,6 @@ namespace CUBLAS {
 /// src/CUDA/cuda_cublas.cc
 extern std::vector<cublasHandle_t> handles;
 
-/// Global variable to signal the initializatin status of CUBLAS::handles
-extern bool _handles_are_initialized;
-
 /** \brief            A wrapper to initialize the global CUBLAS handles
  */
 inline void init() {
@@ -60,17 +57,6 @@ inline void init() {
 
 }
 
-/** \brief            Check if the handles are initialized.
- *
- *  \returns          true if they are initialized, false otherwise.
- */
-inline bool is_initialized() {
-
-  PROFILING_FUNCTION_HEADER
-
-  return ((handles.empty()) ? false : true);
-
-}
 
 /** \brief            Destroy the global CUBLAS handles
  */

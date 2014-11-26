@@ -217,6 +217,9 @@ using LinAlg::Utilities::check_format;
 using LinAlg::Utilities::check_input_transposed;
 using LinAlg::Utilities::check_dimensions;
 using LinAlg::Utilities::check_minimal_dimensions;
+#ifdef HAVE_CUDA
+using LinAlg::Utilities::check_gpu_handles;
+#endif
 
 /** \brief            xGESV
  *
@@ -273,18 +276,22 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
 #ifdef HAVE_CUDA
   else if (A._location == Location::GPU) {
 
-#ifndef USE_MAGMA_GESV
+# ifndef LINALG_NO_CHECKS
+    check_gpu_handles("xGESV()");
+# endif
+
+# ifndef USE_MAGMA_GESV
     // When using the CUBLAS variant, we basically do xGESV by hand.
 
     using LinAlg::CUDA::CUBLAS::handles;
 
-#ifndef LINALG_NO_CHECKS
+#   ifndef LINALG_NO_CHECKS
     // Note that the MAGMA GETRF would support non-square matrices
     if (A._rows != A._cols) {
       throw excBadArgument("xGETSV(A, ipiv, B), A: matrix must be square (when "
                            "using cublasXgetrfBatched)");
     }
-#endif
+#   endif
 
     auto handle        = CUDA::CUBLAS::handles[A._device_id];
     auto ipiv_override = nullptr;
@@ -294,15 +301,15 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
     // there is no xLASWP in CUBLAS, respectively)
 
     // TODO: this call here doesn't work
-    LAPACK::CUBLAS::xGETRF(handle, n, A_ptr, lda, ipiv_override, &info);
+    LAPACK::CUBLAS::xGETRF(handle, n, A_ptr, lda, ipiv_override, info);
 
-#ifndef LINALG_NO_CHECKS
+#   ifndef LINALG_NO_CHECKS
     if (info != 0) {
       throw excMath("xGESV() (using CUBLAS::GETRF + CUBLAS::TRSM): unable to "
                     "LU decompose A (CUBLAS::xGETRF(): backend error = %d)", 
                     info);
     }
-#endif
+#   endif
 
     // Directly solve using xTRSM (no xLASWP since we didn't pivot):
     // 1: y = L\b
@@ -314,24 +321,24 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
                         CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, n, nrhs,
                         cast<T>(1.0), A_ptr, lda, B_ptr, ldb);
 
-#else /* USE_MAGMA_GESV */
+# else /* USE_MAGMA_GESV */
 
-#ifndef LINALG_NO_CHECKS
+#   ifndef LINALG_NO_CHECKS
     if (ipiv.location() != Location::host) {
       throw excBadArgument("xGESV(A, ipiv, B): the pivoting vector ipiv must "
                            "reside in main memory (using the MAGMA backend)");
     }
-#endif
+#   endif
 
     MAGMA::xGESV(n, nrhs, A_ptr, lda, ipiv_ptr, B_ptr, ldb, &info);
 
-#ifndef LINALG_NO_CHECKS
+#   ifndef LINALG_NO_CHECKS
     if (info != 0) {
       throw excMath("xGESV(): backend error = %d)", info);
     }
-#endif
+#   endif
 
-#endif /* not USE_MAGMA_GESV */
+# endif /* not USE_MAGMA_GESV */
 
   }
 #endif /* HAVE_CUDA */

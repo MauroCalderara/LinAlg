@@ -24,6 +24,9 @@ namespace CUBLAS {
 // The vector of handles (extern in cuda_cublas.h)
 std::vector<cublasHandle_t> handles;
 
+// Status handle
+bool _handles_are_initialized;
+
 } /* namespace LinAlg::CUDA::CUBLAS */
 
 } /* namespace LinAlg::CUDA */

@@ -60,8 +60,7 @@ inline void cuda_deallocate(T* device_ptr, int device_id) {
  *  \param[in]        device_id
  *                    The number of the GPU on which to allocate the memory.
  *
- *  \return           device_ptr
- *                    A pointer to memory on the GPGPU.
+ *  \return           A shared_ptr to memory on the GPGPU.
  */
 template <typename T>
 inline std::shared_ptr<T> cuda_make_shared(I_t size, int device_id) {
@@ -81,6 +80,62 @@ inline std::shared_ptr<T> cuda_make_shared(I_t size, int device_id) {
 
   checkCUDA(cudaSetDevice(device_id));
   checkCUDA(cudaMalloc((void **) &device_ptr, size * sizeof(T)));
+
+  checkCUDA(cudaSetDevice(prev_device));
+
+  auto deleter = std::bind(cuda_deallocate<T>, std::placeholders::_1,
+                           device_id);
+
+  return std::shared_ptr<T>(device_ptr, deleter);
+
+}
+
+/** \brief            Allocate optimized 2D array on the GPGPU
+ *
+ *  \param[in]        rows
+ *                    Number of rows in the 2D array
+ *
+ *  \param[in]        cols
+ *                    Number of columns in the 2D array
+ *
+ *  \param[in]        device_id
+ *                    The number of the GPU on which to allocate the 2D array
+ *
+ *  \param[in]        format
+ *                    Format of the 2D array
+ *
+ *  \param[out]       leading_dimension
+ *                    The leading dimension of the allocated array
+ *
+ *  \return           A shared_ptr to the 2D array on the GPGPU
+ */
+template <typename T>
+inline std::shared_ptr<T> cuda_make_shared_2D(const I_t rows, const I_t cols, 
+                                              const int device_id, 
+                                              const Format format, 
+                                              I_t& leading_dimension) {
+
+  PROFILING_FUNCTION_HEADER
+
+#ifndef LINALG_NO_CHECKS
+  if (rows == 0 || cols == 0) {
+    throw excBadArgument("cuda_make_shared_2D(): rows and columns must be "
+                         "larger than 0");
+  }
+#endif
+
+  T* device_ptr;
+
+  auto width  = ((format == Format::ColMajor) ? cols : rows) * sizeof(T);
+  auto height =  (format == Format::ColMajor) ? rows : cols;
+
+  auto prev_device = device_id;
+  checkCUDA(cudaGetDevice(&prev_device));
+
+  checkCUDA(cudaSetDevice(device_id));
+  checkCUDA(cudaMallocPitch((void**) &device_ptr, \
+                            (size_t*) &leading_dimension, \
+                            width, (size_t) height));
 
   checkCUDA(cudaSetDevice(prev_device));
 

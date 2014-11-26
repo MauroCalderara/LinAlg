@@ -149,6 +149,7 @@ inline void xGEAM(int device_id, cublasOperation_t transa,
 
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_output_transposed;
+using LinAlg::Utilities::check_gpu_handles;
 using LinAlg::CUDA::CUBLAS::handles;
 
 /** \brief            A CUBLAS routine to copy, transpose and add dense
@@ -177,6 +178,7 @@ inline void xGEAM(const T alpha, const Dense<T>& A, const T beta,
 #ifndef LINALG_NO_CHECKS
   check_device(A, B, C, "xGEAM()");
   check_output_transposed(C, "xGEAM()");
+  check_gpu_handles("xGEAM()");
 
   if (A.rows() != B.rows() || A.rows() != C.rows() ||
       A.cols() != B.cols() || A.cols() != C.cols()   ) {
@@ -235,6 +237,7 @@ inline void xGEAM_async(const T alpha, const Dense<T>& A, const T beta,
 #ifndef LINALG_NO_CHECKS
   check_device(A, B, C, "xGEAM()");
   check_output_transposed(C, "xGEAM()");
+  check_gpu_handles("xGEAM()");
 
   if (stream.synchronous_operation) {
 

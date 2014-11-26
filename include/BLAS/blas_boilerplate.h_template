@@ -157,6 +157,7 @@ inline void xXYZ(...) {
 using LinAlg::Utilities::check_device;
 #ifdef HAVE_CUDA
 using LinAlg::CUDA::CUBLAS::handles;
+using LinAlg::Utilities::check_gpu_handles;
 #endif
 
 // Convenience bindings (bindings for Dense<T>)
@@ -190,6 +191,11 @@ inline void xXYZ(...) {
   }
 #ifdef HAVE_CUDA
   else if (location == Location::GPU) {
+
+# ifndef LINALG_NO_CHECKS
+    check_gpu_handles("xXYZ()");
+# endif
+
     cublasOperation_t transa = (A._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
     cublasOperation_t transb = (B._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
     BLAS::CUBLAS::xXYZ();

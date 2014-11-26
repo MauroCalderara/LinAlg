@@ -376,6 +376,9 @@ inline I_t get_xgetri_nb<Z_t>(I_t n) { return magma_get_zgetri_nb(n); }
 
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_input_transposed;
+#ifdef HAVE_CUDA
+using LinAlg::Utilities::check_gpu_handles;
+#endif
 
 /** \brief            Compute the inverse using the LU decomposition of a
  *                    matrix in-place
@@ -517,7 +520,12 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
 #ifdef HAVE_CUDA
   else if (A._location == Location::GPU) {
 
-#ifndef USE_MAGMA_GETRI
+
+# ifndef LINALG_NO_CHECKS
+    check_gpu_handles("xGESV()");
+# endif
+
+# ifndef USE_MAGMA_GETRI
     // CUBLAS' getri is out-of-place so we need to allocate a C and then stream
     // it back into A after the operation
 
@@ -534,7 +542,7 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
 
     A << C;
 
-#else /* USE_MAGMA_GETRI */
+# else /* USE_MAGMA_GETRI */
 
     auto lwork = work._rows;
 
@@ -549,18 +557,18 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
       work.reallocate(lwork, 1);
 
     } 
-#ifndef LINALG_NO_CHECKS 
+#   ifndef LINALG_NO_CHECKS 
     else if (lwork < A._rows) {
       throw excBadArgument("xGETRI(A, ipiv, work), work: work must have at "
                            "least A.rows() = %d rows (work.rows() = %d)",
                            A._rows, lwork);
     }
-#endif /* LINALG_NO_CHECKS */
+#   endif /* LINALG_NO_CHECKS */
 
     auto work_ptr = work._begin();
     MAGMA::xGETRI(n, A_ptr, lda, ipiv_ptr, work_ptr, lwork, &info);
 
-#endif /* not USE_MAGMA_GETRI */
+# endif /* not USE_MAGMA_GETRI */
 
   }
 #endif /* HAVE_CUDA */

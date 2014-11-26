@@ -217,8 +217,8 @@ inline void xLASET(T alpha, T beta, Dense<T>& A) {
 
   if (A._location == Location::host) {
     auto uplo = "A";
-    auto m = A._rows;
-    auto n = A._cols;
+    auto m = (A._format == Format::ColMajor) ? A._rows : A._cols;
+    auto n = (A._format == Format::ColMajor) ? A._cols : A._rows;
     auto A_ptr = A._begin();
     auto lda = A._leading_dimension;
     FORTRAN::xLASET(uplo, m, n, alpha, beta, A_ptr, lda);
@@ -230,8 +230,8 @@ inline void xLASET(T alpha, T beta, Dense<T>& A) {
     // TODO:
     // Don't know how to set magma_uplo_t to 'all' so we do both upper and 
     // lower :-/
-    auto m = A._rows;
-    auto n = A._cols;
+    auto m = (A._format == Format::ColMajor) ? A._rows : A._cols;
+    auto n = (A._format == Format::ColMajor) ? A._cols : A._rows;
     auto A_ptr = A._begin();
     auto lda = A._leading_dimension;
     MAGMA::xLASET(MagmaUpper, m, n, alpha, beta, A_ptr, lda);

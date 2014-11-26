@@ -132,63 +132,136 @@ namespace CUBLAS {
  *  \param[in]        handle
  *
  *  \param[in]        n
+ *                    Number of columns in A (must be the same as the number of 
+ *                    rows for CUDA GETRF)
  *
- *  \param[in,out]    A
+ *  \param[in,out]    A_ptr
+ *                    Single pointer to the memory region on the device where 
+ *                    the matrix A begins (this is unlike the raw CUBLAS 
+ *                    interface and unlike the CUBLAS::xGETRF_batched() 
+ *                    interface)
  *
  *  \param[in]        lda
+ *                    Leading dimension of A
  *
- *  \param[in,out]    ipiv
+ *  \param[in,out]    ipiv_device
+ *                    Pointer to the memory region on the device where the  
+ *                    pivot vector begins. Length of the pivot vector: n. Can 
+ *                    also be <nullptr>
  *
  *  \param[in,out]    info
- *
- *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
+ *                    Reference to a variable in main memory (this is again 
+ *                    unlike the raw CUBLAS interface and unlike the 
+ *                    CUBLAS::xGETRF_batched() interface)
  */
-inline void xGETRF(cublasHandle_t handle, I_t n, S_t* A, I_t lda, int* ipiv,
-                   int* info) {
+inline void xGETRF(cublasHandle_t handle, I_t n, S_t* A_ptr, I_t lda, 
+                   int* ipiv_device, int& info) {
 
   PROFILING_FUNCTION_HEADER
 
-  throw excUnimplemented("CUBLAS xGETRF not properly implemented");
-  checkCUBLAS(cublasSgetrfBatched(handle, n, &A, lda, ipiv, info, 1));
+  S_t*  Aarray[] = { A_ptr };
+
+  S_t** Aarray_device;
+  checkCUDA(cudaMalloc<S_t*>(&Aarray_device, 1 * sizeof(Aarray)));
+  checkCUDA(cudaMemcpy(Aarray_device, Aarray, 1 * sizeof(Aarray), \
+                       cudaMemcpyHostToDevice));
+
+  int lda_device = lda;
+
+  int* info_device;
+  checkCUDA(cudaMalloc<int>(&info_device, 1 * sizeof(int)));
+
+  checkCUBLAS(cublasSgetrfBatched(handle, n, Aarray_device, lda_device, 
+                                  ipiv_device, info_device, 1));
+
+  checkCUDA(cudaMemcpy(&info, info_device, 1 * sizeof(int), \
+                       cudaMemcpyDeviceToHost));
+
+  checkCUDA(cudaFree(Aarray_device));
+  checkCUDA(cudaFree(info_device));
 
 }
 /** \overload
  */
-inline void xGETRF(cublasHandle_t handle, I_t n, D_t* A, I_t lda, int* ipiv,
-                   int* info) {
+inline void xGETRF(cublasHandle_t handle, I_t n, D_t* A_ptr, I_t lda, 
+                   int* ipiv_device, int& info) {
 
   PROFILING_FUNCTION_HEADER
 
-  throw excUnimplemented("CUBLAS xGETRF not properly implemented");
-  //D_t* Aarray[] = { A }
-  //checkCUBLAS(cublasDgetrfBatched(handle, n, Aarray, lda, ipiv, info, 1));
-  checkCUBLAS(cublasDgetrfBatched(handle, n, &A, lda, ipiv, info, 1));
+  D_t*  Aarray[] = { A_ptr };
+
+  D_t** Aarray_device;
+  checkCUDA(cudaMalloc<D_t*>(&Aarray_device, 1 * sizeof(Aarray)));
+  checkCUDA(cudaMemcpy(Aarray_device, Aarray, 1 * sizeof(Aarray), \
+                       cudaMemcpyHostToDevice));
+
+  int lda_device = lda;
+
+  int* info_device;
+  checkCUDA(cudaMalloc<int>(&info_device, 1 * sizeof(int)));
+
+  checkCUBLAS(cublasDgetrfBatched(handle, n, Aarray_device, lda_device, 
+                                  ipiv_device, info_device, 1));
+
+  checkCUDA(cudaMemcpy(&info, info_device, 1 * sizeof(int), \
+                       cudaMemcpyDeviceToHost));
+
+  checkCUDA(cudaFree(Aarray_device));
+  checkCUDA(cudaFree(info_device));
 
 }
 /** \overload
  */
-inline void xGETRF(cublasHandle_t handle, I_t n, C_t* A, I_t lda, int* ipiv,
-                   int* info) {
+inline void xGETRF(cublasHandle_t handle, I_t n, C_t* A_ptr, I_t lda, 
+                   int* ipiv_device, int& info) {
 
   PROFILING_FUNCTION_HEADER
 
-  throw excUnimplemented("CUBLAS xGETRF not properly implemented");
-  checkCUBLAS(cublasCgetrfBatched(handle, n, \
-                                  reinterpret_cast<cuComplex**>(&A),lda, ipiv, \
-                                  info, 1));
+  C_t*  Aarray[] = { A_ptr };
+
+  C_t** Aarray_device;
+  checkCUDA(cudaMalloc<C_t*>(&Aarray_device, 1 * sizeof(Aarray)));
+  checkCUDA(cudaMemcpy(Aarray_device, Aarray, 1 * sizeof(Aarray), \
+                       cudaMemcpyHostToDevice));
+
+  int* info_device;
+  checkCUDA(cudaMalloc<int>(&info_device, sizeof(int)));
+
+  checkCUBLAS(cublasCgetrfBatched(handle, n, Aarray_device, lda, ipiv_device, 
+                                  info_device, 1));
+
+  checkCUDA(cudaMemcpy(&info, info_device, 1 * sizeof(int), \
+                       cudaMemcpyDeviceToHost));
+
+  checkCUDA(cudaFree(Aarray_device));
+  checkCUDA(cudaFree(info_device));
 
 }
 /** \overload
  */
-inline void xGETRF(cublasHandle_t handle, I_t n, Z_t* A, I_t lda, int* ipiv,
-                   int* info) {
+inline void xGETRF(cublasHandle_t handle, I_t n, Z_t* A_ptr, I_t lda, 
+                   int* ipiv_device, int& info) {
 
   PROFILING_FUNCTION_HEADER
 
-  throw excUnimplemented("CUBLAS xGETRF not properly implemented");
-  checkCUBLAS(cublasZgetrfBatched(handle, n, \
-                                  reinterpret_cast<cuDoubleComplex**>(&A), \
-                                  lda, ipiv, info, 1));
+  Z_t*  Aarray[] = { A_ptr };
+
+  Z_t** Aarray_device;
+  checkCUDA(cudaMalloc<Z_t*>(&Aarray_device, 1 * sizeof(Aarray)));
+  checkCUDA(cudaMemcpy(Aarray_device, Aarray, 1 * sizeof(Aarray), \
+                       cudaMemcpyHostToDevice));
+
+  int* info_device;
+  checkCUDA(cudaMalloc<int>(&info_device, sizeof(int)));
+
+  checkCUBLAS(cublasZgetrfBatched(handle, n, Aarray_device, lda, ipiv_device, 
+                                  info_device, 1));
+
+  checkCUDA(cudaMemcpy(&info, info_device, 1 * sizeof(int), \
+                       cudaMemcpyDeviceToHost));
+
+  checkCUDA(cudaFree(Aarray_device));
+  checkCUDA(cudaFree(info_device));
 
 }
 
@@ -201,14 +274,20 @@ inline void xGETRF(cublasHandle_t handle, I_t n, Z_t* A, I_t lda, int* ipiv,
  *  \param[in]        n
  *
  *  \param[in,out]    Aarray[]
+ *                    Array, stored on the GPU, that contains the pointers to 
+ *                    the begin of the matrices. Length: batchSize 
  *
  *  \param[in]        lda
  *
  *  \param[in,out]    PivotArray
+ *                    Array, stored on the GPU, of length: batchSize * n
  *
  *  \param[in,out]    infoArray
+ *                    Array, stored on the GPU, of length: batchSize
  *
  *  \param[in]        batchSize
+ *
+ *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
 inline void xGETRF_batched(cublasHandle_t handle, I_t n, S_t* Aarray[], I_t lda,
                            int* PivotArray, int* infoArray, I_t batchSize) {
@@ -323,6 +402,9 @@ inline void xGETRF(I_t m, I_t n, Z_t* A, I_t lda, I_t* ipiv, int* info) {
 
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_input_transposed;
+#ifdef HAVE_CUDA
+using LinAlg::Utilities::check_gpu_handles;
+#endif
 
 /** \brief            Compute the LU decomposition of a matrix
  *
@@ -348,20 +430,20 @@ inline void xGETRF(Dense<T>& A, Dense<int>& ipiv) {
 
 #ifndef LINALG_NO_CHECKS
   check_input_transposed(A, "xGETRF(A, ipiv), A:");
-#ifndef HAVE_CUDA
+# ifndef HAVE_CUDA
   check_input_transposed(ipiv, "xGETRF(A, ipiv), ipiv:");
-#else
+# else
   if (!ipiv.is_empty()) {
     check_input_transposed(ipiv, "xGETRF(A, ipiv), ipiv:");
   }
-#endif
+# endif
 
-#ifndef HAVE_CUDA
+# ifndef HAVE_CUDA
   if (A.rows() != ipiv.rows()) {
     throw excBadArgument("xGETRF(A, ipiv), A, ipiv: must have same number of "
                          "rows");
   }
-#else
+# else
   if (A.rows() != A.cols() && A._location == Location::GPU) {
     throw excBadArgument("xGETRF(A, ipiv), A: matrix A must be a square matrix "
                          "(CUBLAS restriction)");
@@ -372,45 +454,68 @@ inline void xGETRF(Dense<T>& A, Dense<int>& ipiv) {
                            "of rows");
     }
   }
-#endif
+# endif
 #endif /* LINALG_NO_CHECKS */
 
   auto n = A.cols();
   auto A_ptr = A._begin();
   auto lda = A._leading_dimension;
-  auto ipiv_ptr = ipiv._begin();
   int  info = 0;
 
   if (A._location == Location::host) {
+
 #ifndef LINALG_NO_CHECKS
     check_device(A, ipiv, "xGETRF(A, ipiv)");
 #endif
+
     auto m = A.cols();
+    auto ipiv_ptr = ipiv._begin();
     FORTRAN::xGETRF(m, n, A_ptr, lda, ipiv_ptr, &info);
+
   }
+
 #ifdef HAVE_CUDA
   else if (A._location == Location::GPU) {
 
-#ifndef USE_MAGMA_GETRF
-#ifndef LINALG_NO_CHECKS
-    check_device(A, ipiv, "xGETRF(A, ipiv)");
-#endif
+# ifndef LINALG_NO_CHECKS
+    check_gpu_handles("xGETRF()");
+# endif
+
+# ifndef USE_MAGMA_GETRF
+
+#   ifndef LINALG_NO_CHECKS
+    if (!ipiv.is_empty()) {
+      check_device(A, ipiv, "xGETRF(A, ipiv)");
+    }
+#   endif
+
     using LinAlg::CUDA::CUBLAS::handles;
     auto device_id = A._device_id;
-    CUBLAS::xGETRF(handles[device_id], n, A_ptr, lda, ipiv_ptr, &info);
-#else /* USE_MAGMA_GETRF */
-#ifndef LINALG_NO_CHECKS
+    int* ipiv_ptr = (ipiv.is_empty()) ? NULL : ipiv._begin();
+
+    CUBLAS::xGETRF(handles[device_id], n, A_ptr, lda, ipiv_ptr, info);
+
+# else /* USE_MAGMA_GETRF */
+
+#   ifndef LINALG_NO_CHECKS
     if (ipiv.location() != Location::host) {
       throw excBadArgument("xGETRF(A, ipiv): ipiv must be allocated in main "
                            "memory (using MAGMA's getrf)");
     }
-#endif
+    if (ipiv.is_empty()) {
+      throw excBadArgument("xGETRF(A, ipiv): ipiv must not be empty (using "
+                           "MAGMA's getrf)");
+    }
+#   endif
+
     auto m = A.cols();
+    auto ipiv_ptr = ipiv._begin();
     MAGMA::xGETRF(m, n, A_ptr, lda, ipiv_ptr, &info);
-#endif /* not USE_MAGMA_GETRF */
+
+# endif /* not USE_MAGMA_GETRF */
 
   }
-#endif
+#endif /* HAVE_CUDA */
 
 #ifndef LINALG_NO_CHECKS
   else {

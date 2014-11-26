@@ -25,6 +25,10 @@ namespace LinAlg {
 
 namespace GPU {
 
+/// Global variable to signal the initializatin status of CUBLAS::handles.
+/// "Defined" in src/CUDA/cuda.cc
+extern bool _handles_are_initialized;
+
 /** \brief            A wrapper to initialize all GPU related handles
  */
 inline void init() {
@@ -40,7 +44,10 @@ inline void init() {
   magma_init();
 #endif
 
+  _handles_are_initialized = true;
+
 }
+
 
 } /* namespace LinAlg::CUDA */
 

@@ -320,6 +320,7 @@ inline void xGEMM(cublasHandle_t handle, cublasOperation_t transa,
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_output_transposed;
 #ifdef HAVE_CUDA
+using LinAlg::Utilities::check_gpu_handles;
 using LinAlg::CUDA::CUBLAS::handles;
 #endif
 
@@ -378,6 +379,11 @@ inline void xGEMM(const T alpha, const Dense<T>& A, const Dense<T>& B,
   }
 #ifdef HAVE_CUDA
   else if (location == Location::GPU) {
+
+# ifndef LINALG_NO_CHECKS
+    check_gpu_handles("xGEMM()");
+# endif
+
     cublasOperation_t transa = (A._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
     cublasOperation_t transb = (B._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
     CUBLAS::xGEMM(handles[device_id], transa, transb, m, n, k, &alpha, A_ptr,

@@ -248,6 +248,11 @@ inline void xXYZ(Dense<T>& X, Dense<int>& Y) {
   }
 #ifdef HAVE_CUDA
   else if (X._location == Location::GPU) {
+
+# ifndef LINALG_NO_CHECKS
+  check_cublas_handles("xXYZ()");
+# endif
+
     using LinAlg::CUDA::CUBLAS::handles;
     CUBLAS::xXYZ(handles[device_id], ...);
   }
