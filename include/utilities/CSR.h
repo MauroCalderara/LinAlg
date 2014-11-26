@@ -38,7 +38,7 @@ namespace Utilities {
 std::tuple<I_t, I_t, I_t, bool> parse_CSR_header(std::string filename);
 
 // See src/utilities/CSR.cc
-std::tuple<I_t, I_t, I_t, bool> parse_CSR_body(std::string filename);
+std::tuple<I_t, I_t, I_t, I_t, bool> parse_CSR_body(std::string filename);
 
 /** \brief              Read from a CSR file into a matrix.
  *
@@ -83,10 +83,10 @@ void read_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
 
 #endif
 
-  I_t rows, columns, n_nonzeros;
+  I_t rows, columns, n_nonzeros, first_index;
   bool file_is_complex;
 
-  std::tie(rows, columns, n_nonzeros, file_is_complex) =
+  std::tie(rows, columns, n_nonzeros, first_index, file_is_complex) =
                                                   parse_CSR_body(filename);
 
   if (matrix.is_empty()) {
@@ -155,7 +155,9 @@ void read_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
           // Input has already been checked by parse_CSR_body()
           linestream.str(line); linestream.clear();
           linestream >> i >> j >> real >> imag;
-          m_data[j * ld + i] = cast<T>(real, imag);
+          auto col_pos = j - first_index;
+          auto row_pos = i - first_index;
+          m_data[col_pos * ld + row_pos] = cast<T>(real, imag);
 
           ++line_num;
 
@@ -171,7 +173,9 @@ void read_CSR(LinAlg::Dense<T>& matrix, std::string filename) {
 
           linestream.str(line); linestream.clear();
           linestream >> i >> j >> real;
-          m_data[j * ld + i] = cast<T>(real);
+          auto col_pos = j - first_index;
+          auto row_pos = i - first_index;
+          m_data[col_pos * ld + row_pos] = cast<T>(real);
 
           ++line_num;
 

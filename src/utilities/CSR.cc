@@ -156,18 +156,20 @@ std::tuple<I_t, I_t, I_t, bool> parse_CSR_header(std::string filename) {
  *  \param[in]          filename
  *                      Path to the CSR file.
  *
- *  \return             A std::tuple<I_t, I_t, bool> with the elements: rows,
- *                      colums, n_nonzeros, is_complex.
+ *  \return             A std::tuple<I_t, I_t, I_t, I_t, bool> with the 
+ *                      elements: rows, colums, n_nonzeros, first_index, 
+ *                      is_complex.
  *
  *  \todo               Have an example of how to use this using idiomatic C++
  *                      with std::tie:
  *
  *  Example usage:
  *  \code
- *       std::tie(rows, cols, n_nonzeros, is_complex) = parse_CSR_body(file);
+ *       std::tie(rows, cols, n_nonzeros, first_index, is_complex) = 
+ *                                        parse_CSR_body(file);
  *  \endcode
  */
-std::tuple<I_t, I_t, I_t, bool> parse_CSR_body(std::string filename) {
+std::tuple<I_t, I_t, I_t, I_t, bool> parse_CSR_body(std::string filename) {
 
   PROFILING_FUNCTION_HEADER
 
@@ -181,6 +183,7 @@ std::tuple<I_t, I_t, I_t, bool> parse_CSR_body(std::string filename) {
   I_t header_rows, header_n_nonzeros;
   I_t rows = 0;
   I_t columns = 0;
+  I_t first_index;
   bool matrix_is_cmpx;
   bool parse_ok;
   istringstream linestream;
@@ -189,7 +192,6 @@ std::tuple<I_t, I_t, I_t, bool> parse_CSR_body(std::string filename) {
   if (file_to_parse.is_open()) {
 
     int line_num;
-    int first_index;    // fortran index
     string line;
 
 #ifndef LINALG_NO_CHECKS
@@ -281,7 +283,8 @@ std::tuple<I_t, I_t, I_t, bool> parse_CSR_body(std::string filename) {
     } catch(ifstream::failure err) {
 
       throw excBadFile("parse_CSR_body(): Input file (%s:%d): premature end or "
-                       "read error (%s).", filename.c_str(), line_num, err.what());
+                       "read error (%s).", filename.c_str(), line_num, 
+                       err.what());
 
     }
 #endif
@@ -299,8 +302,8 @@ std::tuple<I_t, I_t, I_t, bool> parse_CSR_body(std::string filename) {
   }
 #endif
 
-  return tuple<I_t, I_t, I_t, bool>(rows, columns, header_n_nonzeros,
-                                    matrix_is_cmpx);
+  return tuple<I_t, I_t, I_t, I_t, bool>(rows, columns, header_n_nonzeros, 
+                                         first_index, matrix_is_cmpx);
 
 }
 
