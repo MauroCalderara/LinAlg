@@ -154,14 +154,14 @@ inline bool operator==(const IJ left, const IJ right) {
 struct SubBlock {
 
   // Start values are inclusive, stop values exclusive
-  I_t first_row, first_col, last_row, last_col;
+  I_t first_row, last_row, first_col, last_col;
 
-  SubBlock() : first_row(0), first_col(0), last_row(0), last_col(0) {}
+  SubBlock() : first_row(0), last_row(0), first_col(0), last_col(0) {}
 
   SubBlock(IJ start, IJ stop)
          : first_row(start.row),
-           first_col(start.col),
            last_row(stop.row),
+           first_col(start.col),
            last_col(stop.col) {
     #ifndef LINALG_NO_CHECKS
     if (last_row < first_row || last_col < first_col) {
@@ -203,8 +203,6 @@ inline bool operator!=(const SubBlock left, const SubBlock right) {
           (left.last_row  != right.last_row)  ||
           (left.last_col  != right.last_col)    );
 }
-
-
 
 } /* namespace LinAlg */
 
