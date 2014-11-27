@@ -21,6 +21,8 @@
  *        bindings to the <NAME> LAPACK backend
  */
 
+#include "../preprocessor.h"
+
 #ifdef HAVE_CUDA
 # ifdef HAVE_MAGMA
 #  include <magma.h>

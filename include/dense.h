@@ -16,15 +16,17 @@
 #include <iostream>   // std::cout
 #include <iomanip>    // std::setw
 
+#include "preprocessor.h"
+
 #ifdef HAVE_CUDA
-#include <cuda_runtime.h>       // various CUDA routines
-#include <functional>           // std::bind
-#include "CUDA/cuda_memory_allocation.h" // CUDA::cuda_make_shared
+# include <cuda_runtime.h>       // various CUDA routines
+# include <functional>           // std::bind
+# include "CUDA/cuda_memory_allocation.h" // CUDA::cuda_make_shared
                                          // CUDA::cuda_deallocate
 #endif
 
-#include "profiling.h"
 #include "types.h"
+#include "profiling.h"
 #include "matrix.h"
 #include "exceptions.h"
 

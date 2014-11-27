@@ -16,6 +16,7 @@
 #include <cstdio>     // std::fprint
 #include <string>
 
+#include "../preprocessor.h"
 #include "stringformat.h"
 
 namespace LinAlg {
@@ -181,6 +182,5 @@ struct HiResTimer {
 } /* namespace LinAlg::Utilities */
 
 } /* namespace LinAlg */
-
 
 #endif /* LINALG_UTILITIES_TIMER_H_ */

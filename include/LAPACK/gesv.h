@@ -21,6 +21,8 @@
  *        bindings to the <NAME> LAPACK backend
  */
 
+#include "../preprocessor.h"
+
 #ifdef HAVE_CUDA
 
 # include <cuda_runtime.h>
@@ -34,13 +36,13 @@
 
 #endif /* HAVE_CUDA */
 
-
 #include "../types.h"
 #include "../profiling.h"
 #include "../exceptions.h"
 #include "../utilities/checks.h"
 #include "../dense.h"
 #include "getrf.h"
+
 #ifndef USE_MAGMA_GESV
 # include "../BLAS/trsm.h"
 #endif

@@ -14,13 +14,15 @@
 
 #include <memory>   // std::shared_ptr
 
+#include "../preprocessor.h"
+
 #ifdef HAVE_CUDA
-#include <cuda_runtime.h> // various CUDA routines
-#include "../CUDA/cuda_checks.h"  // checkCUDA, checkCUBLAS, checkCUSPARSE
+# include <cuda_runtime.h> // various CUDA routines
+# include "../CUDA/cuda_checks.h"  // checkCUDA, checkCUBLAS, checkCUSPARSE
 #endif
 
 #ifdef HAVE_MIC
-#include "../MIC/mic_helper.h"
+# include "../MIC/mic_helper.h"
 #endif
 
 #include "../types.h"
@@ -57,6 +59,4 @@ inline std::shared_ptr<T> host_make_shared(I_t size) {
 } /* namespace LinAlg::Utilities */
 
 } /* namespace LinAlg */
-
-
 #endif /* LINALG_UTILITIES_MEMORY_ALLOCATION_H_ */

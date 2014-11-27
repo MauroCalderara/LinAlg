@@ -21,6 +21,7 @@
  *        bindings to the <NAME> LAPACK backend
  */
 
+#include "../preprocessor.h"
 #include "../types.h"
 #include "../exceptions.h"
 #include "../dense.h"

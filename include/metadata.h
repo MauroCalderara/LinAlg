@@ -15,6 +15,7 @@
 #include <vector>     // std::vector
 #include <string>     // std::string
 
+#include "preprocessor.h"
 #include "types.h"
 #include "dense.h"
 

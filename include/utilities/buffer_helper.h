@@ -16,26 +16,22 @@
 #include <functional> // std::function
 #include <future>     // std::future
 
+#include "../preprocessor.h"
+
 #include "../types.h"
 #include "../exceptions.h"
 #include "../streams.h"
 
 #ifndef DOXYGEN_SKIP
 
-// If BUFFER_HELPER_DISPLAY is defined, the buffer will print it's status during
-// operations
-//#define BUFFER_HELPER_DISPLAY
-#ifdef BUFFER_HELPER_DISPLAY
-#include <iostream>     // std::cout
-#endif
+# ifdef BUFFER_HELPER_DISPLAY
+#   include <iostream>     // std::cout
+# endif
 
-// If BUFFER_HELPER_VERBOSE is defined, the buffer will print information 
-// about adding tasks to the queue and syncing with them
-//#define BUFFER_HELPER_VERBOSE
-#ifdef BUFFER_HELPER_VERBOSE
-#include <string>       // std::string
-#include <cstdio>       // std::printf
-#endif
+# ifdef BUFFER_HELPER_VERBOSE
+#   include <string>       // std::string
+#   include <cstdio>       // std::printf
+# endif
 
 #endif /* DOXYGEN_SKIP */
 

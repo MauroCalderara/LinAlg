@@ -19,6 +19,7 @@
 #include <sstream>    // std::istringstream
 #include <utility>    // std::move
 
+#include "../preprocessor.h"
 #include "../types.h"
 #include "../profiling.h"
 #include "../exceptions.h"
@@ -662,6 +663,5 @@ inline void write_CSR(LinAlg::Sparse<T>& matrix, const char* filename) {
 } /* namespace LinAlg::Utilities */
 
 } /* namespace LinAlg */
-
 
 #endif /* LINALG_UTILITIES_CSR_H_ */

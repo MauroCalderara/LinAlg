@@ -15,24 +15,27 @@
 
 #ifndef LINALG_NO_CHECKS
 
+# include <exception>
+# include <string>
+# include <sstream>    // std::stringstream
+
+# include "preprocessor.h"
+
 //#define EXCEPTION_STACK_TRACE
-#ifdef EXCEPTION_STACK_TRACE
-#include <execinfo.h> // backtrace, backtrace_symbols
-#include <cxxabi.h>   // __cxa_demangle
-#endif
+# ifdef EXCEPTION_STACK_TRACE
+#   include <execinfo.h> // backtrace, backtrace_symbols
+#   include <cxxabi.h>   // __cxa_demangle
+# endif
 
-#ifdef HAVE_MPI
-#include <mpi.h>
-#endif
+# ifdef HAVE_MPI
+#   include <mpi.h>
+# endif
 
-#include <exception>
-#include <string>
-#include <sstream>    // std::stringstream
 
-#include "utilities/stringformat.h"
+# include "utilities/stringformat.h"
 
 /// Maximal depth of the stack for the stack trace
-#define MAX_STACK 50
+# define MAX_STACK 50
 
 namespace LinAlg {
 
@@ -47,7 +50,7 @@ class excLinAlg : public std::exception {
 
  public:
 
-#ifndef DOXYGEN_SKIP
+# ifndef DOXYGEN_SKIP
   virtual const char* prefix() const = 0;
   virtual const char* suffix() const { return ""; }
 
@@ -62,7 +65,7 @@ class excLinAlg : public std::exception {
                             std::string(suffix()) + stack_trace;
     return error_msg.c_str();
   }
-#endif /* DOXYGEN_SKIP */
+# endif /* DOXYGEN_SKIP */
 
   /** \brief          Constructor from const char*
    *
@@ -111,9 +114,9 @@ class excLinAlg : public std::exception {
 
 inline void excLinAlg::get_stack() {
 
-#ifndef EXCEPTION_STACK_TRACE
+# ifndef EXCEPTION_STACK_TRACE
   // A function that does nothing
-#else
+# else
   // A function that gets a stack trace at the time of the construction of the 
   // exception.
 
@@ -159,7 +162,7 @@ inline void excLinAlg::get_stack() {
   }
 
   stack_trace = stack_trace_stream.str();
-#endif /* not EXCEPTION_STACK_TRACE */
+# endif /* not EXCEPTION_STACK_TRACE */
 
 }
 
@@ -170,7 +173,7 @@ inline void excLinAlg::get_stack() {
  *                    functionality.
  */
 class excUnimplemented : public excLinAlg {
-#ifndef DOXYGEN_SKIP
+# ifndef DOXYGEN_SKIP
  public:
   template <typename... Ts>
   excUnimplemented(const char* userfmtstr, Ts... args)
@@ -178,7 +181,7 @@ class excUnimplemented : public excLinAlg {
   excUnimplemented(const char* userstring) : excLinAlg(userstring) {}
   excUnimplemented(std::string string) : excLinAlg(string) {}
   const char* prefix() const { return "LinAlg unimplemented - "; }
-#endif
+# endif
 };
 
 /** \exception        excBadArgument
@@ -187,7 +190,7 @@ class excUnimplemented : public excLinAlg {
  *                    arguments provided.
  */
 class excBadArgument : public excLinAlg {
-#ifndef DOXYGEN_SKIP
+# ifndef DOXYGEN_SKIP
  public:
   template <typename... Ts>
   excBadArgument(const char* userfmtstr, Ts... args)
@@ -195,7 +198,7 @@ class excBadArgument : public excLinAlg {
   excBadArgument(const char* userstring) : excLinAlg(userstring) {}
   excBadArgument(std::string string) : excLinAlg(string) {}
   const char* prefix() const { return "LinAlg bad argument - "; }
-#endif
+# endif
 };
 
 /** \exception        excMallocError
@@ -204,7 +207,7 @@ class excBadArgument : public excLinAlg {
  *                    allocating memory.
  */
 class excMallocError : public excLinAlg {
-#ifndef DOXYGEN_SKIP
+# ifndef DOXYGEN_SKIP
  public:
   template <typename... Ts>
   excMallocError(const char* userfmtstr, Ts... args)
@@ -212,7 +215,7 @@ class excMallocError : public excLinAlg {
   excMallocError(const char* userstring) : excLinAlg(userstring) {}
   excMallocError(std::string string) : excLinAlg(string) {}
   const char* prefix() const { return "LinAlg malloc error - "; }
-#endif
+# endif
 };
 
 /** \exception        excSystemError
@@ -220,7 +223,7 @@ class excMallocError : public excLinAlg {
  *  \brief            Exception to signal that there was a system error.
  */
 class excSystemError : public excLinAlg {
-#ifndef DOXYGEN_SKIP
+# ifndef DOXYGEN_SKIP
  public:
   template <typename... Ts>
   excSystemError(const char* userfmtstr, Ts... args)
@@ -228,7 +231,7 @@ class excSystemError : public excLinAlg {
   excSystemError(const char* userstring) : excLinAlg(userstring) {}
   excSystemError(std::string string) : excLinAlg(string) {}
   const char* prefix() const { return "LinAlg system error - "; }
-#endif
+# endif
 };
 
 /** \exception        excBadFile
@@ -236,7 +239,7 @@ class excSystemError : public excLinAlg {
  *  \brief            Exception to signal that a file has invalid syntax.
  */
 class excBadFile : public excLinAlg {
-#ifndef DOXYGEN_SKIP
+# ifndef DOXYGEN_SKIP
  public:
   template <typename... Ts>
   excBadFile(const char* userfmtstr, Ts... args)
@@ -244,7 +247,7 @@ class excBadFile : public excLinAlg {
   excBadFile(const char* userstring) : excLinAlg(userstring) {}
   excBadFile(std::string string) : excLinAlg(string) {}
   const char* prefix() const { return "LinAlg bad file - "; }
-#endif
+# endif
 };
 
 /** \exception        excBufferHelper
@@ -253,7 +256,7 @@ class excBadFile : public excLinAlg {
  *                    occurred
  */
 class excBufferHelper : public excLinAlg {
-#ifndef DOXYGEN_SKIP
+# ifndef DOXYGEN_SKIP
  public:
   template <typename... Ts>
   excBufferHelper(const char* userfmtstr, Ts... args)
@@ -261,7 +264,7 @@ class excBufferHelper : public excLinAlg {
   excBufferHelper(const char* userstring) : excLinAlg(userstring) {}
   excBufferHelper(std::string string) : excLinAlg(string) {}
   const char* prefix() const { return "LinAlg buffer - "; }
-#endif
+# endif
 };
 
 /** \exception        excMath
@@ -269,7 +272,7 @@ class excBufferHelper : public excLinAlg {
  *  \brief            Exception to signal a mathematical problem.
  */
 class excMath : public excLinAlg {
-#ifndef DOXYGEN_SKIP
+# ifndef DOXYGEN_SKIP
  public:
   template <typename... Ts>
   excMath(const char* userfmtstr, Ts... args)
@@ -277,10 +280,10 @@ class excMath : public excLinAlg {
   excMath(const char* userstring) : excLinAlg(userstring) {}
   excMath(std::string string) : excLinAlg(string) {}
   const char* prefix() const { return "LinAlg math - "; }
-#endif
+# endif
 };
 
-#ifdef HAVE_CUDA
+# ifdef HAVE_CUDA
 namespace CUDA {
 
 /** \exception        excCUDAError
@@ -289,7 +292,7 @@ namespace CUDA {
  *                    executing a CUDA routine.
  */
 class excCUDAError : public excLinAlg {
-#ifndef DOXYGEN_SKIP
+# ifndef DOXYGEN_SKIP
  public:
   template <typename... Ts>
   excCUDAError(const char* userfmtstr, Ts... args)
@@ -297,7 +300,7 @@ class excCUDAError : public excLinAlg {
   excCUDAError(const char* userstring) : excLinAlg(userstring) {}
   excCUDAError(std::string string) : excLinAlg(string) {}
   const char* prefix() const { return "LinAlg CUDA error - "; }
-#endif
+# endif
 };
 
 /** \exception        excCUBLASError
@@ -306,7 +309,7 @@ class excCUDAError : public excLinAlg {
  *                    executing a CUBLAS routine.
  */
 class excCUBLASError : public excLinAlg {
-#ifndef DOXYGEN_SKIP
+# ifndef DOXYGEN_SKIP
  public:
   template <typename... Ts>
   excCUBLASError(const char* userfmtstr, Ts... args)
@@ -314,7 +317,7 @@ class excCUBLASError : public excLinAlg {
   excCUBLASError(const char* userstring) : excLinAlg(userstring) {}
   excCUBLASError(std::string string) : excLinAlg(string) {}
   const char* prefix() const { return "LinAlg CUBLAS error - "; }
-#endif
+# endif
 };
 
 /** \exception        excCUSPARSEError
@@ -323,7 +326,7 @@ class excCUBLASError : public excLinAlg {
  *                    executing a CUSPARSE routine..
  */
 class excCUSPARSEError : public excLinAlg {
-#ifndef DOXYGEN_SKIP
+# ifndef DOXYGEN_SKIP
  public:
   template <typename... Ts>
   excCUSPARSEError(const char* userfmtstr, Ts... args)
@@ -331,13 +334,13 @@ class excCUSPARSEError : public excLinAlg {
   excCUSPARSEError(const char* userstring) : excLinAlg(userstring) {}
   excCUSPARSEError(std::string string) : excLinAlg(string) {}
   const char* prefix() const { return "LinAlg CUSPARSE error - "; }
-#endif
+# endif
 };
 
 } /* namespace LinAlg::CUDA */
 #endif
 
-#ifdef HAVE_MPI
+# ifdef HAVE_MPI
 namespace MPI {
 
 /** \exception        excMPIError
@@ -346,7 +349,7 @@ namespace MPI {
  *                    call.
  */
 class excMPIError : public excLinAlg {
-#ifndef DOXYGEN_SKIP
+#   ifndef DOXYGEN_SKIP
  public:
   template <typename... Ts>
   excMPIError(const char* userfmtstr, Ts... args)
@@ -357,7 +360,7 @@ class excMPIError : public excLinAlg {
   const char* suffix() const { return suffix_string.c_str(); }
 
   std::string suffix_string;
-#endif
+#   endif
 
   /** \brief          Routine to extract all useful information from an
    *                  MPI_Status and set the suffix of the user message
@@ -391,7 +394,7 @@ class excMPIError : public excLinAlg {
 };
 
 } /* namespace LinAlg::MPI */
-#endif
+# endif
 
 } /* namespace LinAlg */
 

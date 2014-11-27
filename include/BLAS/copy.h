@@ -21,6 +21,8 @@
  *        bindings to the <NAME> BLAS backend
  */
 
+#include "../preprocessor.h"
+
 #include "../types.h"
 #include "../profiling.h"
 

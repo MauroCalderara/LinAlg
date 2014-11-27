@@ -17,6 +17,7 @@
 #include <string>     // std::string
 #include <vector>     // std::vector
 
+#include "../preprocessor.h"
 #include "../profiling.h"
 #include "../exceptions.h"
 #include "stringformat.h"

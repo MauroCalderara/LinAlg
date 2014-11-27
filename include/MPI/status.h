@@ -12,9 +12,11 @@
 #ifndef LINALG_MPI_STATUS_H_
 #define LINALG_MPI_STATUS_H_
 
+#include "../preprocessor.h"
+
 #ifdef HAVE_MPI
 
-#include <mpi.h>      // all MPI stuff
+# include <mpi.h>      // all MPI stuff
 
 namespace LinAlg {
 

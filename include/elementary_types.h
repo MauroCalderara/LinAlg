@@ -12,15 +12,17 @@
 #ifndef LINALG_ELEMENTARY_TYPES_H_
 #define LINALG_ELEMENTARY_TYPES_H_
 
+#include "preprocessor.h"
+
 #ifndef LINALG_NO_CHECK
-#include <cstdio>
+# include <cstdio>
 #endif
 
 // For an explanation, see below under "TYPE DISCUSSION"
 #ifdef HAVE_MAGMA
-#include <magma_types.h>
+# include <magma_types.h>
 #else
-#include <complex>
+# include <complex>
 #endif /* HAVE_MAGMA */
 
 namespace LinAlg {

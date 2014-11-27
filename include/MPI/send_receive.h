@@ -12,13 +12,15 @@
 #ifndef LINALG_MPI_SEND_RECV_H_
 #define LINALG_MPI_SEND_RECV_H_
 
+#include "../preprocessor.h"
+
 #ifdef HAVE_MPI
 
-#include <mpi.h>      // all MPI stuff
+# include <mpi.h>      // all MPI stuff
 
-#ifndef DOXYGEN_SKIP
-#define MPI_TAG_OFFSET 15
-#endif
+# ifndef DOXYGEN_SKIP
+#   define MPI_TAG_OFFSET 15
+# endif
 
 namespace LinAlg {
 

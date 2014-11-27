@@ -12,26 +12,28 @@
 #ifndef LINALG_MPI_SEND_RECV_META_H_
 #define LINALG_MPI_SEND_RECV_META_H_
 
+#include "../preprocessor.h"
+
 #ifdef HAVE_MPI
 
-#include <mpi.h>      // all MPI stuff
+# include <mpi.h>      // all MPI stuff
 
-#include <vector>     // std::vector
-#include <string>     // std::string
-#include <sstream>    // std::stringstream
-#include <cstdio>     // std::printf
-#include <utility>    // std::move
-#include <functional> // std::bind
+# include <vector>     // std::vector
+# include <string>     // std::string
+# include <sstream>    // std::stringstream
+# include <cstdio>     // std::printf
+# include <utility>    // std::move
+# include <functional> // std::bind
 
-#include "../types.h"
-#include "../profiling.h"
-#include "../exceptions.h"
-#include "../streams.h"
-#include "../metadata.h"   // LinAlg::MetaData
-#include "send_receive.h"
-#include "status.h"
+# include "../types.h"
+# include "../profiling.h"
+# include "../exceptions.h"
+# include "../streams.h"
+# include "../metadata.h"   // LinAlg::MetaData
+# include "send_receive.h"
+# include "status.h"
 
-#include "../dense.h"
+# include "../dense.h"
 
 namespace LinAlg {
 
@@ -61,7 +63,7 @@ inline void send_meta(MetaData meta, MPI_Comm communicator, int receiving_rank,
   auto error = mpi_send(meta.data(), meta.size(), receiving_rank, internal_tag,
                         communicator);
 
-#ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
   if (error != MPI_SUCCESS) {
 
     // Construct a status and a corresponding exception
@@ -74,7 +76,7 @@ inline void send_meta(MetaData meta, MPI_Comm communicator, int receiving_rank,
     throw my_exception;
 
   }
-#endif
+# endif
 
 }
 
@@ -262,7 +264,7 @@ inline void receive_meta(MetaData& meta, MPI_Comm communicator,
   auto error = mpi_recv(meta.data(), meta.size(), sending_rank, internal_tag,
                         communicator, &status);
 
-#ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
   if (error != MPI_SUCCESS) {
 
     // Construct a status and a corresponding exception
@@ -275,7 +277,7 @@ inline void receive_meta(MetaData& meta, MPI_Comm communicator,
     throw my_exception;
 
   }
-#endif
+# endif
 
 }
 

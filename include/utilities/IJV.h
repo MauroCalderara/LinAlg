@@ -16,6 +16,7 @@
 #include <fstream>    // std::fstream
 #include <sstream>    // std::istringstream
 
+#include "../preprocessor.h"
 #include "../types.h"
 #include "../profiling.h"
 #include "../exceptions.h"
@@ -101,14 +102,14 @@ void write_IJV_data(LinAlg::Dense<T>& matrix, std::string filename) {
     }
   }
 
-#ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
   else {
 
     throw excBadArgument("write_IJV_data(): unable to open file (%s) for "
                          "writing.", filename.c_str());
 
   }
-#endif
+# endif
 
 }
 template <typename T>
@@ -154,14 +155,14 @@ void write_IJV_data(LinAlg::Sparse<T>& matrix, std::string filename) {
     }
   }
 
-#ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
   else {
 
     throw excBadArgument("write_IJV_data(): unable to open file (%s) for "
                          "writing.", filename.c_str());
 
   }
-#endif
+# endif
 
 }
 
@@ -364,6 +365,5 @@ inline void write_IJV(LinAlg::Sparse<T>& matrix, const char* filename) {
 } /* namespace LinAlg::Utilities */
 
 } /* namespace LinAlg */
-
 
 #endif /* LINALG_UTILITIES_IJV_H_ */

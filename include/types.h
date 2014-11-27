@@ -12,6 +12,7 @@
 #ifndef LINALG_TYPES_H_
 #define LINALG_TYPES_H_
 
+#include "preprocessor.h"
 #include "elementary_types.h"
 #include "exceptions.h"
 
@@ -21,13 +22,13 @@
  *                    requirement of the linker.
  */
 #ifndef fortran_name
-#ifdef NoChange
-#define fortran_name(x,y) (x)
-#elif UpCase
-#define fortran_name(x,y) (y)
-#else
-#define fortran_name(x,y) (x ## _)
-#endif
+# ifdef NoChange
+#   define fortran_name(x,y) (x)
+# elif UpCase
+#   define fortran_name(x,y) (y)
+# else
+#   define fortran_name(x,y) (x ## _)
+# endif
 #endif
 
 namespace LinAlg {
@@ -163,11 +164,11 @@ struct SubBlock {
            last_row(stop.row),
            first_col(start.col),
            last_col(stop.col) {
-    #ifndef LINALG_NO_CHECKS
+#ifndef LINALG_NO_CHECKS
     if (last_row < first_row || last_col < first_col) {
       throw excBadArgument("SubBlock(): invalid subblock specification");
     }
-    #endif
+#endif
   }
 
   /// Matlab style block specification

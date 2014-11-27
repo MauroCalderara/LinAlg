@@ -12,9 +12,11 @@
 #ifndef LINALG_UTILITIES_COPY_ARRAY_H_
 #define LINALG_UTILITIES_COPY_ARRAY_H_
 
+#include "../preprocessor.h"
+
 #ifdef HAVE_CUDA
-#include <cuda_runtime.h> // various CUDA routines
-#include "../CUDA/cuda_checks.h"  // checkCUDA, checkCUBLAS, checkCUSPARSE
+# include <cuda_runtime.h> // various CUDA routines
+# include "../CUDA/cuda_checks.h"  // checkCUDA, checkCUBLAS, checkCUSPARSE
 #endif
 
 #include "../types.h"
@@ -136,14 +138,14 @@ void copy_1Darray(T* src_array, I_t length, T* dst_array,
         checkCUDA(cudaSetDevice(prev_device));
 
       }
-#ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
       else {
 
         throw excUnimplemented("copy_1Darray(): Copy between GPUs not yet "
                                "implemented.");
 
       }
-#endif
+# endif
 
     } else if (src_location == Location::GPU && dst_location == Location::host){
 
@@ -170,7 +172,7 @@ void copy_1Darray(T* src_array, I_t length, T* dst_array,
       checkCUDA(cudaSetDevice(prev_device));
 
     }
-#ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
     else {
 
       throw excUnimplemented("copy_1Darray(): Copy from GPU to other "
@@ -178,7 +180,7 @@ void copy_1Darray(T* src_array, I_t length, T* dst_array,
                              "first.");
 
     }
-#endif
+# endif
 
   }
 #endif /* HAVE_CUDA */
@@ -368,7 +370,7 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
 #ifdef HAVE_CUDA
   else if (src_location == Location::GPU || dst_location == Location::GPU) {
 
-#ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
     if (src_format != dst_format) {
 
       // We support this iff the matrices are not submatrices (would probably 
@@ -401,7 +403,7 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
                              "out of GPU not supported");
 
     }
-#endif
+# endif
 
     I_t line_length = (src_format == Format::ColMajor) ? rows : cols;
     I_t lines       = (src_format == Format::ColMajor) ? cols : rows;

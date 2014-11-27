@@ -12,6 +12,7 @@
 #ifndef LINALG_UTILITIES_FORMAT_CONVERT_H_
 #define LINALG_UTILITIES_FORMAT_CONVERT_H_
 
+#include "../preprocessor.h"
 #include "../types.h"
 #include "../profiling.h"
 #include "../exceptions.h"
@@ -217,6 +218,5 @@ inline void dense2sparse(Dense<T> src, IJ start, IJ stop, Sparse<T> dst) {
 } /* namespace LinAlg::Utilities */
 
 } /* namespace LinAlg */
-
 
 #endif /* LINALG_UTILITIES_FORMAT_CONVERT_H_ */

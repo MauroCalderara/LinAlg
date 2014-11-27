@@ -12,10 +12,13 @@
 #ifndef LINALG_MIC_HELPER_H_
 #define LINALG_MIC_HELPER_H_
 
+#include "../preprocessor.h"
+
 #ifdef HAVE_MIC
 
-#include "../exceptions.h"   // LinAlg::excLinAlg
-#include "../profiling.h"
+# include "../types.h"
+# include "../exceptions.h"   // LinAlg::excLinAlg
+# include "../profiling.h"
 
 namespace LinAlg {
 
@@ -68,11 +71,11 @@ inline std::shared_ptr<T> mic_make_shared(I_t size, int device_id) {
 
   PROFILING_FUNCTION_HEADER
 
-#ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
   if (size < 1) {
     throw excBadArgument("mic_make_shared(): size must be larger than 0");
   }
-#endif
+# endif
 
   std::shared_ptr<T> device_ptr = host_make_shared<T>(size);
   #pragma offload_transfer target (mic:device_id) \

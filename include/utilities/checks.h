@@ -12,13 +12,15 @@
 #ifndef LINALG_UTILITIES_CHECKS_H_
 #define LINALG_UTILITIES_CHECKS_H_
 
+#include "../preprocessor.h"
+
 #include "../types.h"
 #include "../exceptions.h"
 #include "../streams.h"
 #include "stringformat.h"
 
 #ifdef HAVE_CUDA
-#include "../CUDA/cuda.h"    // GPU::
+# include "../CUDA/cuda.h"    // GPU::
 #endif
 
 namespace LinAlg {
@@ -27,7 +29,7 @@ namespace Utilities {
 
 #ifndef DOXYGEN_SKIP
 
-#ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
 /*  \brief            Checks if two matrices are on the same device, throws an
  *                    exception if not.
  *
@@ -129,7 +131,7 @@ inline void check_output_transposed(Dense<T>& A, const char* caller_name) {
 
 }
 
-#ifdef HAVE_CUDA
+#   ifdef HAVE_CUDA
 /*  \brief            Checks if a CUDAstream has the same device id as a matrix.
  *                    Raises an exception if the devices are different.
  *
@@ -164,25 +166,25 @@ inline void check_stream(Dense<T>& A, CUDAStream stream,
  */
 inline void check_gpu_handles(const char* caller_name) {
 
-  if (!GPU::_handles_are_initialized) {
+  if (!GPU::_GPU_structures_initialized) {
 
     std::string message = caller_name;
-#   ifdef HAVE_MAGMA
+#     ifdef HAVE_MAGMA
     message = message + ": CUBLAS/CUSPARSE/MAGMA handles are not initialized, "
               "call LinAlg::GPU::init() before calling any "
               "CUBLAS/CUSPARSE/MAGMA routines";
-#   else
+#     else
     message = message + ": CUBLAS/CUSPARSE handles are not initialized, call "
               "LinAlg::GPU::init() before calling any CUBLAS/CUSPARSE "
               "routines";
-#   endif
+#     endif
   
     throw CUDA::excCUDAError(message);
   
   }
 
 }
-#endif /* HAVE_CUDA */
+#   endif /* HAVE_CUDA */
 
 /*  \brief            Checks if a matrix is in a certain format. Raises an
  *                    exception if it is not.
@@ -309,7 +311,7 @@ inline void check_same_dimensions(Dense<T>& A, Dense<U>& B,
 
 }
 
-#endif /* LINALG_NO_CHECKS */
+# endif /* LINALG_NO_CHECKS */
 
 #endif /* DOXYGEN_SKIP */
 

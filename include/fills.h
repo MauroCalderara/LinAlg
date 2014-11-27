@@ -16,6 +16,8 @@
 #include <random>         // std::mt19337, std::uniform_real_distribution
 #include <ctime>          // std::time
 
+#include "preprocessor.h"
+#include "types.h"
 #include "profiling.h"
 #include "dense.h"
 #include "sparse.h"

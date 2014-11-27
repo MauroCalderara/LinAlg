@@ -13,15 +13,13 @@
 #define LINALG_SPARSE_H_
 
 #include <memory>
-#define WARN_COPY
-#ifdef WARN_COPY
-#include <iostream>   // std::cout;
-#endif
+
+#include "preprocessor.h"
 
 #ifdef HAVE_CUDA
-#include <cuda_runtime.h> // various CUDA routines
-#include <cusparse_v2.h>
-#include "CUDA/cuda_memory_allocation.h"    // CUDA::cuda_make_shared
+# include <cuda_runtime.h> // various CUDA routines
+# include <cusparse_v2.h>
+# include "CUDA/cuda_memory_allocation.h"    // CUDA::cuda_make_shared
 #endif
 
 #include "types.h"
@@ -622,10 +620,10 @@ inline void Sparse<T>::first_index(int new_first_index) {
 #ifdef HAVE_CUDA
   else if (_location == Location::GPU) {
 
-#ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
     throw excUnimplemented("Sparse.first_index(): Can not change first index on "
                            "matrices on the GPU");
-#endif
+# endif
 
     // To support this we would need a CUDA kernel that increments all elements
     // in the vectors.
@@ -674,10 +672,6 @@ void Sparse<T>::location(Location new_location, int device_id) {
 #ifdef HAVE_CUDA
   else if ((new_location == Location::GPU) && (_location == Location::host)) {
 
-#ifdef WARN_COPY
-    std::cout << "Warning: copying matrix to GPU\n";
-#endif
-
     using CUDA::cuda_make_shared;
     using Utilities::copy_1Darray;
 
@@ -712,10 +706,6 @@ void Sparse<T>::location(Location new_location, int device_id) {
 
   }
   else if ((new_location == Location::host) && (_location == Location::GPU)) {
-
-#ifdef WARN_COPY
-    std::cout << "Warning: copying matrix from GPU\n";
-#endif
 
     using Utilities::host_make_shared;
     using Utilities::copy_1Darray;

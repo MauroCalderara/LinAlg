@@ -21,6 +21,8 @@
  *        bindings to the <NAME> BLAS backend
  */
 
+#include "../preprocessor.h"
+
 #ifdef HAVE_MKL
 
 #include "../types.h"      // need LinAlg::size_t before MKL header

@@ -21,17 +21,21 @@
  *        bindings to the <NAME> BLAS backend
  */
 
+#include "../preprocessor.h"
+
 #ifdef HAVE_CUDA
-#include <cuda_runtime.h>
-#include <cublas_v2.h>
-#include "../CUDA/cuda_checks.h"
-#include "../CUDA/cuda_cublas.h"
+# include <cuda_runtime.h>
+# include <cublas_v2.h>
+# include "../CUDA/cuda_checks.h"
+# include "../CUDA/cuda_cublas.h"
 #endif
 
 #include "../types.h"
+
 #ifdef HAVE_MKL
-#include <mkl.h>    // need to have types.h before mkl.h
+# include <mkl.h>    // need to have types.h before mkl.h
 #endif
+
 #include "../profiling.h"
 #include "../exceptions.h"
 #include "../utilities/checks.h"

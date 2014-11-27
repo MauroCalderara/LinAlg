@@ -14,6 +14,7 @@
 #ifndef PROFILING_H_
 #define PROFILING_H_
 
+#include "preprocessor.h"
 
 // Currently only score-p based profiling is supported
 //
@@ -50,7 +51,7 @@
 
 
 #ifdef SCOREP_USER_ENABLE
-#include <scorep/SCOREP_User.h>
+# include <scorep/SCOREP_User.h>
 ///////////////////
 // SCORE-P based 'manual' profiling
 //

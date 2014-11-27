@@ -15,13 +15,15 @@
 #ifndef LINALG_MESSAGE_PASSING_H_
 #define LINALG_MESSAGE_PASSING_H_
 
+#include "../preprocessor.h"
+
 #ifdef HAVE_MPI
 
 // Keep this in alphabetical order
-#include "send_receive.h"
-#include "send_receive_matrix.h"
-#include "send_receive_meta.h"
-#include "status.h"
+# include "send_receive.h"
+# include "send_receive_matrix.h"
+# include "send_receive_meta.h"
+# include "status.h"
 
 #endif /* HAVE_MPI */
 

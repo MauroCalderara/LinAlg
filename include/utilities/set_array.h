@@ -14,13 +14,15 @@
 
 #include <memory>   // std::shared_ptr
 
+#include "../preprocessor.h"
+
 #ifdef HAVE_CUDA
-#include <cuda_runtime.h> // various CUDA routines
-#include "../CUDA/cuda_checks.h"  // checkCUDA, checkCUBLAS, checkCUSPARSE
+# include <cuda_runtime.h> // various CUDA routines
+# include "../CUDA/cuda_checks.h"  // checkCUDA, checkCUBLAS, checkCUSPARSE
 #endif
 
 #ifdef HAVE_MIC
-#include "../MIC/mic_helper.h"
+# include "../MIC/mic_helper.h"
 #endif
 
 #include "../types.h"
@@ -79,7 +81,7 @@ inline void set_2Darray(T* array, Location location, int device_id,
     LAPACK::FORTRAN::xLASET(uplo, m, n, value, value, array, leading_dimension);
   
   }
-# ifdef HAVE_CUDA
+#ifdef HAVE_CUDA
   else if (location == Location::GPU) {
   
     if (value == cast<T>(0.0)) {
@@ -99,7 +101,7 @@ inline void set_2Darray(T* array, Location location, int device_id,
 
       my_stream.sync();
 
-#   ifdef HAVE_MAGMA
+# ifdef HAVE_MAGMA
     } else {
     
       using LAPACK::MAGMA::xLASET;
@@ -110,7 +112,7 @@ inline void set_2Darray(T* array, Location location, int device_id,
       xLASET(MagmaLower, m, n, value, value, array, leading_dimension);
     
     }
-#   else
+# else
     } else {
     
       throw excUnimplemented("set_2Darray(): without Magma enabled, currently "
@@ -118,7 +120,7 @@ inline void set_2Darray(T* array, Location location, int device_id,
                              "GPU");
     
     }
-#endif
+# endif
   
   }
 #endif /* HAVE_CUDA */

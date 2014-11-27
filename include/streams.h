@@ -12,15 +12,17 @@
 #ifndef LINALG_STREAMS_H_
 #define LINALG_STREAMS_H_
 
+#include "preprocessor.h"
+
 #ifdef HAVE_CUDA
-#include <cuda_runtime.h> // various CUDA routines
-#include <cublas_v2.h>
-#include <cusparse_v2.h>
-#include "CUDA/cuda_checks.h"
+# include <cuda_runtime.h> // various CUDA routines
+# include <cublas_v2.h>
+# include <cusparse_v2.h>
+# include "CUDA/cuda_checks.h"
 #endif
 
 #ifdef HAVE_MPI
-#include <mpi.h>
+# include <mpi.h>
 #endif
 
 #include <functional> // std::function
@@ -28,11 +30,11 @@
 #include <atomic>     // std::atomic
 
 #ifdef USE_POSIX_THREADS
-#include <pthread.h>
+# include <pthread.h>
 #else /* use C++11 threads */
-#include <thread>     // std::thread
-#include <mutex>      // std::mutex
-#include <condition_variable>
+# include <thread>     // std::thread
+# include <mutex>      // std::mutex
+# include <condition_variable>
 #endif
 
 #include "types.h"
@@ -91,9 +93,9 @@ struct StreamBase {
  */
 struct Stream : StreamBase {
 
-# ifndef DOXYGEN_SKIP
+#ifndef DOXYGEN_SKIP
 
-#   ifdef USE_POSIX_THREADS
+# ifdef USE_POSIX_THREADS
 
   pthread_mutex_t                   lock;
   pthread_cond_t                    cv;
@@ -110,13 +112,13 @@ struct Stream : StreamBase {
     return nullptr;
   }
 
-#   else /* use C++11 threads */
+# else /* use C++11 threads */
 
   std::mutex                        lock;
   std::condition_variable           cv;
   std::thread                       worker_thread;
 
-#   endif /* USE_POSIX_THREADS */
+# endif /* USE_POSIX_THREADS */
 
   std::deque<std::function<void()>> queue;
   std::atomic<I_t> next_in_queue;
@@ -126,7 +128,7 @@ struct Stream : StreamBase {
   I_t next_ticket;             // next_ticket = next_in_queue -> no work;
   bool terminate;
 
-# endif /* not DOXYGEN_SKIP */
+#endif /* not DOXYGEN_SKIP */
 
   Stream();
   Stream(Streams stream_spec);
@@ -159,21 +161,21 @@ inline Stream::Stream() : StreamBase() {
 
   next_in_queue.store(0);
 
-# ifdef USE_POSIX_THREADS
+#ifdef USE_POSIX_THREADS
   auto error = pthread_mutex_init(&lock, NULL);
-#   ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
   if (error != 0) {
     throw excSystemError("Unable to initialize mutex, error = %d", error);
   }
-#   endif
+# endif
   error = pthread_cond_init(&cv, NULL);
-#   ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
   if (error != 0) {
     throw excSystemError("Unable to initialize condition variable, error = %d",
                          error);
   }
-#   endif
 # endif
+#endif
 
 }
 
@@ -204,24 +206,24 @@ inline void Stream::start() {
   } else {
 
     // Start the worker thread
-#   ifdef USE_POSIX_THREADS
+#ifdef USE_POSIX_THREADS
 
     // See in the class definition why we need the wrapper for the worker 
     // function
     printf("CREATING POSIX THREAD\n");
     auto error = pthread_create(&worker_thread, NULL, 
                                 &Stream::worker_wrapper, this);
-#   ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
     if (error != 0) {
       throw excSystemError("Unable to spawn thread, error = %d", error);
     }
-#   endif
+# endif
 
-#   else /* use C++11 threads */
+#else /* use C++11 threads */
 
     worker_thread = std::thread(&Stream::worker, this);
 
-#   endif
+#endif
 
     thread_alive = true;
 
@@ -238,20 +240,20 @@ inline Stream::~Stream() {
   stop();
   clear();
 
-# ifdef USE_POSIX_THREADS
+#ifdef USE_POSIX_THREADS
   auto error = pthread_mutex_destroy(&lock);
-#   ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
   //if (error != 0) {
   //  throw excSystemError("Unable to destroy mutex, error = %d", error);
   //}
-#   endif
+# endif
   error = pthread_cond_destroy(&cv);
-#   ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
   if (error != 0) {
     throw excSystemError("Unable to destroy condition variable, error = %d", 
                          error);
   }
-#   endif
+# endif
 #endif
 
 }
@@ -267,29 +269,29 @@ inline void Stream::worker() {
 
   while (!terminate) {
 
-#ifdef USE_POSIX_THREADS
+# ifdef USE_POSIX_THREADS
     // No RAII handler for pthreads
-#else
+# else
     { // RAII scope for thread_lock
-#endif
+# endif
 
     // Safely examine the condition. The lock prevents other threads to modify 
     // it while we check the condition.
-#   ifdef USE_POSIX_THREADS
+# ifdef USE_POSIX_THREADS
     pthread_mutex_lock(&lock);
-#   else
+# else
     std::unique_lock<std::mutex> thread_lock(lock);
-#   endif
+# endif
 
     if (queue.empty()) {
 
       // If the queue is empty we wait (releases the lock while waiting and 
       // reacquires it when the condition becomes true)
-#     ifdef USE_POSIX_THREADS
+# ifdef USE_POSIX_THREADS
       while (queue.empty() && !terminate) pthread_cond_wait(&cv, &lock);
-#     else 
+# else 
       cv.wait(thread_lock, [this](){ return (!queue.empty() || terminate); });
-#     endif
+# endif
 
       if (terminate) return;
 
@@ -299,12 +301,12 @@ inline void Stream::worker() {
     current_task = queue.back();
     queue.pop_back();
 
-#   ifdef USE_POSIX_THREADS
+# ifdef USE_POSIX_THREADS
     // Release the lock
     pthread_mutex_unlock(&lock);
-#   else
+# else
     } // Implicit release of thread_lock at the end of the scope block
-#   endif
+# endif
 
     // Execute the task
     current_task();
@@ -313,11 +315,11 @@ inline void Stream::worker() {
     ++next_in_queue;
 
     // Signal to waiters
-#   ifdef USE_POSIX_THREADS
+# ifdef USE_POSIX_THREADS
     pthread_cond_signal(&cv);
-#   else
+# else
     cv.notify_all();
-#   endif
+# endif
 
   }
 
@@ -361,11 +363,11 @@ inline I_t Stream::add(std::function<void()> task) {
 
     // Safely examine the condition. The lock prevents other threads to modify 
     // it while we check the condition.
-#   ifdef USE_POSIX_THREADS
+#ifdef USE_POSIX_THREADS
     pthread_mutex_lock(&lock);
-#   else
+#else
     std::unique_lock<std::mutex> adder_lock(lock);
-#   endif
+#endif
 
     my_ticket = next_ticket;
 
@@ -373,19 +375,19 @@ inline I_t Stream::add(std::function<void()> task) {
 
     ++next_ticket;
 
-#   ifdef USE_POSIX_THREADS
+#ifdef USE_POSIX_THREADS
     // Release the lock
     pthread_mutex_unlock(&lock);
-#   else
+#else
     } // Implicit release of adder_lock at the end of the scope block
-#   endif
+#endif
 
     // Notify the worker thread
-#   ifdef USE_POSIX_THREADS
+#ifdef USE_POSIX_THREADS
     pthread_cond_signal(&cv);
-#   else
+#else
     cv.notify_all();
-#   endif
+#endif
 
   }
 
@@ -429,14 +431,14 @@ inline void Stream::sync(I_t ticket) {
 
       // Acquire the lock, check the condition, wait till next_in_queue is 
       // larger than the requested ticket (release the lock in the mean time)
-#     ifdef USE_POSIX_THREADS
+#ifdef USE_POSIX_THREADS
       pthread_mutex_lock(&lock);
       while (next_in_queue < ticket + 1) pthread_cond_wait(&cv, &lock);
       pthread_mutex_unlock(&lock);
-#     else 
+#else 
       std::unique_lock<std::mutex> sync_lock(lock);
       cv.wait(sync_lock, [this, ticket](){ return next_in_queue > ticket; });
-#     endif
+#endif
 
     }
 
@@ -462,7 +464,7 @@ inline void Stream::stop() {
 
   if (!synchronous_operation && thread_alive) {
 
-#   ifdef USE_POSIX_THREADS
+#ifdef USE_POSIX_THREADS
 
     pthread_mutex_lock(&lock);
 
@@ -474,7 +476,7 @@ inline void Stream::stop() {
 
     pthread_join(worker_thread, NULL);
 
-#   else /* C++11 threads */
+#else /* C++11 threads */
 
     {
 
@@ -488,7 +490,7 @@ inline void Stream::stop() {
 
     worker_thread.join();
 
-#   endif
+#endif
 
   }
 
@@ -504,11 +506,11 @@ inline void Stream::clear() {
 
   // Locking blocks if there's no other thread
   if (!synchronous_operation && thread_alive) {
-#   ifdef USE_POSIX_THREADS
+#ifdef USE_POSIX_THREADS
     pthread_mutex_lock(&lock);
-#   else
+#else
     std::unique_lock<std::mutex> clear_lock(lock);
-#   endif
+#endif
   }
 
   // Remove all tasks from the queue
@@ -517,13 +519,13 @@ inline void Stream::clear() {
   // This signals that no work is available
   next_ticket = next_in_queue;
 
-# ifdef USE_POSIX_THREADS
+#ifdef USE_POSIX_THREADS
   if (!synchronous_operation && thread_alive) {
     pthread_mutex_unlock(&lock);
   }
-# else 
+#else 
   // Implicit release of clear_lock when going out of scope
-# endif
+#endif
 
 }
 
@@ -592,11 +594,11 @@ struct DenseMatrixFunctionBundle {
  */
 struct CUDAStream : StreamBase {
 
-#ifndef DOXYGEN_SKIP
+# ifndef DOXYGEN_SKIP
   cudaStream_t   cuda_stream;
   cublasHandle_t cublas_handle;
   int device_id;
-#endif
+# endif
 
   CUDAStream();
   CUDAStream(Streams stream_spec);
@@ -702,11 +704,11 @@ struct MPIStream : StreamBase {
   MPIStream();
   MPIStream(Streams stream_spec);
 
-#ifndef DOXYGEN_SKIP
+# ifndef DOXYGEN_SKIP
   std::vector<MPI_Request> requests;
   std::vector<MPI_Status>  statuses;
   inline I_t add_operations(I_t i);
-#endif
+# endif
 
   inline void sync();
 
@@ -730,7 +732,7 @@ inline MPIStream::MPIStream(Streams stream_spec) : StreamBase(stream_spec) {
 
 
 // Internal helper function to append to the stream
-#ifndef DOXYGEN_SKIP
+# ifndef DOXYGEN_SKIP
 inline I_t MPIStream::add_operations(I_t i) {
 
   PROFILING_FUNCTION_HEADER
@@ -742,7 +744,7 @@ inline I_t MPIStream::add_operations(I_t i) {
   return current;
 
 }
-#endif
+# endif
 
 /** \brief            Synchronize with the stream (i.e. waits till all tasks
  *                    are processed)
@@ -761,7 +763,7 @@ inline void MPIStream::sync() {
 
       MPI_Wait(&requests[i], &statuses[i]);
 
-#ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
       if (statuses[i].MPI_ERROR != MPI_SUCCESS) {
 
         MPI::excMPIError my_exception("MPIStream: operation %d in stream "
@@ -771,7 +773,7 @@ inline void MPIStream::sync() {
         throw my_exception;
 
       }
-#endif
+# endif
 
     }
 

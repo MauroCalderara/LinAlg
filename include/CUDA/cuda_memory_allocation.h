@@ -20,6 +20,7 @@
 #include <cublas_v2.h>
 #include <cusparse_v2.h>
 
+#include "../preprocessor.h"
 #include "../types.h"
 #include "../profiling.h"
 #include "cuda_checks.h"

@@ -18,6 +18,7 @@
 #include <cuda_runtime.h> // various CUDA routines
 #include <cublas_v2.h>
 
+#include "../preprocessor.h"
 #include "../types.h"
 #include "../profiling.h"
 #include "cuda_checks.h"
@@ -28,8 +29,8 @@ namespace CUDA {
 
 namespace CUBLAS {
 
-/// Global vector of cublas handles (one for each GPU). "Defined" in
-/// src/CUDA/cuda_cublas.cc
+/// Global vector of cublas handles (one for each GPU).
+// "Defined" in src/CUDA/cuda_cublas.cc
 extern std::vector<cublasHandle_t> handles;
 
 /** \brief            A wrapper to initialize the global CUBLAS handles

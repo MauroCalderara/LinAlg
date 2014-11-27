@@ -21,14 +21,16 @@
  *        bindings to the <NAME> BLAS backend
  */
 
-#ifdef HAVE_CUDA
-#include <cuda_runtime.h>
-#include <cublas_v2.h>
-#include "../CUDA/cuda_checks.h"
-#include "../CUDA/cuda_cublas.h"
-#endif
-
 #include <utility>    // std::move
+
+#include "../preprocessor.h"
+
+#ifdef HAVE_CUDA
+# include <cuda_runtime.h>
+# include <cublas_v2.h>
+# include "../CUDA/cuda_checks.h"
+# include "../CUDA/cuda_cublas.h"
+#endif
 
 #include "../types.h"
 #include "../profiling.h"

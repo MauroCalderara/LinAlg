@@ -7,13 +7,15 @@
 #ifndef LINALG_BLAS_FORWARD_H_
 #define LINALG_BLAS_FORWARD_H_
 
-#include "../types.h"
+#include "../preprocessor.h"
 
 #ifdef HAVE_CUDA
 #include <vector>
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 #endif
+
+#include "../types.h"
 
 namespace LinAlg {
 

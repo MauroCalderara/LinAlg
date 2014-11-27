@@ -21,17 +21,18 @@
  *        bindings to the <NAME> LAPACK backend
  */
 
-#ifdef HAVE_CUDA
-#include <cuda_runtime.h>
-#include <cublas_v2.h>
-#include "../CUDA/cuda_checks.h"
+#include "../preprocessor.h"
 
-#ifdef HAVE_MAGMA
-#include <magma.h>
-#endif /* HAVE_MAGMA */
+#ifdef HAVE_CUDA
+# include <cuda_runtime.h>
+# include <cublas_v2.h>
+# include "../CUDA/cuda_checks.h"
+
+# ifdef HAVE_MAGMA
+#   include <magma.h>
+# endif /* HAVE_MAGMA */
 
 #endif /* HAVE_CUDA */
-
 
 #include "../types.h"
 #include "../profiling.h"

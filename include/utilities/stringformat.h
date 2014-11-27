@@ -18,6 +18,8 @@
 #include <string>     // std::string
 #include <memory>     // std::unique_ptr
 
+#include "../preprocessor.h"
+
 namespace LinAlg {
 
 namespace Utilities {
