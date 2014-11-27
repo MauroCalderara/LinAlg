@@ -347,11 +347,11 @@ namespace MAGMA {
  *
  *  \param[in]        n
  *
- *  \param[in,out]    A
+ *  \param[in,out]    A (resides on the GPU)
  *
  *  \param[in]        lda
  *
- *  \param[in,out]    ipiv
+ *  \param[in,out]    ipiv (resides on the CPU)
  *
  *  \param[in,out]    info
  *
