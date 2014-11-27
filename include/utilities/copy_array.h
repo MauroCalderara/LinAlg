@@ -220,10 +220,10 @@ void copy_1Darray(T* src_array, I_t length, T* dst_array,
  *                      Device id of the input array.
  *
  *  \param[in]          rows
- *                      The number of rows in the 2D array.
+ *                      The number of rows in the source 2D array.
  *
  *  \param[in]          cols
- *                      The number of columns in the 2D array.
+ *                      The number of columns in the source 2D array.
  *
  *  \param[in]          dst_format
  *                      The format of the output array.
