@@ -204,6 +204,12 @@ inline bool operator!=(const SubBlock left, const SubBlock right) {
           (left.last_col  != right.last_col)    );
 }
 
+
+// BLAS / LAPACK specifiers
+enum class Side { left, right };
+enum class UPLO { upper, lower };
+enum class Diag { unit, non_unit };
+
 } /* namespace LinAlg */
 
 #endif /* LINALG_TYPES_H_ */

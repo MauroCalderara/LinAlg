@@ -119,6 +119,9 @@ struct Dense : Matrix {
 
   /// Return the storage format
   inline Format format() const { return _format; }
+  
+  // Set the format
+  inline void format(Format new_format);
 
   // Print the matrix contents
   inline void print() const;
@@ -252,6 +255,7 @@ void swap(Dense<U>& first, Dense<U>& second) {
   swap(first._memory, second._memory);
   swap(first._offset, second._offset);
   swap(first._leading_dimension, second._leading_dimension);
+  swap(first._format, second._format);
   swap(first._rows, second._rows);
   swap(first._cols, second._cols);
   swap(first._location, second._location);
@@ -913,6 +917,29 @@ inline void Dense<T>::unlink() {
 
   // This potentially frees the memory
   _memory = nullptr;
+
+}
+
+
+/** \brief            Change the storage format of the matrix (out-of-place)
+ *
+ *  \param[in]        new_format
+ *                    The new storage format
+ */
+template <typename T>
+inline void Dense<T>::format(Format new_format) {
+
+  if (new_format == _format) return;
+
+  Dense<T> new_matrix;
+  new_matrix.reallocate_like(*this);
+  new_matrix._format = new_format;
+  new_matrix._leading_dimension = (new_format == Format::RowMajor) ?
+                                  new_matrix._cols : new_matrix._rows;
+
+  new_matrix << *this;
+
+  swap(*this, new_matrix);
 
 }
 

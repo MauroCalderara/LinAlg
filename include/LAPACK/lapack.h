@@ -28,5 +28,6 @@
 #include "ilaenv.h"
 #include "larnv.h"
 #include "laset.h"
+#include "laswp.h"
 
 #endif /* LINALG_LAPACK_LAPACK_H_ */

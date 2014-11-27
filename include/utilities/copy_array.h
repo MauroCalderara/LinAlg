@@ -302,7 +302,8 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
 #endif
       }
 
-    } else if (src_format == Format::RowMajor && dst_format == Format::ColMajor) {
+    } else if (src_format == Format::RowMajor && 
+               dst_format == Format::ColMajor) {
 
       if (transpose) {
         for (I_t row = 0; row < rows; ++row) {
@@ -318,7 +319,8 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
         }
       }
 
-    } else if (src_format == Format::ColMajor && dst_format == Format::RowMajor) {
+    } else if (src_format == Format::ColMajor && 
+               dst_format == Format::RowMajor) {
 
       if (transpose) {
         for (I_t col = 0; col < cols; ++col) {
@@ -334,7 +336,8 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
         }
       }
 
-    } else if (src_format == Format::RowMajor && dst_format == Format::RowMajor) {
+    } else if (src_format == Format::RowMajor && 
+               dst_format == Format::RowMajor) {
 
       if (transpose) {
 #ifndef HAVE_MKL
@@ -368,8 +371,29 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
 #ifndef LINALG_NO_CHECKS
     if (src_format != dst_format) {
 
-      throw excUnimplemented("copy_2Darray(): source and destination must "
-                             "have the same format");
+      // We support this iff the matrices are not submatrices (would probably 
+      // also be possible to do if they were)
+      //
+      // In other words: we assume both source and destination are stored in  
+      // one connected piece of memory. The array in ColMajor provides the 
+      // leading dimension.
+
+      if (
+           // source is not a submatrix
+           ((src_format == Format::ColMajor && src_ld != rows) ||
+            (src_format == Format::RowMajor && src_ld != cols)   )
+           ||
+           // destination is not a submatrix
+           ((dst_format == Format::ColMajor && dst_ld != rows) ||
+            (dst_format == Format::RowMajor && dst_ld != cols)   )
+         ) {
+      
+        throw excUnimplemented("copy_2Darray(): if source and destination "
+                               "have the different formats, they must not be "
+                               "submatrices");
+      
+      }
+
 
     } else if (transpose == true && (src_location != dst_location)) {
 
@@ -402,10 +426,28 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
 
       }
 
-      checkCUDA(cudaMemcpy2DAsync(dst_array, dst_ld * sizeof(T), \
-                                  src_array, src_ld * sizeof(T), \
-                                  line_length * sizeof(T), lines, \
-                                  transfer_kind, my_stream.cuda_stream));
+      if (src_format == dst_format) {
+
+        checkCUDA(cudaMemcpy2DAsync(dst_array, dst_ld * sizeof(T), \
+                                    src_array, src_ld * sizeof(T), \
+                                    line_length * sizeof(T), lines, \
+                                    transfer_kind, my_stream.cuda_stream));
+
+      } else {
+      
+        using LinAlg::BLAS::CUBLAS::xGEAM;
+        // GEAM assumes both arrays are in ColMajor and we can be sure that  
+        // both arrays are consecutive in memory due to the above checks, so we 
+        // just transpose one ColMajor array to another one (effectively having 
+        // C be the same as A if interpreted as having the non-corresponding 
+        // format).
+        // Since xGEAM doesn't support B = nullptr, we use B = A and beta = 0.0;
+        auto ld = (src_format == Format::ColMajor) ? rows : cols;
+        xGEAM(my_stream.cublas_handle, CUBLAS_OP_T, CUBLAS_OP_T, line_length,
+              lines, cast<T>(1.0), src_array, ld, cast<T>(0.0), src_array, ld, 
+              dst_array, ld);
+      
+      }
 
     } else {
 
