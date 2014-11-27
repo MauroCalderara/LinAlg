@@ -10,7 +10,8 @@ DYNAMIC = lib/linlinalg.so
 .PHONY: clean doc
 
 # Main targets
-all: $(STATIC) $(DYNAMIC)
+#all: $(STATIC) $(DYNAMIC)
+all: $(STATIC)
 
 doc:
 	doxygen doc/doxygen.conf
