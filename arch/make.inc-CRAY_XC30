@@ -6,12 +6,12 @@ include arch/extraflags.inc
 endif
 
 # Compiler wrapper (e.g. for profiling)
-CXX_PRE = scorep
-CXX_PRE_ARGS = --user --nocompiler --thread=pthread --mpp=mpi --mutex=pthread:default --cuda
+#CXX_PRE = scorep
+#CXX_PRE_ARGS = --user --nocompiler --thread=pthread --mpp=mpi --cuda
 
 # Compiler
 CXX = $(CXX_PRE) $(CXX_PRE_ARGS) CC
-CXX_FLAGS = -fPIC -pthread -std=c++11 -g $(GCC_EXTRA_FLAGS)
+CXX_FLAGS = -fPIC -pthread -std=c++11 -g -O2 $(GCC_EXTRA_FLAGS)
 CXX_LINKER_FLAGS = -pthread -lstdc++
 
 # Flags to change behavior of the LinAlg library
@@ -29,12 +29,13 @@ MKL_INCLUDE = -I$(MKL_ROOT)/include
 #MKL_LIBS = -L$(MKL_ROOT)/lib/intel64 -Wl,--start-group -lmkl_intel_ilp64 \
 #		   -lmkl_core -lmkl_gnu_thread -Wl,--end-group -ldl -lpthread -lm
 MKL_LIBS  = -L$(MKL_ROOT)/lib/intel64/ -lmkl_gf_lp64 -lmkl_gnu_thread \
-	        -lmkl_core -Wl,-rpath,$(MKL_ROOT)/lib/intel64/
+	        -lmkl_core -Wl,-rpath,$(MKL_ROOT)/lib/intel64/ -fopenmp
 
 # MAGMA
 MAGMA_FLAGS = -DHAVE_MAGMA -DUSE_MAGMA_GESV -DUSE_MAGMA_GETRF \
-              -DUSE_MAGMA_GETRI -DADD_
-MAGMA_HOME = /scratch/daint/camauro/libs/magma/1.5.0
+              -DUSE_MAGMA_GETRI -DUSE_MAGMA_TRSM -DADD_
+#MAGMA_FLAGS = -DHAVE_MAGMA -DADD_
+MAGMA_HOME = /scratch/daint/camauro/libs/magma/1.6.0
 MAGMA_INCLUDE = -I$(MAGMA_HOME)/include
 MAGMA_LIBS = -L$(MAGMA_HOME)/lib -lmagma
 
