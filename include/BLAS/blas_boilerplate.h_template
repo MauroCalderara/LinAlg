@@ -30,6 +30,7 @@
 #include "../types.h"
 #include "../profiling.h"
 #include "../exceptions.h"
+#include "../utilities/checks.h"
 #include "../dense.h"
 
 #ifndef DOXYGEN_SKIP
