@@ -75,9 +75,6 @@
 //      out_stream[device_id]
 //      on_stream[device_id]
 //
-#ifndef USE_GLOBAL_TRANSFER_STREAMS
-#define GLOBAL_TRANSFER_STREAMS
-#endif
 
 // USE_POSIX_THREADS
 //
