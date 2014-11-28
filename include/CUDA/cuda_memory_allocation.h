@@ -12,18 +12,19 @@
 #ifndef LINALG_CUDA_CUDA_MEMORY_ALLOCATION_H_
 #define LINALG_CUDA_CUDA_MEMORY_ALLOCATION_H_
 
+#include "../preprocessor.h"
+
 #ifdef HAVE_CUDA
 
-#include <vector>         // std::vector for cublas handles
-#include <memory>         // std::shared_ptr
-#include <cuda_runtime.h> // various CUDA routines
-#include <cublas_v2.h>
-#include <cusparse_v2.h>
+# include <vector>         // std::vector for cublas handles
+# include <memory>         // std::shared_ptr
+# include <cuda_runtime.h> // various CUDA routines
+# include <cublas_v2.h>
+# include <cusparse_v2.h>
 
-#include "../preprocessor.h"
-#include "../types.h"
-#include "../profiling.h"
-#include "cuda_checks.h"
+# include "../types.h"
+# include "../profiling.h"
+# include "cuda_checks.h"
 
 namespace LinAlg {
 
@@ -68,11 +69,11 @@ inline std::shared_ptr<T> cuda_make_shared(I_t size, int device_id) {
 
   PROFILING_FUNCTION_HEADER
 
-#ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
   if (size < 1) {
     throw excBadArgument("cuda_make_shared(): size must be larger than 0");
   }
-#endif
+# endif
 
   T* device_ptr;
 
@@ -118,12 +119,12 @@ inline std::shared_ptr<T> cuda_make_shared_2D(const I_t rows, const I_t cols,
 
   PROFILING_FUNCTION_HEADER
 
-#ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
   if (rows == 0 || cols == 0) {
     throw excBadArgument("cuda_make_shared_2D(): rows and columns must be "
                          "larger than 0");
   }
-#endif
+# endif
 
   T* device_ptr;
 
@@ -151,6 +152,6 @@ inline std::shared_ptr<T> cuda_make_shared_2D(const I_t rows, const I_t cols,
 
 } /* namespace LinAlg */
 
-#endif /* HAVE_CUDA */
+# endif /* HAVE_CUDA */
 
 #endif /* LINALG_CUDA_CUDA_MEMORY_ALLOCATION_H_ */
