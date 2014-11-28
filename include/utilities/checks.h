@@ -145,7 +145,7 @@ inline void check_output_transposed(Dense<T>& A, const char* caller_name) {
  *                    Name of the calling routine
  */
 template <typename T>
-inline void check_stream(Dense<T>& A, CUDAStream stream,
+inline void check_stream(Dense<T>& A, CUDAStream& stream,
                          const char* caller_name) {
 
   if (A._device_id != stream.device_id) {

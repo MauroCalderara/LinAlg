@@ -605,6 +605,7 @@ struct CUDAStream : StreamBase {
   CUDAStream(int device_id);
   ~CUDAStream();
   inline void sync();
+  inline void set(int device_id, bool synchronous);
 
 };
 
@@ -634,11 +635,11 @@ inline CUDAStream::CUDAStream(Streams stream_spec)
 
 /** \brief              Constructor for a stream on a specific device
  *
- *  \param[in]          device_id
+ *  \param[in]          device_id_
  *                      Id of the device for which to create the stream.
  */
-inline CUDAStream::CUDAStream(int device_id)
-                     : device_id(device_id) {
+inline CUDAStream::CUDAStream(int device_id_)
+                     : device_id(device_id_) {
 
   PROFILING_FUNCTION_HEADER
 
@@ -683,6 +684,39 @@ inline void CUDAStream::sync() {
 
   checkCUDA(cudaStreamSynchronize(cuda_stream));
   synchronized = true;
+
+}
+
+/** \brief            Function change/reinitialize a stream
+ *
+ *  \param[in]        device_id_
+ *                    The id of the device the stream should be bound to
+ */
+inline void CUDAStream::set(int device_id_, bool synchronous) {
+
+  // A stream is always pre-initialized, so we need to destruct that first
+  checkCUBLAS(cublasDestroy(cublas_handle));
+  if (!synchronous_operation) checkCUDA(cudaStreamDestroy(cuda_stream));
+
+  device_id = device_id_;
+  synchronous_operation = synchronous;
+
+  if (synchronous_operation) {
+  
+    checkCUBLAS(cublasCreate(&cublas_handle));
+  
+  } else {
+
+    int prev_device;
+    checkCUDA(cudaGetDevice(&prev_device));
+
+    checkCUDA(cudaSetDevice(device_id));
+    checkCUDA(cudaStreamCreate(&cuda_stream));
+    checkCUBLAS(cublasCreate(&cublas_handle));
+
+    checkCUDA(cudaSetDevice(prev_device));
+
+  }
 
 }
 

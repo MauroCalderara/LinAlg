@@ -368,102 +368,211 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
   }
 
 #ifdef HAVE_CUDA
-  else if (src_location == Location::GPU || dst_location == Location::GPU) {
+  else if (src_location == Location::GPU && dst_location == Location::host) {
+
+    // Transfer out of GPU
+
+    CUDAStream* my_stream;
+
+# ifndef USE_GLOBAL_TRANSFER_STREAMS
+    my_stream = new CUDAStream(src_device_id);
+# else
+#   ifndef LINALG_NO_CHECKS
+    check_gpu_handles("copy_2Darray()");
+#   endif
+    //my_stream = &(CUDA::out_stream[src_device_id]);
+    my_stream = &CUDA::out_stream;
+# endif
+
+    // Supported: straight transfer (no transposition or format change)
+    if (transpose == false && src_format == dst_format) {
+
+      auto line_length = (src_format == Format::ColMajor) ? rows : cols;
+      auto lines       = (src_format == Format::ColMajor) ? cols : rows;
+
+      checkCUDA(cudaMemcpy2DAsync(dst_array, dst_ld * sizeof(T), \
+                                  src_array, src_ld * sizeof(T), \
+                                  line_length * sizeof(T), lines, \
+                                  cudaMemcpyDeviceToHost, 
+                                  my_stream->cuda_stream));
+
+    }
+# ifndef LINALG_NO_CHECKS
+    // Unsupported: everything else
+    else {
+    
+      throw excUnimplemented("copy_2Darray(): transfers out of the GPU "
+                             "currently don't yet support transposition and "
+                             "different source and destination formats");
+      // With a temporary, everything is possible though ...
+    
+    }
+# endif
+
+    my_stream->sync();
+
+# ifndef USE_GLOBAL_TRANSFER_STREAMS
+    delete my_stream;
+#endif
+
+  }
+
+  else if (src_location == Location::host && dst_location == Location::GPU) {
+  
+    // Transfer out
+
+    CUDAStream* my_stream;
+
+# ifndef USE_GLOBAL_TRANSFER_STREAMS
+    my_stream = new CUDAStream(dst_device_id);
+# else
+#   ifndef LINALG_NO_CHECKS
+    check_gpu_handles("copy_2Darray()");
+#   endif
+    //my_stream = &(CUDA::in_stream[dst_device_id]);
+    my_stream = &CUDA::in_stream;
+# endif
+
+    // Supported: straight transfer (no transposition or format change)
+    if (transpose == false && src_format == dst_format) {
+
+      auto line_length = (src_format == Format::ColMajor) ? rows : cols;
+      auto lines       = (src_format == Format::ColMajor) ? cols : rows;
+
+      checkCUDA(cudaMemcpy2DAsync(dst_array, dst_ld * sizeof(T), \
+                                  src_array, src_ld * sizeof(T), \
+                                  line_length * sizeof(T), lines, \
+                                  cudaMemcpyHostToDevice, \
+                                  my_stream->cuda_stream));
+
+    }
+# ifndef LINALG_NO_CHECKS
+    // Unsupported: everything else
+    else {
+    
+      throw excUnimplemented("copy_2Darray(): transfers into the GPU "
+                             "currently don't yet support transposition and "
+                             "different source and destination formats");
+      // With a temporary, everything is possible though ...
+    
+    }
+# endif
+
+    my_stream->sync();
+
+# ifndef USE_GLOBAL_TRANSFER_STREAMS
+    delete my_stream;
+# endif
+  
+  }
+
+  else if (src_location == Location::GPU && dst_location == Location::GPU) {
+
+    using LinAlg::BLAS::CUBLAS::xGEAM;
+  
+    // Transfer within GPU
+
+    CUDAStream* my_stream;
+
+# ifndef USE_GLOBAL_TRANSFER_STREAMS
+    my_stream = new CUDAStream(src_device_id);
+# else
+#   ifndef LINALG_NO_CHECKS
+    check_gpu_handles("copy_2Darray()");
+#   endif
+    //my_stream = &(CUDA::on_stream[dst_device_id]);
+    my_stream = &CUDA::on_stream;
+# endif
+
+    // Supported: straight transfer (no transposition or format change)
+    if (transpose == false && src_format == dst_format) {
+
+      auto line_length = (src_format == Format::ColMajor) ? rows : cols;
+      auto lines       = (src_format == Format::ColMajor) ? cols : rows;
+
+      checkCUDA(cudaMemcpy2DAsync(dst_array, dst_ld * sizeof(T), \
+                                  src_array, src_ld * sizeof(T), \
+                                  line_length * sizeof(T), lines, \
+                                  cudaMemcpyDeviceToDevice, 
+                                  my_stream->cuda_stream));
+
+    }
+
+    // Supported: transposition if both matrices are ColMajor
+    else if (transpose == true && src_format == Format::ColMajor && 
+                             dst_format == Format::ColMajor   ) {
+    
+      auto line_length = rows;
+      auto lines       = cols;
+
+      // Since xGEAM doesn't support B = nullptr, we use B = A and beta = 0.0;
+      xGEAM(my_stream->cublas_handle, CUBLAS_OP_T, CUBLAS_OP_T, line_length,
+            lines, cast<T>(1.0), src_array, src_ld, cast<T>(0.0), src_array,
+            src_ld, dst_array, dst_ld);
+    
+    }
+
+    // Supported: change of format if source is ColMajor and destination is not 
+    // a submatrix
+    else if (transpose == false && src_format == Format::ColMajor &&
+             dst_ld == cols) {
+
+      // GEAM assumes both arrays are in ColMajor and would thus mess up
+      // with a non-consecutive RowMajor array. However, since our destination 
+      // array is consecutive, we transpose the ColMajor array into what xGEAM 
+      // believes to be ColMajor array with tight leading dimension. This 
+      // effectively makes the destination a RowMajor array with the same 
+      // content as the source.
+
+      auto line_length = rows;
+      auto lines       = cols;
+
+      // Since xGEAM doesn't support B = nullptr, we use B = A and beta = 0.0;
+      xGEAM(my_stream->cublas_handle, CUBLAS_OP_T, CUBLAS_OP_T, line_length,
+            lines, cast<T>(1.0), src_array, src_ld, cast<T>(0.0), src_array, 
+            src_ld, dst_array, dst_ld);
+    
+    }
+    // Supported: change of format if source is RowMajor and not a submatrix  
+    // and destination is ColMajor
+    else if (transpose == false && src_format == Format::RowMajor &&
+             src_ld == cols) {
+    
+      // GEAM assumes both arrays are in ColMajor and would thus mess up
+      // with a non-consecutive RowMajor array. However, since our source array 
+      // is consecutive we transpose the what xGEAM believes to be a ColMajor 
+      // array with tight leading dimension into a ColMajor array with  
+      // arbitrary properties. This effectively makes the destination a  
+      // ColMajor array with the same content as the source RowMajor array.
+
+      auto line_length = cols;
+      auto lines       = rows;
+
+      // Since xGEAM doesn't support B = nullptr, we use B = A and beta = 0.0;
+      xGEAM(my_stream->cublas_handle, CUBLAS_OP_T, CUBLAS_OP_T, line_length,
+            lines, cast<T>(1.0), src_array, src_ld, cast<T>(0.0), src_array, 
+            src_ld, dst_array, dst_ld);
+    
+    }
 
 # ifndef LINALG_NO_CHECKS
-    if (src_format != dst_format) {
-
-      // We support this iff the matrices are not submatrices (would probably 
-      // also be possible to do if they were)
-      //
-      // In other words: we assume both source and destination are stored in  
-      // one connected piece of memory. The array in ColMajor provides the 
-      // leading dimension.
-
-      if (
-           // source is not a submatrix
-           ((src_format == Format::ColMajor && src_ld != rows) ||
-            (src_format == Format::RowMajor && src_ld != cols)   )
-           ||
-           // destination is not a submatrix
-           ((dst_format == Format::ColMajor && dst_ld != rows) ||
-            (dst_format == Format::RowMajor && dst_ld != cols)   )
-         ) {
-      
-        throw excUnimplemented("copy_2Darray(): if source and destination "
-                               "have the different formats, they must not be "
-                               "submatrices");
-      
-      }
-
-
-    } else if (transpose == true && (src_location != dst_location)) {
-
-      throw excUnimplemented("copy_2Darray(): transposing while copying in or "
-                             "out of GPU not supported");
+    // Unsupported: everything else
+    else {
+    
+      throw excUnimplemented("copy_2Darray(): the requested combination "
+                             "of arguments has not yet been implemented for "
+                             "transfers within the GPU");
+      // With a temporary, everything is possible though ...
 
     }
 # endif
 
-    I_t line_length = (src_format == Format::ColMajor) ? rows : cols;
-    I_t lines       = (src_format == Format::ColMajor) ? cols : rows;
+    my_stream->sync();
 
-    LinAlg::CUDAStream my_stream(src_device_id);
-
-    if (transpose == false) {
-
-      cudaMemcpyKind transfer_kind;
-
-      if (src_location == Location::GPU && dst_location == Location::host) {
-
-        transfer_kind = cudaMemcpyDeviceToHost;
-
-      } else if (src_location == dst_location) {
-
-        transfer_kind = cudaMemcpyDeviceToDevice;
-
-      } else {
-
-        transfer_kind = cudaMemcpyHostToDevice;
-
-      }
-
-      if (src_format == dst_format) {
-
-        checkCUDA(cudaMemcpy2DAsync(dst_array, dst_ld * sizeof(T), \
-                                    src_array, src_ld * sizeof(T), \
-                                    line_length * sizeof(T), lines, \
-                                    transfer_kind, my_stream.cuda_stream));
-
-      } else {
-      
-        using LinAlg::BLAS::CUBLAS::xGEAM;
-        // GEAM assumes both arrays are in ColMajor and we can be sure that  
-        // both arrays are consecutive in memory due to the above checks, so we 
-        // just transpose one ColMajor array to another one (effectively having 
-        // C be the same as A if interpreted as having the non-corresponding 
-        // format).
-        // Since xGEAM doesn't support B = nullptr, we use B = A and beta = 0.0;
-        auto ld = (src_format == Format::ColMajor) ? rows : cols;
-        xGEAM(my_stream.cublas_handle, CUBLAS_OP_T, CUBLAS_OP_T, line_length,
-              lines, cast<T>(1.0), src_array, ld, cast<T>(0.0), src_array, ld, 
-              dst_array, ld);
-      
-      }
-
-    } else {
-
-      using LinAlg::BLAS::CUBLAS::xGEAM;
-
-      // Since xGEAM doesn't support B = nullptr, we use B = A and beta = 0.0;
-      xGEAM(my_stream.cublas_handle, CUBLAS_OP_T, CUBLAS_OP_T, line_length,
-            lines, cast<T>(1.0), src_array, src_ld, cast<T>(0.0), src_array,
-            src_ld, dst_array, dst_ld);
-
-    }
-
-    my_stream.sync();
-
+# ifndef USE_GLOBAL_TRANSFER_STREAMS
+    delete my_stream;
+# endif
+  
   }
 #endif /* HAVE_CUDA */
 

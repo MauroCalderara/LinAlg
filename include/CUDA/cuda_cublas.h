@@ -12,16 +12,17 @@
 #ifndef LINALG_CUDA_CUDA_CUBLAS_H_
 #define LINALG_CUDA_CUDA_CUBLAS_H_
 
+#include "../preprocessor.h"
+
 #ifdef HAVE_CUDA
 
-#include <vector>         // std::vector for cublas handles
-#include <cuda_runtime.h> // various CUDA routines
-#include <cublas_v2.h>
+# include <vector>         // std::vector for cublas handles
+# include <cuda_runtime.h> // various CUDA routines
+# include <cublas_v2.h>
 
-#include "../preprocessor.h"
-#include "../types.h"
-#include "../profiling.h"
-#include "cuda_checks.h"
+# include "../types.h"
+# include "../profiling.h"
+# include "cuda_checks.h"
 
 namespace LinAlg {
 
@@ -81,6 +82,6 @@ inline void destroy() {
 
 } /* namespace LinAlg */
 
-#endif /* HAVE_CUDA */
+# endif /* HAVE_CUDA */
 
 #endif /* LINALG_CUDA_CUDA_CUBLAS_H_ */

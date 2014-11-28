@@ -12,48 +12,49 @@
 #ifndef LINALG_CUDA_CUDA_CHECKS_H_
 #define LINALG_CUDA_CUDA_CHECKS_H_
 
+#include "../preprocessor.h"
+
 #ifdef HAVE_CUDA
 
-#include <vector>         // std::vector for cublas handles
-#include <memory>         // std::shared_ptr
-#include <cuda_runtime.h> // various CUDA routines
-#include <cublas_v2.h>
-#include <cusparse_v2.h>
+# include <vector>         // std::vector for cublas handles
+# include <memory>         // std::shared_ptr
+# include <cuda_runtime.h> // various CUDA routines
+# include <cublas_v2.h>
+# include <cusparse_v2.h>
 
-#include "../preprocessor.h"
-#include "../types.h"
-#include "../exceptions.h"   // LinAlg::excLinAlg
+# include "../types.h"
+# include "../exceptions.h"   // LinAlg::excLinAlg
 
-#ifndef LINALG_NO_CHECKS
+# ifndef LINALG_NO_CHECKS
 
 /** \def              checkCUDA(ans)
  *
  *  \brief            Macro to facilitate CUDA error checking
  */
-#define checkCUDA(expr) { LinAlg::CUDA::check_CUDA((expr), \
+#    define checkCUDA(expr) { LinAlg::CUDA::check_CUDA((expr), \
                                                       __FILE__, __LINE__); }
 
 /** \def              checkCUBLAS(ans)
  *
  *  \brief            Macro to facilitate CUBLAS error checking
  */
-#define checkCUBLAS(expr) { LinAlg::CUDA::check_CUBLAS((expr), \
+#    define checkCUBLAS(expr) { LinAlg::CUDA::check_CUBLAS((expr), \
                                                       __FILE__, __LINE__); }
 
 /** \def              checkCUSPARSE(ans)
  *
  *  \brief            Macro to facilitiate CUSPARSE error checking
  */
-#define checkCUSPARSE(expr) { LinAlg::CUDA::check_CUSPARSE((expr), \
+#    define checkCUSPARSE(expr) { LinAlg::CUDA::check_CUSPARSE((expr), \
                                                       __FILE__, __LINE__); }
 
-#else
+# else
 
-#define checkCUDA(expr) expr
-#define checkCUBLAS(expr) expr
-#define checkCUSPARSE(expr) expr
+#   define checkCUDA(expr) expr
+#   define checkCUBLAS(expr) expr
+#   define checkCUSPARSE(expr) expr
 
-#endif /* LINALG_NO_CHECKS */
+# endif /* LINALG_NO_CHECKS */
 
 
 namespace LinAlg {
