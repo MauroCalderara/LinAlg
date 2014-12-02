@@ -29,16 +29,9 @@
 #include <queue>      // std::deque
 #include <atomic>     // std::atomic
 
-#ifdef USE_POSIX_THREADS
-# include <pthread.h>
-#else /* use C++11 threads */
-# include <thread>     // std::thread
-# include <mutex>      // std::mutex
-# include <condition_variable>
-#endif
-
 #include "types.h"
 #include "profiling.h"
+#include "threads.h"
 #include "exceptions.h"
 #include "dense.h"
 #include "sparse.h"
@@ -95,10 +88,10 @@ struct Stream : StreamBase {
 
 #ifndef DOXYGEN_SKIP
 
-# ifdef USE_POSIX_THREADS
+  Threads::Mutex                    lock;
+  Threads::ConditionVariable        cv;
 
-  pthread_mutex_t                   lock;
-  pthread_cond_t                    cv;
+# ifdef USE_POSIX_THREADS
   pthread_t                         worker_thread;
   // Pthreads expect a C-style pointer to a void* function and support passing 
   // void* arguments to it. Thus unlike in the C++11 thread case below passing 
@@ -111,13 +104,8 @@ struct Stream : StreamBase {
     ((Stream*)instance)->worker();
     return nullptr;
   }
-
 # else /* use C++11 threads */
-
-  std::mutex                        lock;
-  std::condition_variable           cv;
   std::thread                       worker_thread;
-
 # endif /* USE_POSIX_THREADS */
 
   std::deque<std::function<void()>> queue;
@@ -160,22 +148,6 @@ inline Stream::Stream() : StreamBase() {
   terminate    = false;
 
   next_in_queue.store(0);
-
-#ifdef USE_POSIX_THREADS
-  auto error = pthread_mutex_init(&lock, NULL);
-# ifndef LINALG_NO_CHECKS
-  if (error != 0) {
-    throw excSystemError("Unable to initialize mutex, error = %d", error);
-  }
-# endif
-  error = pthread_cond_init(&cv, NULL);
-# ifndef LINALG_NO_CHECKS
-  if (error != 0) {
-    throw excSystemError("Unable to initialize condition variable, error = %d",
-                         error);
-  }
-# endif
-#endif
 
 }
 
@@ -240,22 +212,6 @@ inline Stream::~Stream() {
   stop();
   clear();
 
-#ifdef USE_POSIX_THREADS
-  auto error = pthread_mutex_destroy(&lock);
-# ifndef LINALG_NO_CHECKS
-  //if (error != 0) {
-  //  throw excSystemError("Unable to destroy mutex, error = %d", error);
-  //}
-# endif
-  error = pthread_cond_destroy(&cv);
-# ifndef LINALG_NO_CHECKS
-  if (error != 0) {
-    throw excSystemError("Unable to destroy condition variable, error = %d", 
-                         error);
-  }
-# endif
-#endif
-
 }
 
 // The routine for the worker thread
@@ -269,44 +225,27 @@ inline void Stream::worker() {
 
   while (!terminate) {
 
-# ifdef USE_POSIX_THREADS
-    // No RAII handler for pthreads
-# else
     { // RAII scope for thread_lock
-# endif
 
-    // Safely examine the condition. The lock prevents other threads to modify 
-    // it while we check the condition.
-# ifdef USE_POSIX_THREADS
-    pthread_mutex_lock(&lock);
-# else
-    std::unique_lock<std::mutex> thread_lock(lock);
-# endif
+      // Safely examine the condition. The lock prevents other threads to 
+      // modify it while we check the condition.
+      Threads::MutexLock thread_lock(lock);
 
-    if (queue.empty()) {
+      if (queue.empty()) {
 
-      // If the queue is empty we wait (releases the lock while waiting and 
-      // reacquires it when the condition becomes true)
-# ifdef USE_POSIX_THREADS
-      while (queue.empty() && !terminate) pthread_cond_wait(&cv, &lock);
-# else 
-      cv.wait(thread_lock, [this](){ return (!queue.empty() || terminate); });
-# endif
+        // If the queue is empty we wait (releases the lock while waiting and 
+        // reacquires it when the condition becomes true)
+        cv.wait(thread_lock, [this](){ return (!queue.empty() || terminate); });
 
-      if (terminate) return;
+        if (terminate) return;
 
-    }
+      }
 
-    // Fetch work
-    current_task = queue.back();
-    queue.pop_back();
+      // Fetch work
+      current_task = queue.back();
+      queue.pop_back();
 
-# ifdef USE_POSIX_THREADS
-    // Release the lock
-    pthread_mutex_unlock(&lock);
-# else
     } // Implicit release of thread_lock at the end of the scope block
-# endif
 
     // Execute the task
     current_task();
@@ -315,11 +254,7 @@ inline void Stream::worker() {
     ++next_in_queue;
 
     // Signal to waiters
-# ifdef USE_POSIX_THREADS
-    pthread_cond_signal(&cv);
-# else
     cv.notify_all();
-# endif
 
   }
 
@@ -355,39 +290,21 @@ inline I_t Stream::add(std::function<void()> task) {
 
     // Do the locking dance
 
-#ifdef USE_POSIX_THREADS
-    // No RAII handler for pthreads
-#else
     { // RAII scope for adder_lock
-#endif
 
-    // Safely examine the condition. The lock prevents other threads to modify 
-    // it while we check the condition.
-#ifdef USE_POSIX_THREADS
-    pthread_mutex_lock(&lock);
-#else
-    std::unique_lock<std::mutex> adder_lock(lock);
-#endif
+      // Safely examine the condition. The lock prevents other threads to  
+      // modify it while we check the condition.
+      Threads::MutexLock adder_lock(lock);
 
-    my_ticket = next_ticket;
+      my_ticket = next_ticket;
 
-    queue.push_front(task);
+      queue.push_front(task);
 
-    ++next_ticket;
+      ++next_ticket;
 
-#ifdef USE_POSIX_THREADS
-    // Release the lock
-    pthread_mutex_unlock(&lock);
-#else
     } // Implicit release of adder_lock at the end of the scope block
-#endif
 
-    // Notify the worker thread
-#ifdef USE_POSIX_THREADS
-    pthread_cond_signal(&cv);
-#else
     cv.notify_all();
-#endif
 
   }
 
@@ -431,14 +348,8 @@ inline void Stream::sync(I_t ticket) {
 
       // Acquire the lock, check the condition, wait till next_in_queue is 
       // larger than the requested ticket (release the lock in the mean time)
-#ifdef USE_POSIX_THREADS
-      pthread_mutex_lock(&lock);
-      while (next_in_queue < ticket + 1) pthread_cond_wait(&cv, &lock);
-      pthread_mutex_unlock(&lock);
-#else 
-      std::unique_lock<std::mutex> sync_lock(lock);
+      Threads::MutexLock sync_lock(lock);
       cv.wait(sync_lock, [this, ticket](){ return next_in_queue > ticket; });
-#endif
 
     }
 
@@ -464,32 +375,20 @@ inline void Stream::stop() {
 
   if (!synchronous_operation && thread_alive) {
 
-#ifdef USE_POSIX_THREADS
-
-    pthread_mutex_lock(&lock);
-
-    terminate = true;
-
-    pthread_mutex_unlock(&lock);
-
-    pthread_cond_signal(&cv);
-
-    pthread_join(worker_thread, NULL);
-
-#else /* C++11 threads */
-
     {
 
-    std::unique_lock<std::mutex> terminate_lock(lock);
+      Threads::MutexLock terminate_lock(lock);
 
-    terminate = true;
+      terminate = true;
 
     }
 
     cv.notify_all();
 
+#ifdef USE_POSIX_THREADS
+    pthread_join(worker_thread, NULL);
+#else /* C++11 threads */
     worker_thread.join();
-
 #endif
 
   }
@@ -504,28 +403,26 @@ inline void Stream::clear() {
 
   PROFILING_FUNCTION_HEADER
 
-  // Locking blocks if there's no other thread
+  // Locking blocks if there's another thread
   if (!synchronous_operation && thread_alive) {
-#ifdef USE_POSIX_THREADS
-    pthread_mutex_lock(&lock);
-#else
-    std::unique_lock<std::mutex> clear_lock(lock);
-#endif
+
+    Threads::MutexLock clear_lock(lock);
+
+    // Remove all tasks from the queue
+    queue.clear();
+
+    // This signals that no work is available
+    next_ticket = next_in_queue;
+
+  } else {
+  
+    // Remove all tasks from the queue
+    queue.clear();
+
+    // This signals that no work is available
+    next_ticket = next_in_queue;
+  
   }
-
-  // Remove all tasks from the queue
-  queue.clear();
-
-  // This signals that no work is available
-  next_ticket = next_in_queue;
-
-#ifdef USE_POSIX_THREADS
-  if (!synchronous_operation && thread_alive) {
-    pthread_mutex_unlock(&lock);
-  }
-#else 
-  // Implicit release of clear_lock when going out of scope
-#endif
 
 }
 
