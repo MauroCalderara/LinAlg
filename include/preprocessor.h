@@ -106,4 +106,16 @@
 //    Have the BufferHelper class print information about adding tasks to the 
 //    queue and syncing with them
 
+// SIMPLE_PROFILER
+//
+//    Enable the simple profiler
+//#define SIMPLE_PROFILER
+
+// SIMPLE_PROFILER_PREALLOCATED_RECORDS
+//
+//    How many records to preallocate for each function that is profiled
+#ifndef SIMPLE_PROFILER_PREALLOCATED_RECORDS
+# define SIMPLE_PROFILER_PREALLOCATED_RECORDS 1000
+#endif
+
 #endif /* PREPROCESSOR_H_ */

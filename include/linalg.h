@@ -13,6 +13,7 @@
 #ifndef LINALG_LINALG_H_
 #define LINALG_LINALG_H_
 
+#include "preprocessor.h"
 #include "types.h"
 #include "profiling.h"
 #include "exceptions.h"
