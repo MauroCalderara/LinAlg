@@ -42,7 +42,7 @@ namespace Utilities {
  *  Example usage:
  *  \code
  *     using std::tie;
- *     tie(size, n_nonzeros, first_index, is_complex)= parse_CSR_header(file);
+ *     tie(size, n_nonzeros, first_index, is_complex) = parse_CSR_header(file);
  *  \endcode
  */
 std::tuple<I_t, I_t, I_t, bool> parse_CSR_header(std::string filename) {
