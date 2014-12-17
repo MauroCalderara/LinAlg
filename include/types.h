@@ -129,27 +129,6 @@ enum class BufferDirection {
   decreasing,   //< Buffer runs in direction of decreasing indices
 };
 
-/** \brief            IJ, a point in a matrix (row/column pair)
- */
-struct IJ {
-
-  I_t row;      //< Row
-  I_t col;      //< Column
-
-  IJ() : row(0), col(0) {};             //< Empty constructor
-  IJ(I_t i, I_t j) : row(i), col(j) {}; //< Constructor from row and column
-
-};
-inline IJ operator+(const IJ left, const IJ right) {
-  return IJ(left.row + right.row, left.col + right.col);
-}
-inline IJ operator-(const IJ left, const IJ right) {
-  return IJ(left.row - right.row, left.col - right.col);
-}
-inline bool operator==(const IJ left, const IJ right) {
-  return ((left.row == right.row) && (left.col == right.col));
-}
-
 /** \brief            SubBlock, a matrix subblock
  */
 struct SubBlock {
@@ -159,11 +138,12 @@ struct SubBlock {
 
   SubBlock() : first_row(0), last_row(0), first_col(0), last_col(0) {}
 
-  SubBlock(IJ start, IJ stop)
-         : first_row(start.row),
-           last_row(stop.row),
-           first_col(start.col),
-           last_col(stop.col) {
+  /// Matlab style block specification
+  SubBlock(I_t first_row_, I_t last_row_, I_t first_col_, I_t last_col_)
+         : first_row(first_row_),
+           last_row(last_row_),
+           first_col(first_col_),
+           last_col(last_col_)    {
 #ifndef LINALG_NO_CHECKS
     if (last_row < first_row || last_col < first_col) {
       throw excBadArgument("SubBlock(): invalid subblock specification");
@@ -171,21 +151,16 @@ struct SubBlock {
 #endif
   }
 
-  /// Matlab style block specification
-  SubBlock(I_t first_row, I_t last_row, I_t first_col, I_t last_col)
-         : SubBlock(IJ(first_row, first_col), IJ(last_row, last_col)) {}
-
-  /// Upper left corner (inclusive)
-  inline IJ start() const { return IJ(first_row, first_col); }
-
-  /// Lower right corner (exclusive)
-  inline IJ stop() const { return IJ(last_row, last_col); }
-
-  /// Rows
+  /// Return the number of rows in the sub matrix
   inline I_t rows() const { return (last_row - first_row); }
 
-  /// Columns
+  /// Return the number of columns in the sub matrix
   inline I_t cols() const { return (last_col - first_col); }
+
+  /// Return whether the sub matrix is empty
+  inline bool is_empty() const { 
+    return ((first_row == last_row) || (first_col == last_col)); 
+  }
 
 };
 inline SubBlock transposed(SubBlock block) {
