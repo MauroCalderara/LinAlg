@@ -1,6 +1,6 @@
 /** \file
  *
- *  \brief            xGEAM (CUBLAS BLAS-like)
+ *  \brief            xGEAM (cuBLAS BLAS-like)
  *
  *  \date             Created:  Jul 16, 2014
  *  \date             Modified: $Date$
@@ -45,9 +45,9 @@ namespace LinAlg {
 namespace BLAS {
 
 #ifdef HAVE_CUDA
-namespace CUBLAS {
+namespace cuBLAS {
 
-/** \brief            A CUBLAS routine to copy, transpose and add dense
+/** \brief            A cuBLAS routine to copy, transpose and add dense
  *                    matrices on the GPU
  *
  *  C = alpha * A + beta * B          where A and B can be transposed matrices
@@ -78,7 +78,7 @@ namespace CUBLAS {
  *
  *  \param[in]        ldc
  *
- *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
+ *  See [cuBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
 inline void xGEAM(cublasHandle_t handle, cublasOperation_t transa,
                   cublasOperation_t transb, I_t m, I_t n, const S_t alpha,
@@ -143,18 +143,18 @@ inline void xGEAM(int device_id, cublasOperation_t transa,
                   cublasOperation_t transb, I_t m, I_t n, const T alpha,
                   const T* A, I_t lda, const T beta, const T* B, I_t ldb,
                   T* C, I_t ldc) {
-  xGEAM(LinAlg::CUDA::CUBLAS::handles[device_id], transa, transb, m, n, alpha,
+  xGEAM(LinAlg::CUDA::cuBLAS::handles[device_id], transa, transb, m, n, alpha,
         A, lda, beta, B, ldb, C, ldc);
 }
 
-} /* namespace LinAlg::BLAS::CUBLAS */
+} /* namespace LinAlg::BLAS::cuBLAS */
 
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_output_transposed;
 using LinAlg::Utilities::check_gpu_handles;
-using LinAlg::CUDA::CUBLAS::handles;
+using LinAlg::CUDA::cuBLAS::handles;
 
-/** \brief            A CUBLAS routine to copy, transpose and add dense
+/** \brief            A cuBLAS routine to copy, transpose and add dense
  *                    matrices on the GPU
  *
  *  C = alpha * A + beta * B          where A and B can be transposed matrices
@@ -169,7 +169,7 @@ using LinAlg::CUDA::CUBLAS::handles;
  *
  *  \param[in]        C
  *
- *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
+ *  See [cuBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
 template <typename T>
 inline void xGEAM(const T alpha, const Dense<T>& A, const T beta,
@@ -206,12 +206,12 @@ inline void xGEAM(const T alpha, const Dense<T>& A, const T beta,
   auto C_ptr = C._begin();
   auto ldc = C._leading_dimension;
 
-  CUBLAS::xGEAM(handles[device_id], transa, transb, m, n, alpha, A_ptr, lda,
+  cuBLAS::xGEAM(handles[device_id], transa, transb, m, n, alpha, A_ptr, lda,
                 beta, B_ptr, ldb, C_ptr, ldc);
 
 }
 
-/** \brief            A CUBLAS routine to copy, transpose and add dense
+/** \brief            A cuBLAS routine to copy, transpose and add dense
  *                    matrices on the GPU, asynchronous variant.
  *
  *  C = alpha * A + beta * B          where A and B can be transposed matrices
@@ -273,7 +273,7 @@ inline void xGEAM_async(const T alpha, const Dense<T>& A, const T beta,
   auto C_ptr = C._begin();
   auto ldc = C._leading_dimension;
 
-  CUBLAS::xGEAM(stream.cublas_handle, transa, transb, m, n, alpha, A_ptr, lda,
+  cuBLAS::xGEAM(stream.cublas_handle, transa, transb, m, n, alpha, A_ptr, lda,
                 beta, B_ptr, ldb, C_ptr, ldc);
 
 }

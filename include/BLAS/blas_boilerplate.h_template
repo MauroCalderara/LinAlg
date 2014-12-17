@@ -48,6 +48,7 @@ extern "C" {
   void fortran_name(dxyz, DXYZ)(...);
   void fortran_name(cxyz, CXYZ)(...);
   void fortran_name(zxyz, ZXYZ)(...);
+
 }
 #endif
 
@@ -103,10 +104,10 @@ inline void xXYZ(...) {
 
 }
 
-} /* namespace FORTRAN */
+} /* namespace LinAlg::BLAS::FORTRAN */
 
 #ifdef HAVE_CUDA
-namespace CUBLAS {
+namespace cuBLAS {
 
 /** \brief            General xyz
  *
@@ -118,7 +119,7 @@ namespace CUBLAS {
  *
  *  \param[in,out]    Z
  *
- *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
+ *  See [cuBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
 inline void xXYZ(...) {
 
@@ -155,11 +156,11 @@ inline void xXYZ(...) {
 
 }
 
-} /* namespace CUBLAS */
+} /* namespace LinAlg::BLAS::cuBLAS */
 
 using LinAlg::Utilities::check_device;
 #ifdef HAVE_CUDA
-using LinAlg::CUDA::CUBLAS::handles;
+using LinAlg::CUDA::cuBLAS::handles;
 using LinAlg::Utilities::check_gpu_handles;
 #endif
 
@@ -201,7 +202,7 @@ inline void xXYZ(...) {
 
     cublasOperation_t transa = (A._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
     cublasOperation_t transb = (B._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
-    BLAS::CUBLAS::xXYZ();
+    BLAS::cuBLAS::xXYZ();
   }
 #endif
 

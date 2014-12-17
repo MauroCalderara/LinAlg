@@ -1,6 +1,6 @@
 /** \file
  *
- *  \brief            CUDA/CUBLAS/CUSPARSE error checking
+ *  \brief            CUDA/cuBLAS/cuSPARSE error checking
  *
  *  \date             Created:  Jul 12, 2014
  *  \date             Modified: $Date$
@@ -36,14 +36,14 @@
 
 /** \def              checkCUBLAS(ans)
  *
- *  \brief            Macro to facilitate CUBLAS error checking
+ *  \brief            Macro to facilitate cuBLAS error checking
  */
 #    define checkCUBLAS(expr) { LinAlg::CUDA::check_CUBLAS((expr), \
                                                       __FILE__, __LINE__); }
 
 /** \def              checkCUSPARSE(ans)
  *
- *  \brief            Macro to facilitiate CUSPARSE error checking
+ *  \brief            Macro to facilitiate cuSPARSE error checking
  */
 #    define checkCUSPARSE(expr) { LinAlg::CUDA::check_CUSPARSE((expr), \
                                                       __FILE__, __LINE__); }
@@ -90,7 +90,7 @@ inline void check_CUDA(cudaError_t code, const char* file, int line) {
 
 }
 
-/** \brief            Function to check the return value of CUBLAS calls.
+/** \brief            Function to check the return value of cuBLAS calls.
  *
  *  \param[in]        code
  *                    Error code to check.
@@ -137,7 +137,7 @@ inline void check_CUBLAS(cublasStatus_t code, const char *file, int line) {
         cublas_error_string = "CUBLAS_STATUS_INTERNAL_ERROR";
         break;
       default:
-        cublas_error_string = "unknown CUBLAS error";
+        cublas_error_string = "unknown cuBLAS error";
         break;
 
     }
@@ -149,7 +149,7 @@ inline void check_CUBLAS(cublasStatus_t code, const char *file, int line) {
 
 }
 
-/** \brief            Function to check the return value of CUSPARSE calls.
+/** \brief            Function to check the return value of cuSPARSE calls.
  *
  *  \param[in]        code
  *                    Error code to check.
@@ -199,7 +199,7 @@ inline void check_CUSPARSE(cusparseStatus_t code, const char *file, int line) {
         cusparse_error_string = "CUSPARSE_STATUS_MATRIX_TYPE_NOT_SUPPORTED";
         break;
       default:
-        cusparse_error_string = "unknown CUSPARSE error";
+        cusparse_error_string = "unknown cuSPARSE error";
         break;
 
     }

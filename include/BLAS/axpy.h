@@ -1,6 +1,6 @@
 /** \file
  *
- *  \brief            xAXPY (BLAS-N)
+ *  \brief            xAXPY (BLAS-1)
  *
  *  \date             Created:  Jul 16, 2014
  *  \date             Modified: $Date$
@@ -117,7 +117,7 @@ inline void xAXPY(I_t n, Z_t alpha, Z_t* x, I_t incx, Z_t* y, I_t incy) {
 } /* namespace FORTRAN */
 
 #ifdef HAVE_CUDA
-namespace CUBLAS {
+namespace cuBLAS {
 
 /** \brief            Vector addition with prefactor
  *
@@ -137,7 +137,7 @@ namespace CUBLAS {
  *
  *  \param[in]        incy
  *
- *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
+ *  See [cuBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
 inline void xAXPY(cublasHandle_t handle, I_t n, S_t alpha, S_t* x, I_t incx,
                   S_t* y, I_t incy) {
@@ -178,7 +178,7 @@ inline void xAXPY(cublasHandle_t handle, I_t n, Z_t alpha, Z_t* x, I_t incx,
 
 }
 
-} /* namespace CUBLAS */
+} /* namespace cuBLAS */
 #endif /* HAVE_CUDA */
 
 // No convenience bindings (BLAS level 1)

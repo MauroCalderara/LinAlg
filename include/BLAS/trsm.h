@@ -151,7 +151,7 @@ inline void xTRSM(char side, char uplo, char transa, char diag, int m,
 } /* namespace LinAlg::BLAS::FORTRAN */
 
 #ifdef HAVE_CUDA
-namespace CUBLAS {
+namespace cuBLAS {
 
 /** \brief            Triangular matrix solve
  *
@@ -182,7 +182,7 @@ namespace CUBLAS {
  *
  *  \param[in]        ldb
  *
- *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
+ *  See [cuBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
 inline void xTRSM(cublasHandle_t handle, cublasSideMode_t side,
                   cublasFillMode_t uplo, cublasOperation_t trans,
@@ -238,7 +238,7 @@ inline void xTRSM(cublasHandle_t handle, cublasSideMode_t side,
 
 }
 
-} /* namespace LinAlg::BLAS::CUBLAS */
+} /* namespace LinAlg::BLAS::cuBLAS */
 
 # ifdef HAVE_MAGMA
 
@@ -397,7 +397,7 @@ inline void xTRSM(Side side, UPLO uplo, Diag diag, const T alpha,
 
 # ifndef USE_MAGMA_TRSM
 
-    auto handle_    = CUDA::CUBLAS::handles[A._device_id];
+    auto handle_    = CUDA::cuBLAS::handles[A._device_id];
     auto side_      = (side == Side::left)  ? CUBLAS_SIDE_LEFT  :
                                               CUBLAS_SIDE_RIGHT ;
     auto uplo_      = (uplo == UPLO::lower) ? CUBLAS_FILL_MODE_LOWER :
@@ -409,7 +409,7 @@ inline void xTRSM(Side side, UPLO uplo, Diag diag, const T alpha,
     auto diag_      = (diag == Diag::unit)  ? CUBLAS_DIAG_UNIT     :
                                               CUBLAS_DIAG_NON_UNIT ;
 
-    BLAS::CUBLAS::xTRSM(handle_, side_, uplo_, transa_, diag_, m_, n_, alpha_, 
+    BLAS::cuBLAS::xTRSM(handle_, side_, uplo_, transa_, diag_, m_, n_, alpha_, 
                         A_, lda_, B_, ldb_);
 
 # else  /* USE_MAGMA_TRSM */

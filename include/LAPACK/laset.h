@@ -24,15 +24,9 @@
 #include "../preprocessor.h"
 
 #ifdef HAVE_CUDA
-
-# include <cuda_runtime.h>
-# include <cublas_v2.h>
-# include "../CUDA/cuda_checks.h"
-
 # ifdef HAVE_MAGMA
 #   include <magma.h>
 # endif
-
 #endif
 
 #include "../types.h"

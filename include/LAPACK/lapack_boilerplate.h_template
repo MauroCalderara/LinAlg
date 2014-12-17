@@ -54,6 +54,7 @@ extern "C" {
   void fortran_name(dxyz, DXYZ)(...);
   void fortran_name(cxyz, CXYZ)(...);
   void fortran_name(zxyz, ZXYZ)(...);
+
 }
 #endif
 
@@ -110,11 +111,11 @@ inline void xXYZ(...) {
 
 }
 
-} /* namespace FORTRAN */
+} /* namespace LinAlg::LAPACK::FORTRAN */
 
 
 #ifdef HAVE_CUDA
-namespace CUBLAS {
+namespace cuBLAS {
 
 /** \brief            xXYZ
  *
@@ -126,7 +127,7 @@ namespace CUBLAS {
  *
  *  \param[in,out]    Z
  *
- *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
+ *  See [cuBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
 inline void xXYZ(...) {
 
@@ -163,7 +164,7 @@ inline void xXYZ(...) {
 
 }
 
-} /* namespace LinAlg::LAPACK::CUBLAS */
+} /* namespace LinAlg::LAPACK::cuBLAS */
 
 #ifdef HAVE_MAGMA
 namespace MAGMA {
@@ -254,11 +255,11 @@ inline void xXYZ(Dense<T>& X, Dense<int>& Y) {
   check_cublas_handles("xXYZ()");
 # endif
 
-    using LinAlg::CUDA::CUBLAS::handles;
-    CUBLAS::xXYZ(handles[device_id], ...);
+    using LinAlg::CUDA::cuBLAS::handles;
+    cuBLAS::xXYZ(handles[device_id], ...);
   }
 #ifdef HAVE_MAGMA
-  // check if MAGMA's or CUBLAS' XYZ is faster and use that one.
+  // check if MAGMA's or cuBLAS' XYZ is faster and use that one.
 #endif
 #endif
 

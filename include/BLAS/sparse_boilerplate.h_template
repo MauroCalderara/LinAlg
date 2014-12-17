@@ -1,0 +1,131 @@
+/** \file
+ *
+ *  \brief            xyz (BACKEND)
+ *
+ *  \date             Created:  Jul 16, 2014
+ *  \date             Modified: $Date$
+ *
+ *  \authors          mauro <mcalderara@iis.ee.ethz.ch>
+ *
+ *  \version          $Revision$
+ */
+#ifndef LINALG_SPARSE_BACKEND_XYZ_H_
+#define LINALG_SPARSE_BACKEND_XYZ_H_
+
+/* Organization of the namespace:
+ *
+ *    LinAlg::Sparse
+ *        bindings to routines handing sparse matrices
+ *
+ *    LinAlg::Sparse::<BACKEND>
+ *        bindings from <BACKEND> backend
+ */
+
+#include "../../preprocessor.h"
+
+#ifdef HAVE_CUDA
+#include <cuda_runtime.h>
+#include <cublas_v2.h>
+#include "../../CUDA/cuda_checks.h"
+#endif
+
+#include "../../types.h"
+#include "../../profiling.h"
+#include "../../exceptions.h"
+#include "../../utilities/checks.h"
+#include "../../sparse.h"
+
+namespace LinAlg {
+
+namespace Sparse {
+
+#ifdef HAVE_X
+namespace BACKEND {
+
+/** \brief            Some sparse routine
+ *
+ *  Z = X + Y
+ *
+ *  \param[in]        transx
+ *
+ *  \param[in,out]    Z
+ *
+ *  See [cuSPARSE](http://docs.nvidia.com/cuda/cusparse/)
+ */
+inline void xxyz(...) {
+
+  PROFILING_FUNCTION_HEADER
+
+  check_BACKEND(xyzS(...));
+
+}
+/** \overload
+ */
+inline void xxyz(...) {
+
+  PROFILING_FUNCTION_HEADER
+
+  check_BACKEND(xyzD(...));
+
+}
+/** \overload
+ */
+inline void xxyz(...) {
+
+  PROFILING_FUNCTION_HEADER
+
+  check_BACKEND(xyzC(...));
+
+}
+/** \overload
+ */
+inline void xxyz(...) {
+
+  PROFILING_FUNCTION_HEADER
+
+  check_BACKEND(xyzZ(...));
+
+}
+
+using LinAlg::Utilities::check_device;
+#ifdef HAVE_CUDA
+using LinAlg::CUDA::cuSPARSE::handles;
+using LinAlg::Utilities::check_gpu_handles;
+#endif
+
+// Convenience bindings (bindings for Sparse<T>)
+/** \brief            General xyz
+ *
+ *  Z = X + Y
+ *
+ *  \param[in]        X
+ *
+ *  \param[in]        Y
+ *
+ *  \param[in,out]    Z
+ */
+template <typename T>
+inline void xxyz(...) {
+
+  PROFILING_FUNCTION_HEADER
+
+#ifndef LINALG_NO_CHECKS
+  check_device(...)
+  if (matrix._location != Location::BACKEND)
+#endif
+
+  auto param0 = ...;
+
+  xxyz(...);
+
+
+}
+#endif /* HAVE_X */
+
+} /* namespace LinAlg::Sparse::BACKEND */
+
+} /* namespace LinAlg::Sparse */
+
+} /* namespace LinAlg */
+
+#endif /* LINALG_SPARSE_BACKEND_XYZ_H_ */

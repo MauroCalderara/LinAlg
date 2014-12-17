@@ -1,6 +1,6 @@
 /** \file
  *
- *  \brief            Inclusion of all BLAS headers
+ *  \brief            Inclusion of all BLAS and BLAS-like headers
  *
  * Organization of the namespace:
  *
@@ -8,7 +8,7 @@
  *        convenience bindings supporting different locations for Dense<T>
  *
  *    LinAlg::BLAS::\<NAME\>
- *        bindings to the \<NAME\> BLAS backend
+ *        bindings to the \<NAME\> BLAS (or BLAS-like) backend
  *
  *
  *  \date             Created:  Jul 16, 2014

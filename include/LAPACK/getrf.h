@@ -124,7 +124,7 @@ inline void xGETRF(I_t m, I_t n, Z_t* A, I_t lda, I_t* ipiv, int* info) {
 
 
 #ifdef HAVE_CUDA
-namespace CUBLAS {
+namespace cuBLAS {
 
 /** \brief            Compute LU factorization
  *
@@ -138,8 +138,8 @@ namespace CUBLAS {
  *
  *  \param[in,out]    A_ptr
  *                    Single pointer to the memory region on the device where 
- *                    the matrix A begins (this is unlike the raw CUBLAS 
- *                    interface and unlike the CUBLAS::xGETRF_batched() 
+ *                    the matrix A begins (this is unlike the raw cuBLAS 
+ *                    interface and unlike the cuBLAS::xGETRF_batched() 
  *                    interface)
  *
  *  \param[in]        lda
@@ -152,8 +152,8 @@ namespace CUBLAS {
  *
  *  \param[in,out]    info
  *                    Reference to a variable in main memory (this is again 
- *                    unlike the raw CUBLAS interface and unlike the 
- *                    CUBLAS::xGETRF_batched() interface)
+ *                    unlike the raw cuBLAS interface and unlike the 
+ *                    cuBLAS::xGETRF_batched() interface)
  */
 inline void xGETRF(cublasHandle_t handle, I_t n, S_t* A_ptr, I_t lda, 
                    int* ipiv_device, int& info) {
@@ -288,7 +288,7 @@ inline void xGETRF(cublasHandle_t handle, I_t n, Z_t* A_ptr, I_t lda,
  *
  *  \param[in]        batchSize
  *
- *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
+ *  See [cuBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
 inline void xGETRF_batched(cublasHandle_t handle, I_t n, S_t* Aarray[], I_t lda,
                            int* PivotArray, int* infoArray, I_t batchSize) {
@@ -335,7 +335,7 @@ inline void xGETRF_batched(cublasHandle_t handle, I_t n, Z_t* Aarray[], I_t lda,
 
 }
 
-} /* namespace LinAlg::LAPACK::CUBLAS */
+} /* namespace LinAlg::LAPACK::cuBLAS */
 
 #ifdef HAVE_MAGMA
 namespace MAGMA {
@@ -415,7 +415,7 @@ using LinAlg::Utilities::check_gpu_handles;
  *
  *  \param[in]        ipiv
  *                    ipiv is A.rows()*1 matrix (a vector). When using the
- *                    CUBLAS backend and specifying an empty matrix for ipiv,
+ *                    cuBLAS backend and specifying an empty matrix for ipiv,
  *                    the routine performs a non-pivoting LU decomposition.
  *
  *  \note             The return value of the routine is checked and a
@@ -447,7 +447,7 @@ inline void xGETRF(Dense<T>& A, Dense<int>& ipiv) {
 # else
   if (A.rows() != A.cols() && A._location == Location::GPU) {
     throw excBadArgument("xGETRF(A, ipiv), A: matrix A must be a square matrix "
-                         "(CUBLAS restriction)");
+                         "(cuBLAS restriction)");
   }
   if (!ipiv.is_empty()) {
     if (A.rows() != ipiv.rows()) {
@@ -490,11 +490,11 @@ inline void xGETRF(Dense<T>& A, Dense<int>& ipiv) {
     }
 #   endif
 
-    using LinAlg::CUDA::CUBLAS::handles;
+    using LinAlg::CUDA::cuBLAS::handles;
     auto device_id = A._device_id;
     int* ipiv_ptr = (ipiv.is_empty()) ? NULL : ipiv._begin();
 
-    CUBLAS::xGETRF(handles[device_id], n, A_ptr, lda, ipiv_ptr, info);
+    cuBLAS::xGETRF(handles[device_id], n, A_ptr, lda, ipiv_ptr, info);
 
 # else /* USE_MAGMA_GETRF */
 

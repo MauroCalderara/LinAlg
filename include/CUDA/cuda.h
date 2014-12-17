@@ -23,6 +23,7 @@
 // Keep this in alphabetical order
 #include "cuda_checks.h"
 #include "cuda_cublas.h"
+#include "cuda_cusparse.h"
 #include "cuda_memory_allocation.h"
 
 #include "../streams.h"
@@ -93,11 +94,11 @@ inline void init() {
   LinAlg::CUDA::init();
 #endif
 
-  // Initialize all CUBLAS handles
-  LinAlg::CUDA::CUBLAS::init();
+  // Initialize all cuBLAS handles
+  LinAlg::CUDA::cuBLAS::init();
 
-  // Same for CUSPARSE:
-  //LinAlg::CUDA::CUSPARSE::init();
+  // Initialize all cuSPARSE handles
+  LinAlg::CUDA::cuSPARSE::init();
 
 #ifdef HAVE_MAGMA
   // Initialize MAGMA

@@ -137,7 +137,7 @@ inline void xGETRI(I_t n, Z_t* A, I_t lda, int* ipiv, Z_t* work, int lwork,
 } /* namespace LinAlg::LAPACK::FORTRAN */
 
 #ifdef HAVE_CUDA
-namespace CUBLAS {
+namespace cuBLAS {
 
 /** \brief            Invert a matrix in LU decomposed format
  *
@@ -161,7 +161,7 @@ namespace CUBLAS {
  *
  *  \param[in,out]    info
  *
- *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
+ *  See [cuBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
 inline void xGETRI(cublasHandle_t handle, I_t n, S_t* A, I_t lda, int* ipiv,
                    S_t* C, I_t ldc, int* info) {
@@ -233,7 +233,7 @@ inline void xGETRI(cublasHandle_t handle, I_t n, Z_t* A, I_t lda, int* ipiv,
  *
  *  \param[in]        batchSize
  *
- *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
+ *  See [cuBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
 inline void xGETRI_batched(cublasHandle_t handle, I_t n, S_t* Aarray[], I_t lda,
                            int* PivotArray, S_t* Carray[], I_t ldc,
@@ -288,7 +288,7 @@ inline void xGETRI_batched(cublasHandle_t handle, I_t n, Z_t* Aarray[], I_t lda,
 
 }
 
-} /* namespace LinAlg::LAPACK::CUBLAS */
+} /* namespace LinAlg::LAPACK::cuBLAS */
 
 #ifdef HAVE_MAGMA
 namespace MAGMA {
@@ -385,8 +385,8 @@ using LinAlg::Utilities::check_gpu_handles;
 /** \brief            Compute the inverse using the LU decomposition of a
  *                    matrix in-place
  *
- *  Note that in-place inversion on GPU using CUBLAS matrices requires extra
- *  memory and an additional memory copy as the CUBLAS inversion function is
+ *  Note that in-place inversion on GPU using cuBLAS matrices requires extra
+ *  memory and an additional memory copy as the cuBLAS inversion function is
  *  out-of-place.
  *
  *  A = A**-1 (in-place)
@@ -395,7 +395,7 @@ using LinAlg::Utilities::check_gpu_handles;
  *                    Matrix in LU decomposition.
  *
  *  \param[in]        ipiv
- *                    ipiv is A.rows()*1 matrix (a vector). The CUBLAS backend
+ *                    ipiv is A.rows()*1 matrix (a vector). The cuBLAS backend
  *                    allows specifying an empty matrix for ipiv, assuming that
  *                    the input is a non-pivoting LU decomposition (see xGETRF).
  *
@@ -403,7 +403,7 @@ using LinAlg::Utilities::check_gpu_handles;
  *                    For the matrices in main memory work is a vector of 
  *                    length at least A.rows(). The optimal length can be 
  *                    determined using LAPACK's ILAENV. Some backends (e.g.  
- *                    the CUBLAS backend) don't require a preallocated work in 
+ *                    the cuBLAS backend) don't require a preallocated work in 
  *                    which case the supplied vector is ignored. If the 
  *                    backend does require a preallocated work and none or an 
  *                    empty one is specified, the routine will allocate one of 
@@ -421,13 +421,13 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
     throw excBadArgument("xGETRI(A, ipiv, work), A: matrix must be square");
   }
 
-  // Check if ipiv is empty _and_ we use the CUBLAS backend
+  // Check if ipiv is empty _and_ we use the cuBLAS backend
 #ifdef HAVE_CUDA
 #ifndef USE_MAGMA_GETRI
   if (ipiv.is_empty() && A._location != Location::GPU) {
     throw excBadArgument("xGETRI(A, ipiv, work), ipiv: empty ipiv is only "
                          "allowed when inverting matrices on the GPU and using "
-                         "the CUBLAS backend");
+                         "the cuBLAS backend");
   }
 #else
   if (ipiv.is_empty() && A._location == Location::GPU) {
@@ -528,7 +528,7 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
 # endif
 
 # ifndef USE_MAGMA_GETRI
-    // CUBLAS' getri is out-of-place so we need to allocate a C and then stream
+    // cuBLAS' getri is out-of-place so we need to allocate a C and then stream
     // it back into A after the operation
 
     Dense<T> C(A._rows, A._cols, A._location, A._device_id);
@@ -538,8 +538,8 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
     auto ldc = C._leading_dimension;
     auto ipiv_ptr = (ipiv.is_empty()) ? nullptr : ipiv._begin();
 
-    using LinAlg::CUDA::CUBLAS::handles;
-    CUBLAS::xGETRI(handles[device_id], n, A_ptr, lda, ipiv_ptr, C_ptr, ldc,
+    using LinAlg::CUDA::cuBLAS::handles;
+    cuBLAS::xGETRI(handles[device_id], n, A_ptr, lda, ipiv_ptr, C_ptr, ldc,
                    &info);
 
     A << C;
@@ -593,7 +593,7 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
  *                    Matrix in LU decomposition.
  *
  *  \param[in]        ipiv
- *                    ipiv is A.rows()*1 matrix (a vector). The CUBLAS backend
+ *                    ipiv is A.rows()*1 matrix (a vector). The cuBLAS backend
  *                    allows specifying an empty matrix for ipiv, assuming that
  *                    the input is a non-pivoting LU decomposition (see xGETRF).
  */
@@ -610,7 +610,7 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv) {
 /** \brief            Compute the inverse using the LU decomposition of a
  *                    matrix out-of-place
  *
- *  \note             This function is provided to suit the CUBLAS
+ *  \note             This function is provided to suit the cuBLAS
  *                    implementation of an out-of-place inversion. An 
  *                    out-of-place inversion of matrices in main memory
  *                    or using the MAGMA getri() implementation requires extra 
@@ -623,7 +623,7 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv) {
  *                    Matrix in LU decomposition.
  *
  *  \param[in]        ipiv
- *                    ipiv is A.rows()*1 matrix (a vector). The CUBLAS backend
+ *                    ipiv is A.rows()*1 matrix (a vector). The cuBLAS backend
  *                    allows specifying an empty matrix for ipiv, assuming that
  *                    the input is a non-pivoting LU decomposition (see xGETRF).
  *
@@ -631,7 +631,7 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv) {
  *                    For the matrices in main memory \<work\> is a vector of 
  *                    length at least A.rows(). The optimal length can be 
  *                    determined using LAPACK's ILAENV. Some backends (e.g.  
- *                    the CUBLAS backend) don't require a preallocated work in 
+ *                    the cuBLAS backend) don't require a preallocated work in 
  *                    which case the supplied vector is ignored. If the 
  *                    backend does require a preallocated work and none or an 
  *                    empty one is specified, the routine will allocate one of 
@@ -669,7 +669,7 @@ inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
     throw excBadArgument("xGETRI(A, ipiv, work), A: matrix must be square");
   }
 
-  // Check if ipiv is empty _and_ we use the CUBLAS backend
+  // Check if ipiv is empty _and_ we use the cuBLAS backend
 #ifdef HAVE_CUDA
 #ifndef USE_MAGMA_GETRI
   if (ipiv.is_empty() && A._location != Location::GPU) {
@@ -783,7 +783,7 @@ inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
     auto ldc      = C._leading_dimension;
     int  info     = 0;
 
-    CUBLAS::xGETRI(LinAlg::CUDA::CUBLAS::handles[device_id], n, A_ptr, lda,
+    cuBLAS::xGETRI(LinAlg::CUDA::cuBLAS::handles[device_id], n, A_ptr, lda,
                    ipiv_ptr, C_ptr, ldc, &info);
 
 #else /* USE_MAGMA_GETRI */
@@ -851,7 +851,7 @@ inline void xGETRI_oop(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work,
  *                    Matrix in non-pivoted LU decomposition.
  *
  *  \param[in]        ipiv
- *                    ipiv is A.rows()*1 matrix (a vector). The CUBLAS backend
+ *                    ipiv is A.rows()*1 matrix (a vector). The cuBLAS backend
  *                    allows specifying an empty matrix for ipiv, assuming that
  *                    the input is a non-pivoting LU decomposition (see xGETRF).
  *

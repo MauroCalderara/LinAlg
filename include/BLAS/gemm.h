@@ -225,7 +225,7 @@ inline void xGEMM(char transa, char transb, int m, int n, int k, Z_t alpha,
 #endif /* HAVE_MKL */
 
 #ifdef HAVE_CUDA
-namespace CUBLAS {
+namespace cuBLAS {
 
 /** \brief            General matrix-matrix multiply
  *
@@ -259,7 +259,7 @@ namespace CUBLAS {
  *
  *  \param[in]        ldc
  *
- *  See [CUBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
+ *  See [cuBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
  */
 inline void xGEMM(cublasHandle_t handle, cublasOperation_t transa,
                   cublasOperation_t transb, I_t m, I_t n, I_t k,
@@ -318,14 +318,14 @@ inline void xGEMM(cublasHandle_t handle, cublasOperation_t transa,
 
 }
 
-} /* namespace LinAlg::BLAS::CUBLAS */
+} /* namespace LinAlg::BLAS::cuBLAS */
 #endif /* HAVE_CUDA */
 
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_output_transposed;
 #ifdef HAVE_CUDA
 using LinAlg::Utilities::check_gpu_handles;
-using LinAlg::CUDA::CUBLAS::handles;
+using LinAlg::CUDA::cuBLAS::handles;
 #endif
 
 // Convenience bindings (bindings for Dense<T>)
@@ -390,7 +390,7 @@ inline void xGEMM(const T alpha, const Dense<T>& A, const Dense<T>& B,
 
     cublasOperation_t transa = (A._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
     cublasOperation_t transb = (B._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
-    CUBLAS::xGEMM(handles[device_id], transa, transb, m, n, k, &alpha, A_ptr,
+    cuBLAS::xGEMM(handles[device_id], transa, transb, m, n, k, &alpha, A_ptr,
                   lda,  B_ptr, ldb, &beta, C_ptr, ldc);
   }
 #endif
@@ -508,7 +508,7 @@ inline void xGEMM(const T alpha, const Dense<T>& A, const Dense<U>& B,
   else if (location == Location::GPU) {
     cublasOperation_t transa = (A._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
     cublasOperation_t transb = (B._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
-    CUBLAS::xGEMM(handles[device_id], transa, transb, m, n, k, &alpha, A_ptr,
+    cuBLAS::xGEMM(handles[device_id], transa, transb, m, n, k, &alpha, A_ptr,
                   lda,  B_ptr, ldb, &beta, C_ptr, ldc);
   }
 #endif

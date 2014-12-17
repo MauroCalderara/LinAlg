@@ -468,7 +468,7 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
 
   else if (src_location == Location::GPU && dst_location == Location::GPU) {
 
-    using LinAlg::BLAS::CUBLAS::xGEAM;
+    using LinAlg::BLAS::cuBLAS::xGEAM;
   
     // Transfer within GPU
 
@@ -585,6 +585,71 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
 #endif
 
 }
+
+/** \brief              Asynchronous 2D array copy
+ *
+ *  This function asynchronously copies matrices from raw pointers.
+ *
+ *  \param[in]          transpose
+ *                      Whether to transpose the source matrix while copying.
+ *
+ *  \param[in]          src_format
+ *                      Format of the input array
+ *
+ *  \param[in]          src_array
+ *                      Source array for the 2D copy
+ *
+ *  \param[in]          src_ld
+ *                      Leading dimension of input array (distance in memory of
+ *                      the first elements of two consecutive columns for
+ *                      ColMajor arrays or first elements of two consecutive
+ *                      rows for RowMajor).
+ *
+ *  \param[in]          src_location
+ *                      Location of the input array.
+ *
+ *  \param[in]          src_device_id
+ *                      Device id of the input array.
+ *
+ *  \param[in]          rows
+ *                      The number of rows in the source 2D array.
+ *
+ *  \param[in]          cols
+ *                      The number of columns in the source 2D array.
+ *
+ *  \param[in]          dst_format
+ *                      The format of the output array.
+ *
+ *  \param[in,out]      dst_array
+ *                      Destination array for the 2D copy.
+ *
+ *  \param[in]          dst_ld
+ *                      Leading dimension of the output array (see src_ld for
+ *                      further details)
+ *
+ *  \param[in]          dst_location
+ *                      Location of the output array.
+ *
+ *  \param[in]          dst_device_id
+ *                      Device id of the output array.
+ */
+/*
+template <typename T>
+void copy_2Darray_async(bool transpose, Format src_format, const T* src_array,
+                        I_t src_ld, Location src_location, int src_device_id,
+                        I_t rows, I_t cols, Format dst_format, T* dst_array,
+                        I_t dst_ld, Location dst_location, int dst_device_id) {
+
+  // Idea:
+  // 
+  // - For the host routines that by default don't support asynchronous calls,
+  //   create a data bundle and call copy_2Darray with that
+  // - For the GPU routines that do support asynchronous calls, move all code 
+  //   here and have the synchronous variant call the async variant with the 
+  //   default/synchronous stream as argument
+
+}
+*/
 
 } /* namespace LinAlg::Utilities */
 

@@ -121,7 +121,7 @@ inline void add(T alpha, Dense<T>& A, Dense<T>& B) {
 #ifdef HAVE_CUDA
   else if (A._location == Location::GPU) {
   
-    // B = alpha * A + 1.0 * B (see CUBLAS GEAM documentation under 'in-place 
+    // B = alpha * A + 1.0 * B (see cuBLAS GEAM documentation under 'in-place 
     // mode')
     BLAS::xGEAM(alpha, A, cast<T>(1.0), B, B);
   
@@ -187,7 +187,11 @@ inline void multiply(const T alpha, const Dense<T>& A, const Dense<T>& B,
 
   PROFILING_FUNCTION_HEADER
 
+  Utilities::Timer gemm_timer("xGEMM");
+
   BLAS::xGEMM(alpha, A, B, beta, C);
+
+  gemm_timer.toc();
 
 }
 
@@ -216,7 +220,7 @@ inline void solve(Dense<T>& A, Dense<T>& B) {
   // Note:
   //  - for the LAPACK and MAGMA GESV backends we need a pivot vector that is
   //    allocated on the CPU
-  //  - for the CUBLAS (GETRF + 2*TRSM) implementation the pivot vector is
+  //  - for the cuBLAS (GETRF + 2*TRSM) implementation the pivot vector is
   //    ignored
 
   PROFILING_FUNCTION_HEADER
@@ -247,7 +251,11 @@ inline void solve(Dense<T>& A, Dense<I_t>& pivot, Dense<T>& B) {
 
   PROFILING_FUNCTION_HEADER
 
+  Utilities::Timer gesv_timer("xGESV");
+
   LAPACK::xGESV(A, pivot, B);
+
+  gesv_timer.toc();
 
 }
 
@@ -284,7 +292,7 @@ inline void invert(Dense<T>& A) {
   Dense<T>   work;
 
   // We assume that pivoting factorization is faster for all backends 
-  // (including those that support non-pivoting factorization like CUBLAS)
+  // (including those that support non-pivoting factorization like cuBLAS)
   LAPACK::xGETRF(A, pivot);
   LAPACK::xGETRI(A, pivot, work);
 
@@ -312,7 +320,7 @@ inline void invert(Dense<T>& A, Dense<int>& pivot) {
   Dense<T>   work;
 
   // We assume that pivoting factorization is faster for all backends 
-  // (including those that support non-pivoting factorization like CUBLAS)
+  // (including those that support non-pivoting factorization like cuBLAS)
   LAPACK::xGETRF(A, pivot);
   LAPACK::xGETRI(A, pivot, work);
 
@@ -375,7 +383,7 @@ inline void invert(Dense<T>& A, Dense<T>& C) {
  *  \note             This function is more efficient than the one without the
  *                    pivoting argument when being invoked multiple times as 
  *                    the pivot vector is only allocated and deallocated once.
- *                    Out-of-place inversions are fast when using the CUBLAS 
+ *                    Out-of-place inversions are fast when using the cuBLAS 
  *                    backend and generally slow otherwise.
  */
 template <typename T>

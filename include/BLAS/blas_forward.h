@@ -22,7 +22,7 @@ namespace LinAlg {
 namespace BLAS {
 
 #ifdef HAVE_CUDA
-namespace CUBLAS {
+namespace cuBLAS {
 
 #ifndef DOXYGEN_SKIP
 inline void xGEAM(int, cublasOperation_t, cublasOperation_t, I_t, I_t,
@@ -39,7 +39,7 @@ inline void xGEAM(int, cublasOperation_t, cublasOperation_t, I_t, I_t,
                   I_t);
 #endif
 
-} /* namespace LinAlg::BLAS::CUBLAS */
+} /* namespace LinAlg::BLAS::cuBLAS */
 #endif /* HAVE_CUDA */
 
 } /* namespace LinAlg::BLAS */

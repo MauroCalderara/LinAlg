@@ -283,9 +283,9 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
 # endif
 
 # ifndef USE_MAGMA_GESV
-    // When using the CUBLAS variant, we basically do xGESV by hand.
+    // When using the cuBLAS variant, we basically do xGESV by hand.
 
-    using LinAlg::CUDA::CUBLAS::handles;
+    using LinAlg::CUDA::cuBLAS::handles;
 
 #   ifndef LINALG_NO_CHECKS
     // Note that the MAGMA GETRF would support non-square matrices
@@ -295,31 +295,31 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
     }
 #   endif
 
-    auto handle        = CUDA::CUBLAS::handles[A._device_id];
+    auto handle        = CUDA::cuBLAS::handles[A._device_id];
     auto ipiv_override = nullptr;
 
     // LU decompose using xGETRF without pivoting (use ipiv_override == empty
     // vector to enforce no pivoting. cudaXtrsm doesn't support pivoting, 
-    // there is no xLASWP in CUBLAS, respectively)
+    // there is no xLASWP in cuBLAS, respectively)
 
     // TODO: this call here doesn't work
-    LAPACK::CUBLAS::xGETRF(handle, n, A_ptr, lda, ipiv_override, info);
+    LAPACK::cuBLAS::xGETRF(handle, n, A_ptr, lda, ipiv_override, info);
 
 #   ifndef LINALG_NO_CHECKS
     if (info != 0) {
-      throw excMath("xGESV() (using CUBLAS::GETRF + CUBLAS::TRSM): unable to "
-                    "LU decompose A (CUBLAS::xGETRF(): backend error = %d)", 
+      throw excMath("xGESV() (using cuBLAS::GETRF + cuBLAS::TRSM): unable to "
+                    "LU decompose A (cuBLAS::xGETRF(): backend error = %d)", 
                     info);
     }
 #   endif
 
     // Directly solve using xTRSM (no xLASWP since we didn't pivot):
     // 1: y = L\b
-    BLAS::CUBLAS::xTRSM(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
+    BLAS::cuBLAS::xTRSM(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
                         CUBLAS_OP_N, CUBLAS_DIAG_UNIT, n, nrhs, cast<T>(1.0),
                         A_ptr, lda, B_ptr, ldb);
     // 2: x = U\y
-    BLAS::CUBLAS::xTRSM(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_UPPER,
+    BLAS::cuBLAS::xTRSM(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_UPPER,
                         CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, n, nrhs,
                         cast<T>(1.0), A_ptr, lda, B_ptr, ldb);
 

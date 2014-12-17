@@ -1,6 +1,6 @@
 /** \file
  *
- *  \brief            The global CUBLAS handle vector
+ *  \brief            The global cuBLAS handle vector
  *
  *  \date             Created:  Jan 16, 2014
  *  \date             Modified: $Date$
@@ -19,12 +19,12 @@ namespace LinAlg {
 
 namespace CUDA {
 
-namespace CUBLAS {
+namespace cuBLAS {
 
 // The vector of handles (extern in cuda_cublas.h)
 std::vector<cublasHandle_t> handles;
 
-} /* namespace LinAlg::CUDA::CUBLAS */
+} /* namespace LinAlg::CUDA::cuBLAS */
 
 } /* namespace LinAlg::CUDA */
 

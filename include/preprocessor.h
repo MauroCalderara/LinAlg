@@ -83,19 +83,19 @@
 
 // USE_MAGMA_GESV
 //
-//    Use Magma's GESV routine instead of one 'built' by CUBLAS parts
+//    Use Magma's GESV routine instead of one 'built' by cuBLAS parts
 
 // USE_MAGMA_GETRF
 //
-//    Use Magma's GETRF routine instead of the CUBLAS version
+//    Use Magma's GETRF routine instead of the cuBLAS version
 
 // USE_MAGMA_GETRI
 //
-//    Use Magma's GETRI routine instead of the CUBLAS version
+//    Use Magma's GETRI routine instead of the cuBLAS version
 
 // USE_MAGMA_TRSM
 //
-//    Use Magma's TRSM routine instead of the CUBLAS version
+//    Use Magma's TRSM routine instead of the cuBLAS version
 
 // BUFFER_HELPER_DISPLAY
 //
