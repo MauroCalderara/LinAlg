@@ -283,6 +283,22 @@ class excMath : public excLinAlg {
 # endif
 };
 
+/** \exception        excUserError
+ *
+ *  \brief            Exception to signal a library usage error
+ */
+class excUserError : public excLinAlg {
+# ifndef DOXYGEN_SKIP
+ public:
+  template <typename... Ts>
+  excUserError(const char* userfmtstr, Ts... args)
+                 : excLinAlg(userfmtstr, args...) {}
+  excUserError(const char* userstring) : excLinAlg(userstring) {}
+  excUserError(std::string string) : excLinAlg(string) {}
+  const char* prefix() const { return "LinAlg User error - "; }
+# endif
+};
+
 # ifdef HAVE_CUDA
 namespace CUDA {
 
@@ -306,7 +322,7 @@ class excCUDAError : public excLinAlg {
 /** \exception        excCUBLASError
  *
  *  \brief            Exception to signal that there was an error while
- *                    executing a CUBLAS routine.
+ *                    executing a cuBLAS routine.
  */
 class excCUBLASError : public excLinAlg {
 # ifndef DOXYGEN_SKIP
@@ -316,7 +332,7 @@ class excCUBLASError : public excLinAlg {
                : excLinAlg(userfmtstr, args...) {}
   excCUBLASError(const char* userstring) : excLinAlg(userstring) {}
   excCUBLASError(std::string string) : excLinAlg(string) {}
-  const char* prefix() const { return "LinAlg CUBLAS error - "; }
+  const char* prefix() const { return "LinAlg cuBLAS error - "; }
 # endif
 };
 

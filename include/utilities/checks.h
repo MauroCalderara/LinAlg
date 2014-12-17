@@ -17,6 +17,8 @@
 #include "../types.h"
 #include "../exceptions.h"
 #include "../streams.h"
+#include "../dense.h"
+#include "../sparse.h"
 #include "stringformat.h"
 
 #ifdef HAVE_CUDA
@@ -43,7 +45,23 @@ namespace Utilities {
  *                    Name of the calling routine
  */
 template <typename T, typename U>
-inline void check_device(Dense<T>& A, Dense<U>& B, const char* caller_name) {
+inline void check_device(const Dense<T>& A, const Dense<U>& B,
+                         const char* caller_name) {
+
+  if (A._location != B._location || A._device_id != B._device_id) {
+
+    std::string message = caller_name;
+    message = message + ": argument matrices not on the same device";
+    throw excBadArgument(message);
+
+  }
+
+}
+/*  \overload
+ */
+template <typename T, typename U>
+inline void check_device(const Sparse<T>& A, const Dense<U>& B,
+                         const char* caller_name) {
 
   if (A._location != B._location || A._device_id != B._device_id) {
 
@@ -71,8 +89,8 @@ inline void check_device(Dense<T>& A, Dense<U>& B, const char* caller_name) {
  *                    Name of the calling routine
  */
 template <typename T, typename U, typename V>
-inline void check_device(const Dense<T>& A, const Dense<U>& B, Dense<V>& C,
-                         const char* caller_name) {
+inline void check_device(const Dense<T>& A, const Dense<U>& B,
+                         const Dense<V>& C, const char* caller_name) {
 
   if (A._location != B._location || A._location != C._location ||
       A._device_id != B._device_id || A._device_id != C._device_id) {
@@ -97,7 +115,22 @@ inline void check_device(const Dense<T>& A, const Dense<U>& B, Dense<V>& C,
  *                    Name of the calling routine
  */
 template <typename T>
-inline void check_input_transposed(Dense<T>& A, const char* caller_name) {
+inline void check_input_transposed(const Dense<T>& A, const char* caller_name) {
+
+  if (A._transposed) {
+
+    std::string message = caller_name;
+    message = message + ": transposed matrices are not supported as input";
+    throw excBadArgument(message);
+
+  }
+
+}
+/*  \overload
+ */
+template <typename T>
+inline void check_input_transposed(const Sparse<T>& A,
+                                   const char* caller_name) {
 
   if (A._transposed) {
 
@@ -119,7 +152,8 @@ inline void check_input_transposed(Dense<T>& A, const char* caller_name) {
  *                    Name of the calling routine
  */
 template <typename T>
-inline void check_output_transposed(Dense<T>& A, const char* caller_name) {
+inline void check_output_transposed(const Dense<T>& A,
+                                    const char* caller_name) {
 
   if (A._transposed) {
 
@@ -145,7 +179,7 @@ inline void check_output_transposed(Dense<T>& A, const char* caller_name) {
  *                    Name of the calling routine
  */
 template <typename T>
-inline void check_stream(Dense<T>& A, CUDAStream& stream,
+inline void check_stream(const Dense<T>& A, const CUDAStream& stream,
                          const char* caller_name) {
 
   if (A._device_id != stream.device_id) {
@@ -156,6 +190,7 @@ inline void check_stream(Dense<T>& A, CUDAStream& stream,
     throw excBadArgument(message);
 
   }
+
 }
 
 /*  \brief            Checks if the cublas handles are initialized, raises an 
@@ -170,12 +205,12 @@ inline void check_gpu_handles(const char* caller_name) {
 
     std::string message = caller_name;
 #     ifdef HAVE_MAGMA
-    message = message + ": CUBLAS/CUSPARSE/MAGMA handles are not initialized, "
+    message = message + ": cuBLAS/cuSPARSE/MAGMA handles are not initialized, "
               "call LinAlg::GPU::init() before calling any "
-              "CUBLAS/CUSPARSE/MAGMA routines";
+              "cuBLAS/cuSPARSE/MAGMA routines";
 #     else
-    message = message + ": CUBLAS/CUSPARSE handles are not initialized, call "
-              "LinAlg::GPU::init() before calling any CUBLAS/CUSPARSE "
+    message = message + ": cuBLAS/cuSPARSE handles are not initialized, call "
+              "LinAlg::GPU::init() before calling any cuBLAS/cuSPARSE "
               "routines";
 #     endif
   
@@ -199,7 +234,8 @@ inline void check_gpu_handles(const char* caller_name) {
  *                    Name of the calling routine
  */
 template <typename T>
-inline void check_format(Format format, Dense<T>& A, const char* caller_name) {
+inline void check_format(const Format format, const Dense<T>& A,
+                         const char* caller_name) {
 
   if (A._format != format) {
 
@@ -212,6 +248,31 @@ inline void check_format(Format format, Dense<T>& A, const char* caller_name) {
     } else if (format == Format::RowMajor) {
 
       message = message + ": input matrix not in RowMajor format.";
+
+    }
+
+    throw excBadArgument(message);
+
+  }
+
+}
+/** \overload
+ */
+template <typename T>
+inline void check_format(Format format, const Sparse<T>& A,
+                         const char* caller_name) {
+
+  if (A._format != format) {
+
+    std::string message = caller_name;
+
+    if (format == Format::CSR) {
+
+      message = message + ": input matrix not in CSR format.";
+
+    } else if (format == Format::CSC) {
+
+      message = message + ": input matrix not in CSC format.";
 
     }
 
@@ -237,7 +298,7 @@ inline void check_format(Format format, Dense<T>& A, const char* caller_name) {
  *                    Name of the calling routine.
  */
 template <typename T>
-inline void check_dimensions(I_t rows, I_t columns, Dense<T>& A,
+inline void check_dimensions(I_t rows, I_t columns, const Dense<T>& A,
                              const char* caller_name) {
 
   if (A.rows() != rows || A.cols() != columns) {
@@ -245,6 +306,33 @@ inline void check_dimensions(I_t rows, I_t columns, Dense<T>& A,
     auto message = stringformat("%s: matrix has wrong dimensions: is %dx%d, "
                                 "should be %dx%d)", caller_name, A.rows(),
                                 A.cols(), rows, columns);
+
+    throw excBadArgument(message);
+
+  }
+
+}
+/* \overload
+ */
+template <typename T>
+inline void check_dimensions(I_t rows, I_t columns, const Sparse<T>& A,
+                             const char* caller_name) {
+
+  if (A._minimal_index == 0 && A._maximal_index == 0) {
+  
+    throw excBadArgument("check_dimensions(): sparse matrix has undefined "
+                         "extent, call .update_extent() first");
+  
+  }
+
+  auto A_rows = A.rows();
+  auto A_cols = A.cols();
+
+  if (A_rows != rows || A_cols != columns) {
+
+    auto message = stringformat("%s: matrix has wrong dimensions: is %dx%d, "
+                                "should be %dx%d)", caller_name, A_rows,
+                                A_cols, rows, columns);
 
     throw excBadArgument(message);
 
@@ -268,7 +356,7 @@ inline void check_dimensions(I_t rows, I_t columns, Dense<T>& A,
  *                    Name of the calling routine.
  */
 template <typename T>
-inline void check_minimal_dimensions(I_t rows, I_t columns, Dense<T>& A,
+inline void check_minimal_dimensions(I_t rows, I_t columns, const Dense<T>& A,
                                      const char* caller_name) {
 
   if (A.rows() < rows || A.cols() < columns) {
@@ -296,7 +384,7 @@ inline void check_minimal_dimensions(I_t rows, I_t columns, Dense<T>& A,
  *                    Name of the calling routine.
  */
 template <typename T, typename U>
-inline void check_same_dimensions(Dense<T>& A, Dense<U>& B,
+inline void check_same_dimensions(const Dense<T>& A, const Dense<U>& B,
                                   const char* caller_name) {
 
   if (A.rows() != B.rows() || A.cols() != B.cols()) {
@@ -304,6 +392,24 @@ inline void check_same_dimensions(Dense<T>& A, Dense<U>& B,
     auto message = stringformat("%s: matrices have different dimensions (%dx%d "
                                 "and %dx%d)", caller_name, A.rows(), A.cols(), 
                                 B.rows(), B.cols());
+
+    throw excBadArgument(message);
+
+  }
+
+}
+/** \overload
+ */
+template <typename T, typename U>
+inline void check_same_dimensions(const Sparse<T>& A, const Sparse<U>& B,
+                                  const char* caller_name) {
+
+  if (A._n_nonzeros != B._n_nonzeros || A._size != B._size) {
+
+    auto message = stringformat("%s: matrices have different dimensions (A: "
+                                "nnz=%d, size=%d / B: nnz=%d, size=%d)", 
+                                caller_name, A._n_nonzeros, A._size, 
+                                B._n_nonzeros, B._size);
 
     throw excBadArgument(message);
 

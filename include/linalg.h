@@ -21,6 +21,7 @@
 #include "matrix.h"
 #include "dense.h"
 #include "sparse.h"
+#include "copy.h"
 #include "abstract.h"
 #include "metadata.h"
 

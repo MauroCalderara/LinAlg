@@ -15,6 +15,8 @@
 #include <memory>     // std::shared_ptr
 #include <iostream>   // std::cout
 #include <iomanip>    // std::setw
+#include <tuple>      // std::tie
+#include <cassert>    // assert
 
 #include "preprocessor.h"
 
@@ -22,7 +24,6 @@
 # include <cuda_runtime.h>       // various CUDA routines
 # include <functional>           // std::bind
 # include "CUDA/cuda_memory_allocation.h" // CUDA::cuda_make_shared
-                                         // CUDA::cuda_deallocate
 #endif
 
 #include "types.h"
@@ -32,8 +33,7 @@
 
 // Forward declaration of routines that are used in the constructors and
 // templated members of Dense<T>
-#include "utilities/utilities_forward.h"
-#include "BLAS/blas_forward.h"
+#include "forward.h"
 
 namespace LinAlg {
 
@@ -71,21 +71,20 @@ struct Dense : Matrix {
 
   // Submatrix creation (from dense)
   Dense(const Dense<T>& source, SubBlock sub_block);
-  Dense(const Dense<T>& source, IJ start, IJ stop);
   Dense(const Dense<T>& source, I_t first_row, I_t last_row, I_t first_col,
         I_t last_col);
 
   // Submatrix creation from ()-operator
   inline Dense<T> operator()(SubBlock sub_block);
-  inline Dense<T> operator()(IJ start, IJ stop);
   inline Dense<T> operator()(I_t first_row, I_t last_row, I_t first_col,
                              I_t last_col);
+
+  // Common Matrix operations
 
   // Explicitly clone
   inline void clone_from(const Dense<T>& source);
   // Explicit cloning as submatrix
   inline void clone_from(const Dense<T>& source, SubBlock sub_block);
-  inline void clone_from(const Dense<T>& source, IJ start, IJ stop);
   inline void clone_from(const Dense<T>& source, I_t first_row, I_t last_row,
                          I_t first_col, I_t last_col);
 
@@ -95,28 +94,44 @@ struct Dense : Matrix {
   // Allocate new memory (no memory is copied)
   inline void reallocate(I_t rows, I_t cols, Location location = Location::host,
                          int device_id = 0);
+
   // Allocate new memory according to the size of another matrix (no memory is 
   // copied)
   template <typename U>
-  inline void reallocate_like(Dense<U>& other);
+  inline void reallocate_like(const U& other, SubBlock sub_block,
+                              Location location, int device_id = 0);
   template <typename U>
-  inline void reallocate_like(Dense<U>& other, Location location,
-                              int device_id);
+  inline void reallocate_like(const U& other, Location location, int device_id);
+  template <typename U>
+  inline void reallocate_like(const U& other);
 
-  // Data copy from one (sub)matrix to another
+  // Data copy from one (sub)matrix to the current instance
+  inline void copy_from(const Dense<T>& source, SubBlock sub_block);
+  inline void copy_from(const Sparse<T>& source, SubBlock sub_block);
+  inline void copy_from(const Dense<T>& source, I_t first_row, I_t last_row,
+                        I_t first_col, I_t last_col);
+  inline void copy_from(const Sparse<T>& source, I_t first_row, I_t last_row,
+                        I_t first_col, I_t last_col);
+  inline void copy_from(const Dense<T>& source);
+  inline void copy_from(const Sparse<T>& source);
   inline void operator<<(const Dense<T>& source);
+  inline void operator<<(const Sparse<T>& source);
+
+  // Provide asynchronous variants of the above as well
+
+  /// Mark the matrix as transposed
+  inline void transpose() { _transposed = !_transposed; }
 
   /// Return the number of rows in the matrix
   inline I_t rows() const { return (_transposed ? _cols : _rows); }
   /// Return the number of columns in the matrix
   inline I_t cols() const { return (_transposed ? _rows : _cols); }
-  /// Mark the matrix as transposed
-  inline void transpose() { _transposed = !_transposed; }
 
   /// Return the current location of the matrix
   inline Location location() const { return _location; }
   void location(Location new_location, int device_id = 0);
 
+  // Free all memory, set the matrix to empty
   void unlink();
 
   /// Return the storage format
@@ -411,30 +426,6 @@ Dense<T>::Dense(const Dense<T>& source, SubBlock sub_block)
  *                    The matrix from which to construct the new dense
  *                    matrix.
  *
- *  \param[in]        start
- *                    Point to mark the upper left corner of the submatrix 
- *                    (included, c-numbering).
- *
- *  \param[in]        stop
- *                    Point to mark the lower right corner of the submatrix 
- *                    (excluded, c-numbering).
- */
-template <typename T>
-Dense<T>::Dense(const Dense<T>& source, IJ start, IJ stop)
-              : Dense(source, SubBlock(start, stop)) {
-}
-
-/** \brief            Submatrix constructor
- *
- *  Create a submatrix from an existing matrix.
- *  For construction from dense matrices no memory is copied and the ownership
- *  of the memory of the source matrix is shared with the source and all other
- *  submatrices.
- *
- *  \param[in]        source
- *                    The matrix from which to construct the new dense
- *                    matrix.
- *
  *  \param[in]        first_row
  *                    The first row of the source matrix which is part of
  *                    the submatrix (i.e. inclusive).
@@ -469,25 +460,6 @@ template <typename T>
 inline Dense<T> Dense<T>::operator()(SubBlock sub_block) {
 
   return Dense<T>(*this, sub_block);
-
-}
-
-/** \brief            Submatrix creation
- *
- *  \param[in]        start
- *                    Point to mark the upper left corner of the submatrix 
- *                    (included, c-numbering).
- *
- *  \param[in]        stop
- *                    Point to mark the lower right corner of the submatrix 
- *                    (excluded, c-numbering).
- *
- *  \returns          A submatrix with the given coordinates
- */
-template <typename T>
-inline Dense<T> Dense<T>::operator()(IJ start, IJ stop) {
-
-  return Dense<T>(*this, SubBlock(start, stop));
 
 }
 
@@ -577,28 +549,6 @@ inline void Dense<T>::clone_from(const Dense<T>& source, SubBlock sub_block) {
 
 }
 
-/** \brief            Cloning from an existing matrix
- *
- *  Applies the parameters of another instance \<source\> to the left hand 
- *  instance. No memory is copied.
- *
- *  \param[in]        source
- *                    The matrix to clone from.
- *
- *  \param[in]        start
- *                    Point to mark the upper left corner of the submatrix 
- *                    (included, c-numbering).
- *
- *  \param[in]        stop
- *                    Point to mark the lower right corner of the submatrix 
- *                    (excluded, c-numbering).
- */
-template <typename T>
-inline void Dense<T>::clone_from(const Dense<T>& source, IJ start, IJ stop) {
-
-  clone_from(source, SubBlock(start, stop));
-
-}
 
 /** \brief            Cloning from an existing matrix
  *
@@ -741,9 +691,12 @@ inline void Dense<T>::reallocate(I_t rows, I_t cols, Location location,
  *                    transposition status and optionally the same location as 
  *                    a given matrix
  *
- *  \param[in]        matrix
+ *  \param[in]        other
  *                    Other matrix whose size and transposition status will be 
  *                    used for this allocation.
+ *
+ *  \param[in]        sub_block
+ *                    OPTIONAL: Sub matrix specification for 'other'
  *
  *  \param[in]        location
  *                    OPTIONAL: Memory / device on which to allocate the
@@ -756,30 +709,122 @@ inline void Dense<T>::reallocate(I_t rows, I_t cols, Location location,
  */
 template <typename T>
 template <typename U>
-inline void Dense<T>::reallocate_like(Dense<U>& other) {
+inline void Dense<T>::reallocate_like(const U& other, SubBlock sub_block, 
+                                      Location location, int device_id) {
 
-  PROFILING_FUNCTION_HEADER
-
-  reallocate(other._rows, other._cols, other._location, other._device_id);
-  _transposed = other._transposed;
+  Utilities::reallocate_like(*this, other, sub_block, location, device_id);
 
 }
 /** \overload
  */
 template <typename T>
 template <typename U>
-inline void Dense<T>::reallocate_like(Dense<U>& other, Location location,
+inline void Dense<T>::reallocate_like(const U& other, Location location,
                                       int device_id) {
 
-  PROFILING_FUNCTION_HEADER
+  Utilities::reallocate_like(*this, other, location, device_id);
 
-  reallocate(other._rows, other._cols, location, device_id);
-  _transposed = other._transposed;
+}
+/** \overload
+ */
+template <typename T>
+template <typename U>
+inline void Dense<T>::reallocate_like(const U& other) {
+
+  Utilities::reallocate_like(*this, other);
 
 }
 
-/** \brief              Data copy operator, copies values from one (sub)matrix
- *                      to another (sub)matrix.
+
+/** \brief            Copies data from a (sub)matrix into the current matrix
+ *
+ *  \param[in]        source
+ *                    The matrix from which to copy the data.
+ *
+ *  \param[in]        sub_block
+ *                    Submatrix specification (C-style indexing).
+ *
+ *  \note             This function copies memory
+ */
+template <typename T>
+inline void Dense<T>::copy_from(const Dense<T>& source, SubBlock sub_block) {
+
+  PROFILING_FUNCTION_HEADER
+
+  copy(source, sub_block, *this);
+
+}
+/** \overload
+ */
+template <typename T>
+inline void Dense<T>::copy_from(const Sparse<T>& source, SubBlock sub_block) {
+
+  PROFILING_FUNCTION_HEADER
+
+  copy(source, sub_block, *this);
+
+}
+
+/** \brief            Copies data from a (sub)matrix into the current matrix
+ *
+ *  \param[in]        source
+ *                    The matrix from which to copy the data.
+ *
+ *  \param[in]        first_row
+ *                    The first row of the source matrix which is part of
+ *                    the submatrix (i.e. inclusive, C-style indexing).
+ *
+ *  \param[in]        last_row
+ *                    The first row of the source matrix which is not part
+ *                    of the submatrix (i.e. exclusive, C-style indexing).
+ *
+ *  \param[in]        first_col
+ *                    The first column of the source matrix which is part of
+ *                    the submatrix (i.e. inclusive, C-style indexing).
+ *
+ *  \param[in]        last_col
+ *                    The first column of the source matrix which is not
+ *                    part of the submatrix (i.e. exclusive, C-style indexing).
+ */
+template <typename T>
+inline void Dense<T>::copy_from(const Dense<T>& source, I_t first_row, 
+                                I_t last_row, I_t first_col, I_t last_col) {
+  copy_from(source, SubBlock(first_row, last_row, first_col, last_col));
+}
+/** \overload
+ */
+template <typename T>
+inline void Dense<T>::copy_from(const Sparse<T>& source, I_t first_row, 
+                                I_t last_row, I_t first_col, I_t last_col) {
+  copy_from(source, SubBlock(first_row, last_row, first_col, last_col));
+}
+
+/** \brief            Copies a matrix into the current matrix
+ *
+ *  \param[in]        source
+ *                    The matrix from which to copy the data.
+ */
+template <typename T>
+inline void Dense<T>::copy_from(const Dense<T>& source) {
+
+  PROFILING_FUNCTION_HEADER
+
+  copy(source, *this);
+
+}
+/** \overload
+ */
+template <typename T>
+inline void Dense<T>::copy_from(const Sparse<T>& source) {
+
+  PROFILING_FUNCTION_HEADER
+
+  copy(source, *this);
+
+}
+
+/** \brief              Data copy operator, copies values of one (sub)matrix
+ *                      to another matrix.
  *
  *  \param[in]          source
  *                      Right hand side of the operator, used as source of the
@@ -793,51 +838,17 @@ inline void Dense<T>::operator<<(const Dense<T>& source) {
 
   PROFILING_FUNCTION_HEADER
 
-#ifdef WARN_COPY
-  std::cout << "Warning: matrix data copy\n";
-#endif
+  copy(source, *this);
 
-#ifndef LINALG_NO_CHECKS
-  // Can't assign to transposed matrices
-  if (this->_transposed) {
-    throw excBadArgument("DenseA^t << DenseB: can't assign to transposed "
-                         "matrices");
-  }
-#endif
+}
+/** \overload
+ */
+template <typename T>
+inline void Dense<T>::operator<<(const Sparse<T>& source) {
 
-  // If both matrices are empty, this is a noop
-  if (source.is_empty() && this->is_empty()) {
-    return;
-  } else if (this->is_empty()) {
-    // If only 'this' is empty allocate memory accordingly
-    this->reallocate(source.rows(), source.cols(), source._location,
-                      source._device_id);
-  }
+  PROFILING_FUNCTION_HEADER
 
-#ifndef LINALG_NO_CHECKS
-  else if (source.rows() != this->rows() || source.cols() != this->cols()) {
-    throw excBadArgument("DenseA%s << DenseB%s: dimension mismatch",
-                         this->_transposed ? "^t" : " ",
-                         source._transposed ? "^t" : " ");
-  }
-
-  try {
-
-#endif
-    Utilities::copy_2Darray(source._transposed, source._format, source._begin(),
-                            source._leading_dimension, source._location,
-                            source._device_id, source._rows, source._cols,
-                            this->_format, this->_begin(),
-                            this->_leading_dimension, this->_location,
-                            this->_device_id);
-#ifndef LINALG_NO_CHECKS
-  } catch (excUnimplemented e) {
-
-    throw excUnimplemented("Dense.operator<<(): exception from copy_2Darray:  "
-                           " %s", e.what());
-
-  }
-#endif
+  copy(source, *this);
 
 }
 
@@ -854,47 +865,28 @@ void Dense<T>::location(Location new_location, int device_id) {
 
   PROFILING_FUNCTION_HEADER
 
-  if (new_location == Location::host) {
-    device_id = 0;
-  }
-
   if (new_location == _location) {
-    return;
+
+    if (new_location == Location::host) device_id = 0;
+    if (device_id == _device_id) return;
+
   }
 
-#ifndef LINALG_NO_CHECKS
-  else if ((new_location != Location::host) && (_location != Location::host)){
-
-    throw excUnimplemented("Dense.location(): Moves only to and from main "
-                           "memory supported. Try moving to main memory first "
-                           "and move to target from there.");
-    // The reason for this is that it is tedious to guarantee a consistent state
-    // in all cases. It is easier if the user handles potential failures.
-  }
-#endif
-
-  // The matrix is empty, we just update the meta data
   if (is_empty()) {
 
-    _location = new_location;
+    _location  = new_location;
     _device_id = device_id;
 
-    return;
+  } else {
+
+    Dense<T> tmp;
+    tmp._format = _format;
+    tmp.reallocate_like(*this, new_location, device_id);
+
+    copy(*this, tmp);
+    clone_from(tmp);
 
   }
-
-  // Create a temporary (just increases the pointer count in ._memory so we
-  // don't deallocate yet)
-  Dense<T> tmp;
-  tmp.clone_from(*this);
-
-  // Reallocate the memory on the target
-  this->reallocate(_rows, _cols, new_location, device_id);
-
-  // Copy the data over
-  *this << tmp;
-
-  // At exit, tmp will be destroyed and the memory is released unless there
 
 }
 

@@ -21,6 +21,7 @@
 #include "../profiling.h"
 #include "../exceptions.h"
 #include "stringformat.h"
+#include "../sparse.h"
 
 namespace LinAlg {
 
@@ -131,7 +132,7 @@ inline void write_vector(const std::vector<T>& vector,
 
 }
 
-} /* namespace Utilities */
+} /* namespace LinAlg::Utilities */
 
 } /* namespace LinAlg */
 
