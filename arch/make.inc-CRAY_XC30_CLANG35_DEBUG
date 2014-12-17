@@ -1,0 +1,64 @@
+# Tested on a Cray XC30 with the following modules
+# loaded:   PrgEnv-gnu intel cudatoolkit scorep scalasca ddt
+# unloaded: totalview
+#
+# clang++ is assumed to be in $PATH (obviously)
+
+# Variables with debug flags
+ifneq ("$(wildcard ../arch/debugflags.inc)", "")
+include ../arch/debugflags.inc
+else
+include arch/debugflags.inc
+endif
+
+# Variables with extra flags
+ifneq ("$(wildcard ../arch/extraflags.inc)", "")
+include ../arch/extraflags.inc
+else
+include arch/extraflags.inc
+endif
+
+# Compiler
+CXX = clang++
+CXX_CRAY_FLAGS = $(shell CC --cray-print-opts=all)
+CXX_FLAGS  = -fPIC -pthread -lpthread -std=c++11
+CXX_FLAGS += $(CLANG_DEBUG_FLAGS) $(CLANG_EXTRA_FLAGS)
+CXX_LINKER_FLAGS = -pthread -lstdc++
+
+# Flags to change behavior of the LinAlg library
+#LINALG_FLAGS = -DUSE_POSIX_THREADS -DUSE_GLOBAL_TRANSFER_STREAMS
+LINALG_FLAGS = -DUSE_POSIX_THREADS
+
+# Cuda
+CUDA_FLAGS = -DHAVE_CUDA
+CUDA_INCLUDE = -I$(CUDATOOLKIT_HOME)/include
+CUDA_LIBS = -L$(CUDATOOLKIT_HOME)/lib64 -lcudart -lcublas -lcusparse
+
+# MKL
+MKL_FLAGS = -DHAVE_MKL
+MKL_ROOT = $(MKLROOT)
+MKL_INCLUDE = -I$(MKL_ROOT)/include
+#MKL_LIBS = -L$(MKL_ROOT)/lib/intel64 -Wl,--start-group -lmkl_intel_ilp64 \
+#		   -lmkl_core -lmkl_gnu_thread -Wl,--end-group -ldl -lpthread -lm
+MKL_LIBS  = -L$(MKL_ROOT)/lib/intel64/ -lmkl_gf_lp64 -lmkl_gnu_thread \
+	        -lmkl_core -Wl,-rpath,$(MKL_ROOT)/lib/intel64/ -fopenmp
+
+# MAGMA
+MAGMA_FLAGS = -DHAVE_MAGMA -DUSE_MAGMA_GESV -DUSE_MAGMA_GETRF \
+              -DUSE_MAGMA_GETRI -DUSE_MAGMA_TRSM
+#MAGMA_FLAGS = -DHAVE_MAGMA -DUSE_MAGMA_GESV \
+#              -DUSE_MAGMA_GETRI -DUSE_MAGMA_TRSM
+MAGMA_HOME = /scratch/daint/camauro/libs/magma/1.6.0
+MAGMA_INCLUDE = -I$(MAGMA_HOME)/include
+MAGMA_LIBS = -L$(MAGMA_HOME)/lib -lmagma
+
+# MPI
+MPI_FLAGS = -DHAVE_MPI
+
+# Other
+OTHER_FLAGS =
+OTHER_INCLUDE =
+OTHER_LIBS = -L$(DDT_DIR)/lib/64 -ldmallocthcxx -Wl,--allow-multiple-definition
+OTHER_LIBS = 
+
+# vim: filetype=make:
