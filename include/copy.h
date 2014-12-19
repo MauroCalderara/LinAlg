@@ -108,20 +108,25 @@ void copy(const Sparse<T>& source, Dense<T>& destination) {
 
 
 #ifndef LINALG_NO_CHECKS
-  // All sorts of transpositions could be done by interpreting the source as 
-  // CSC, but most of that is currently unimplemented
-  Utilities::check_input_transposed(source, "copy(A, B), A");
   Utilities::check_output_transposed(destination, "copy(A, B), B");
-  Utilities::check_format(Format::CSR, source, "copy(A, B), A");
+  if (source._format != Format::CSR && source._format != Format::CSC) {
+    throw excUnimplemented("copy(A, B), A: format must be either CSR or CSC");
+  }
   Utilities::check_format(Format::ColMajor, destination, "copy(A, B), B");
 #endif
 
   if (destination.is_empty()) destination.reallocate_like(source);
 
 #ifdef LINALG_NO_CHECKS
-  if (source._size != destination._rows) {
-    throw excBadArgument("copy(A, B): number of rows don't match (A.rows = %d, "
-                         "B.rows = %d)", source._size, destination._rows);
+  if (source.rows() != destination.rows()) {
+    throw excBadArgument("copy(A, B): number of rows don't match (A.rows = "
+                         "%d, B.rows = %d)", source.rows(), 
+                         destination.rows());
+  }
+  if (source.cols() != destination.cols()) {
+    throw excBadArgument("copy(A, B): number of columns don't match (A.cols "
+                         "= %d, B.cols = %d)", source.cols(), 
+                         destination.cols());
   }
 # ifdef HAVE_CUDA
   if (source._location == Location::GPU      || 
@@ -145,8 +150,18 @@ void copy(const Sparse<T>& source, Dense<T>& destination) {
   else if (source._location == Location::GPU &&
            destination._location == Location::GPU) {
   
-    using LinAlg::BLAS::cuSPARSE::xcsr2dense;
-    xcsr2dense(source, destination);
+    if (( source._transposed && source._format == Format::CSR) ||
+        (!source._transposed && source._format == Format::CSC)   ) {
+
+      using LinAlg::BLAS::cuSPARSE::xcsc2dense;
+      xcsc2dense(source, destination);
+
+    } else {
+
+      using LinAlg::BLAS::cuSPARSE::xcsr2dense;
+      xcsr2dense(source, destination);
+
+    }
   
   }
   else if ((source._location == Location::host    &&
@@ -188,26 +203,37 @@ inline void copy(const Sparse<T>& source, Sparse<T>& destination) {
 #endif
 
   // Copy the data
-  using Utilities::copy_1Darray;
+  if (source._format == destination._format) {
 
-  copy_1Darray(source._values.get(), source._n_nonzeros, 
-               destination._values.get(), 
-               source._location, source._device_id, 
-               destination._location, destination._device_id);
-  copy_1Darray(source._indices.get(), source._n_nonzeros, 
-               destination._indices.get(), 
-               source._location, source._device_id, 
-               destination._location, destination._device_id);
-  copy_1Darray(source._edges.get(), source._size + 1, 
-               destination._edges.get(), 
-               source._location, source._device_id, 
-               destination._location, destination._device_id);
+    using Utilities::copy_1Darray;
 
-  // Update the target matrix
-  destination.first_index(source._first_index);
-  destination._properties = source._properties;
-  destination._minimal_index = source._minimal_index;
-  destination._maximal_index = source._maximal_index;
+    copy_1Darray(source._values.get(), source._n_nonzeros, 
+                 destination._values.get(), 
+                 source._location, source._device_id, 
+                 destination._location, destination._device_id);
+    copy_1Darray(source._indices.get(), source._n_nonzeros, 
+                 destination._indices.get(), 
+                 source._location, source._device_id, 
+                 destination._location, destination._device_id);
+    copy_1Darray(source._edges.get(), source._size + 1, 
+                 destination._edges.get(), 
+                 source._location, source._device_id, 
+                 destination._location, destination._device_id);
+
+    // Update the target matrix
+    destination.first_index(source._first_index);
+    destination._properties = source._properties;
+    destination._minimal_index = source._minimal_index;
+    destination._maximal_index = source._maximal_index;
+
+  }
+#ifndef LINALG_NO_CHECKS
+  else {
+  
+    throw excUnimplemented("copy(A, B): format conversion not supported");
+
+  }
+#endif
 
 }
 
@@ -256,12 +282,16 @@ inline void copy(const Sparse<T>& source, SubBlock source_sub_block,
 
 # ifdef HAVE_CUDA
   if (source._location == Location::GPU) {
+
     // Would need a submatrix extraction routine (sparse2dense_X) and a extent 
     // computation routine (find_extent) for the GPU
     throw excUnimplemented("copy(A, sub_block, B): submatrix extraction is "
                            "not supported on the GPU");
+
   } else if (destination._location == Location::GPU) {
+
     Utilities::check_gpu_handles("copy(A, sub_block, B)");
+
   }
 # endif
 
@@ -312,8 +342,10 @@ inline void copy(const Sparse<T>& source, SubBlock source_sub_block,
 
 #ifndef LINALG_NO_CHECKS
   else {
+
     throw excUnimplemented("copy(A, sub_block, B): function not implemented "
                            "for requested location");
+
   }
 #endif
 

@@ -137,7 +137,10 @@ inline void xcsr2dense(const Sparse<T>& A, Dense<T>& B) {
   using LinAlg::CUDA::cuSPARSE::handles;
 
   check_gpu_handles("xcsr2dense()");
-  check_format(Format::CSR, A, "xcsr2dense(A, B), A");
+  if (A._format != Format::CSR && A._format != Format::CSC) {
+    throw excBadArgument("xcsc2dense(A, B), A: format must be either CSR or " 
+                         "CSC");
+  }
   check_input_transposed(A, "xcsr2dense(A, B), A");
   check_format(Format::ColMajor, B, "xcsr2dense(A, B), B");
   check_output_transposed(B, "xcsr2dense(A, B), B");

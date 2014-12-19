@@ -23,6 +23,8 @@
 
 // Keep this in alphabetical order
 #include "axpy.h"
+#include "cusparse/csc2dense.h"
+#include "cusparse/csr2dense.h"
 #include "copy.h"
 #include "geam.h"
 #include "gemm.h"
