@@ -201,23 +201,34 @@ inline I_t send_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
 
   PROFILING_FUNCTION_HEADER
 
-  Dense<T> buffer;
+  if (stream.synchronous) {
 
-  if (buffered) buffer << matrix;
-  else          buffer.clone_from(matrix);
+    send_matrix(matrix, communicator, receiving_rank, tag, 
+                recipient_preallocated);
+  
+    return 0;
+  
+  } else {
 
-  // Create a bundle of the buffer and a lambda function that gets all static 
-  // parameters by value
-  DenseMatrixFunctionBundle<T> bundle(buffer, 
-    [=] (Dense<T>& tmp_matrix) { 
-      send_matrix(tmp_matrix, communicator, receiving_rank, tag, 
-                  recipient_preallocated, buffered); 
-    }
-  );
+    Dense<T> buffer;
 
-  // This here creates a lasting copy of bundle, including a clone of buffer.
-  // Thus buffer is not deleted when leadving the scope.
-  return stream.add(std::bind(bundle));
+    if (buffered) buffer << matrix;
+    else          buffer.clone_from(matrix);
+
+    // Create a bundle of the buffer and a lambda function that gets all static 
+    // parameters by value
+    DenseMatrixFunctionBundle<T> bundle(buffer, 
+      [=] (Dense<T>& tmp_matrix) { 
+        send_matrix(tmp_matrix, communicator, receiving_rank, tag, 
+                    recipient_preallocated, buffered); 
+      }
+    );
+
+    // This here creates a lasting copy of bundle, including a clone of buffer.
+    // Thus buffer is not deleted when leadving the scope.
+    return stream.add(std::bind(bundle));
+
+  }
 
 }
 
@@ -316,108 +327,11 @@ void receive_matrix(Dense<T>& matrix, MPI_Comm communicator, int sending_rank,
 
 }
 
-/** \brief            Receive a remote matrix into a local, preallocated matrix
- *                    asynchronously using an MPIStream
- *
- *  \param[in,out]    matrix
- *                    Preallocated local matrix to store the remote matrix
- *
- *  \param[in]        communicator
- *                    MPI communicator for the transfer
- *
- *  \param[in]        sending_rank
- *                    MPI rank of the sending party
- *
- *  \param[in]        tag
- *                    Tag of the transfer (must match tag on sender)
- *
- *  \param[in]        stream
- *                    MPI stream to use for asynchronous transfers. If no
- *                    stream or an MPIStream(0) is specified, the operation is
- *                    synchronous.
- *
- *  \note             The function is unbuffered. The caller is responsible to 
- *                    ensure that the matrix object is still alive when the 
- *                    stream executes the task. Failure to do so will lead to 
- *                    undefined behavior. Use with care.
- */
-template <typename T>
-void receive_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
-                          int sending_rank, int tag, MPIStream& stream) {
-
-  PROFILING_FUNCTION_HEADER
-
-  // Check if the default stream has been passed, that is synchronous behavior
-  // has been requested
-  if (stream.synchronous_operation) {
-
-    std::printf("receive_matrix_async(): default stream specified, reverting "
-                "to synchronous operation.\n");
-
-    receive_matrix(matrix, communicator, sending_rank, tag);
-
-    return;
-
-  }
-
-  if (matrix.is_empty()) {
-
-    throw excBadArgument("receive_matrix_async(): asynchronous transfer with "
-                         "MPIStream requires preallocated matrices");
-
-  }
-
-  // Check if the matrix is continuous/sendable or not. If it is not, we can't 
-  // receive it asynchronously since we can't create a buffer with an MPIStream
-  bool directly_sendable = true;
-
-  if (matrix._leading_dimension != matrix._rows &&
-      matrix._format == Format::ColMajor           ) directly_sendable = false;
-  if (matrix._leading_dimension != matrix._cols &&
-      matrix._format == Format::RowMajor           ) directly_sendable = false;
-
-# ifndef HAVE_CUDA_AWARE_MPI
-  if (matrix.is_on_GPU()) directly_sendable = false;
-# endif
-
-  if (!directly_sendable) {
-
-    throw excBadArgument("receive_matrix(): asynchronous transfer with "
-                         "MPIStream requires that the matrix can be received "
-                         "using a single MPI call. Create a suitable buffer "
-                         "and flush it after synchronizing as a workaround. "
-                         "Alternatively use a general stream.");
-
-  }
-
-  // Avoid collisions with multi-tag operations
-  auto internal_tag = MPI_TAG_OFFSET * tag;
-
-  auto array = matrix._begin();
-  auto size = matrix._rows * matrix._cols;
-
-  // Add task to the stream
-  auto pos = stream.add_operations(1);
-  auto request = &stream.requests[pos];
-  stream.synchronized = false;
-
-  auto error = mpi_irecv(array, size, sending_rank, internal_tag,
-                         communicator, request);
-
-  // Errors are handled at synchronization time
-  stream.statuses[pos] = construct_status(error, communicator, tag);
-
-}
-
 /** \brief            Receive a remote matrix into a local, optionally 
- *                    preallocated matrix asynchronously using a general stream
+ *                    preallocated matrix asynchronously
  *
  *  \param[in,out]    matrix
- *                    Local matrix to store the remote matrix. If matrix is 
- *                    preallocated, the transaction is buffered and no meta  
- *                    data is exchanged. If matrix is not preallocated, the 
- *                    transaction is unbuffered and metadata will be exchanged.
- *                    See below for a rationale.
+ *                    Local matrix to store the remote matrix
  *
  *  \param[in]        communicator
  *                    MPI communicator for the transfer
@@ -429,11 +343,15 @@ void receive_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
  *                    Tag of the transfer (must match tag on sender)
  *
  *  \param[in]        stream
- *                    MPI stream to use for asynchronous transfers. If no
- *                    stream or an MPIStream(0) is specified, the operation is
- *                    synchronous.
+ *                    Stream to use for asynchronous transfers.
  *
  *  \returns          The ticket number to synchronize with the stream.
+ *
+ *  \note             If stream has 'prefer_native' set to true, the function 
+ *                    is unbuffered. The caller is responsible to ensure that 
+ *                    the matrix object is still alive when the stream 
+ *                    executes the task. Failure to do so will lead to 
+ *                    undefined behavior. Use with care.
  *
  *  \note             If matrix is not preallocated, the function exchanges the 
  *                    metadata, allocates the memory and updates the matrix 
@@ -444,33 +362,101 @@ void receive_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
  */
 template <typename T>
 I_t receive_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
-                          int sending_rank, int tag, Stream& stream) {
+                         int sending_rank, int tag, Stream& stream) {
 
-  if (matrix.is_empty()) {
-  
-    // Can't buffer as we need to update the matrix meta data. That is we pass 
-    // matrix by reference and trust the user to maintain lifetime of the  
-    // object till invocation of the function in the stream.
-    auto payload = [=, &matrix] () {
-      receive_matrix(matrix, communicator, sending_rank, tag);
-    };
-  
-    return stream.add(payload);
-  
+  PROFILING_FUNCTION_HEADER
+
+  // Check if the default stream has been passed, that is synchronous behavior
+  // has been requested
+  if (stream.synchronous) {
+
+    receive_matrix(matrix, communicator, sending_rank, tag);
+
+    return 0;
+
   } else {
-  
-    // Create a bundle of the buffer and a lambda function that gets all static 
-    // parameters by value
-    Dense<T> buffer;
-    buffer.clone_from(matrix);
-    DenseMatrixFunctionBundle<T> bundle(buffer, 
-      [=] (Dense<T>& tmp_matrix) { 
-        receive_matrix(tmp_matrix, communicator, sending_rank, tag);
-      }
-    );
 
-    return stream.add(std::bind(bundle));
-  
+    if (stream.prefer_native && matrix.is_empty() == false) {
+
+#ifndef LINALG_NO_CHECKS
+      // Check if the matrix is continuous/sendable or not. If it is not, we
+      // can't receive it asynchronously since we can't create a buffer with
+      // an asynchronous MPI call
+      bool directly_sendable = true;
+
+      if (matrix._leading_dimension != matrix._rows &&
+          matrix._format == Format::ColMajor      ) directly_sendable = false;
+      if (matrix._leading_dimension != matrix._cols &&
+          matrix._format == Format::RowMajor      ) directly_sendable = false;
+
+# ifndef HAVE_CUDA_AWARE_MPI
+      if (matrix.is_on_GPU()) directly_sendable = false;
+# endif
+
+      if (!directly_sendable) {
+
+        throw excBadArgument("receive_matrix(): asynchronous transfer with "
+                             "native MPI stream requires that the matrix can "
+                             "be received using a single MPI call. Create a "
+                             "suitable buffer and flush it after "
+                             "synchronizing as a workaround. Alternatively "
+                             "set stream.prefer_native to false and use a "
+                             "general stream.");
+
+      }
+#endif
+
+      // Avoid collisions with multi-tag operations
+      auto internal_tag = MPI_TAG_OFFSET * tag;
+
+      auto array = matrix._begin();
+      auto size = matrix._rows * matrix._cols;
+
+      // Add task to the stream
+      auto pos = stream._add_mpi_tasks(1);
+      auto request = &stream.mpi_requests[pos];
+
+      auto error = mpi_irecv(array, size, sending_rank, internal_tag,
+                             communicator, request);
+
+      // Errors are handled at synchronization time
+      stream.mpi_statuses[pos] = construct_status(error, communicator, tag);
+
+      stream.mpi_synchronized = false;
+
+      return 0;
+
+    } else {
+
+      if (matrix.is_empty()) {
+
+        // Can't buffer as we need to update the matrix meta data. That is we
+        // pass matrix by reference and trust the user to maintain lifetime of
+        // the object till invocation of the function in the stream.
+        auto payload = [=, &matrix] () {
+          receive_matrix(matrix, communicator, sending_rank, tag);
+        };
+
+        return stream.add(payload);
+
+      } else {
+
+        // Create a bundle of the buffer and a lambda function that gets all 
+        // static parameters by value
+        Dense<T> buffer;
+        buffer.clone_from(matrix);
+        DenseMatrixFunctionBundle<T> bundle(buffer,
+          [=] (Dense<T>& tmp_matrix) {
+            receive_matrix(tmp_matrix, communicator, sending_rank, tag);
+          }
+        );
+
+        return stream.add(std::bind(bundle));
+
+      }
+
+    }
+
   }
 
 }

@@ -23,13 +23,13 @@ namespace LinAlg {
 #ifdef USE_GLOBAL_TRANSFER_STREAMS
 namespace CUDA {
 
-//std::vector<CUDAStream> in_stream;
-//std::vector<CUDAStream> out_stream;
-//std::vector<CUDAStream> on_stream;
-//std::vector<CUDAStream> compute_stream;
-CUDAStream in_stream;
-CUDAStream out_stream;
-CUDAStream on_stream;
+//std::vector<Stream> in_stream;
+//std::vector<Stream> out_stream;
+//std::vector<Stream> on_stream;
+//std::vector<Stream> compute_stream;
+Stream in_stream;
+Stream out_stream;
+Stream on_stream;
 
 }
 #endif

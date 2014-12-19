@@ -165,8 +165,7 @@ inline void check_output_transposed(const Dense<T>& A,
 
 }
 
-#   ifdef HAVE_CUDA
-/*  \brief            Checks if a CUDAstream has the same device id as a matrix.
+/*  \brief            Checks if a Stream has the same device id as a matrix.
  *                    Raises an exception if the devices are different.
  *
  *  \param[in]        A
@@ -179,7 +178,7 @@ inline void check_output_transposed(const Dense<T>& A,
  *                    Name of the calling routine
  */
 template <typename T>
-inline void check_stream(const Dense<T>& A, const CUDAStream& stream,
+inline void check_stream(const Dense<T>& A, const Stream& stream,
                          const char* caller_name) {
 
   if (A._device_id != stream.device_id) {
@@ -193,6 +192,7 @@ inline void check_stream(const Dense<T>& A, const CUDAStream& stream,
 
 }
 
+#ifdef HAVE_CUDA
 /*  \brief            Checks if the cublas handles are initialized, raises an 
  *                    exception if not.
  *

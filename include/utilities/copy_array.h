@@ -372,10 +372,10 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
 
     // Transfer out of GPU
 
-    CUDAStream* my_stream;
+    Stream* my_stream;
 
 # ifndef USE_GLOBAL_TRANSFER_STREAMS
-    my_stream = new CUDAStream(src_device_id);
+    my_stream = new Stream(src_device_id);
 # else
 #   ifndef LINALG_NO_CHECKS
     check_gpu_handles("copy_2Darray()");
@@ -395,6 +395,8 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
                                   line_length * sizeof(T), lines, \
                                   cudaMemcpyDeviceToHost, 
                                   my_stream->cuda_stream));
+
+      my_stream->cuda_synchronized = false;
 
     }
 # ifndef LINALG_NO_CHECKS
@@ -421,10 +423,10 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
   
     // Transfer out
 
-    CUDAStream* my_stream;
+    Stream* my_stream;
 
 # ifndef USE_GLOBAL_TRANSFER_STREAMS
-    my_stream = new CUDAStream(dst_device_id);
+    my_stream = new Stream(dst_device_id);
 # else
 #   ifndef LINALG_NO_CHECKS
     check_gpu_handles("copy_2Darray()");
@@ -444,6 +446,8 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
                                   line_length * sizeof(T), lines, \
                                   cudaMemcpyHostToDevice, \
                                   my_stream->cuda_stream));
+
+      my_stream->cuda_synchronized = false;
 
     }
 # ifndef LINALG_NO_CHECKS
@@ -472,10 +476,10 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
   
     // Transfer within GPU
 
-    CUDAStream* my_stream;
+    Stream* my_stream;
 
 # ifndef USE_GLOBAL_TRANSFER_STREAMS
-    my_stream = new CUDAStream(src_device_id);
+    my_stream = new Stream(src_device_id);
 # else
 #   ifndef LINALG_NO_CHECKS
     check_gpu_handles("copy_2Darray()");
@@ -496,6 +500,8 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
                                   cudaMemcpyDeviceToDevice, 
                                   my_stream->cuda_stream));
 
+      my_stream->cuda_synchronized = false;
+
     }
 
     // Supported: transposition if both matrices are ColMajor
@@ -509,6 +515,8 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
       xGEAM(my_stream->cublas_handle, CUBLAS_OP_T, CUBLAS_OP_T, line_length,
             lines, cast<T>(1.0), src_array, src_ld, cast<T>(0.0), src_array,
             src_ld, dst_array, dst_ld);
+
+      my_stream->cuda_synchronized = false;
     
     }
 
@@ -531,6 +539,8 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
       xGEAM(my_stream->cublas_handle, CUBLAS_OP_T, CUBLAS_OP_T, line_length,
             lines, cast<T>(1.0), src_array, src_ld, cast<T>(0.0), src_array, 
             src_ld, dst_array, dst_ld);
+
+      my_stream->cuda_synchronized = false;
     
     }
     // Supported: change of format if source is RowMajor and not a submatrix  
@@ -552,6 +562,8 @@ void copy_2Darray(bool transpose, Format src_format, const T* src_array,
       xGEAM(my_stream->cublas_handle, CUBLAS_OP_T, CUBLAS_OP_T, line_length,
             lines, cast<T>(1.0), src_array, src_ld, cast<T>(0.0), src_array, 
             src_ld, dst_array, dst_ld);
+
+      my_stream->cuda_synchronized = false;
     
     }
 

@@ -80,8 +80,8 @@ inline void send_meta(MetaData meta, MPI_Comm communicator, int receiving_rank,
 
 }
 
-/** \brief            Send meta data about a matrix asynchronously using an 
- *                    MPIStream
+/** \brief            Send meta data about a matrix asynchronously using a 
+ *                    Stream
  *
  *  \param[in]        meta
  *                    The meta data to be sent.
@@ -98,81 +98,69 @@ inline void send_meta(MetaData meta, MPI_Comm communicator, int receiving_rank,
  *  \param[in]        stream
  *                    Stream to use
  *
- *  \note             The function is unbuffered. The caller is responsible to 
- *                    ensure that the matrix object is still alive when the 
+ *  \returns          Ticket number for synchronizing on the stream.
+ *
+ *  \note             The function is unbuffered if the stream has 
+ *                    'perfer_native' set to true. The caller is responsible 
+ *                    to ensure that the matrix object is still alive when the 
  *                    stream executes the task. Failure to do so will lead to 
  *                    undefined behavior. Use with care.
+ *                    The function is buffered if the stream has 
+ *                    'prefer_native' set to false.
  */
-inline void send_meta_async(MetaData& meta, MPI_Comm communicator,
-                            int receiving_rank, int tag, MPIStream& stream) {
+inline I_t send_meta_async(MetaData& meta, MPI_Comm communicator,
+                           int receiving_rank, int tag, Stream& stream) {
 
   // Note: we have to accept by reference as mpi_isend copies the pointer
 
   PROFILING_FUNCTION_HEADER
 
-  if (stream.synchronous_operation) {
+  if (stream.synchronous) {
 
     send_meta(meta, communicator, receiving_rank, tag);
 
-    return;
+    return 0;
 
   }
 
-  auto internal_tag = MPI_TAG_OFFSET * tag;
+  if (stream.prefer_native) {
 
-  // Add task to stream
-  auto stream_position = stream.add_operations(1);
+    auto internal_tag = MPI_TAG_OFFSET * tag;
 
-  auto request = &stream.requests[stream_position];
+    // Add task to stream
+    auto stream_position = stream._add_mpi_tasks(1);
 
-  stream.synchronized = false;
+    auto request = &(stream.mpi_requests[stream_position]);
 
-  auto error = mpi_isend(meta.data(), meta.size(), receiving_rank,
-                         internal_tag, communicator, request);
+    auto error = mpi_isend(meta.data(), meta.size(), receiving_rank,
+                           internal_tag, communicator, request);
 
-  // Error handling happens when synchronizing on the stream.
-  stream.statuses[stream_position] = construct_status(error, communicator,
-                                                       tag);
-}
+    // Error handling happens when synchronizing on the stream.
+    stream.mpi_statuses[stream_position] = construct_status(error, communicator,
+                                                            tag);
 
-/** \brief            Send meta data about a matrix asynchronously using a 
- *                    standard stream
- *
- *  \param[in]        meta
- *                    The meta data to be sent.
- *
- *  \param[in]        communicator
- *                    MPI communicator for the transfer
- *
- *  \param[in]        receiving_rank
- *                    MPI rank of the receiving party
- *
- *  \param[in]        tag
- *                    Tag of the transfer (must match tag on receiver)
- *
- *  \param[in]        stream
- *                    Stream to use
- *
- *  \note             The call is buffered, that is the matrix can be deleted 
- *                    upon return from this.
- */
-inline I_t send_meta_async(MetaData& meta, MPI_Comm communicator, 
-                           int receiving_rank, int tag, Stream& stream) {
+    stream.mpi_synchronized = false;
 
-  // Note: we can accept by reference as we will capture it by value in the 
-  // lamda function below. The copy will live as long as the lambda function 
-  // does.
+    return 0;
 
-  PROFILING_FUNCTION_HEADER
+  } else {
 
-  return stream.add(
-    [=] () {
-      send_meta(meta, communicator, receiving_rank, tag);
+# ifndef LINALG_NO_CHECKS
+    if (!stream.thread_alive) {
+      throw excBadArgument("send_meta_async(): provided stream has no active "
+                           "worker thread");
     }
-  );
+# endif
+  
+    return stream.add(
+                       [=] () {
+                         send_meta(meta, communicator, receiving_rank, tag);
+                       }
+                     );
+  
+  }
 
 }
-
 
 /** \brief            Send meta data extracted from a matrix
  *
@@ -201,8 +189,7 @@ inline void send_meta(Dense<T>& matrix, MPI_Comm communicator,
 }
 
 
-/** \brief            Send meta data about a matrix asynchronously using a 
- *                    general stream
+/** \brief            Send meta data about a matrix asynchronously
  *
  *  \param[in]        matrix
  *                    The matrix whose meta data is to be sent.
@@ -219,7 +206,7 @@ inline void send_meta(Dense<T>& matrix, MPI_Comm communicator,
  *  \param[in]        stream
  *                    Stream to use
  *
- *  \returns          Ticket number within the stream
+ *  \returns          Ticket number for synchronizing on the stream.
  *
  *  \note             The call is buffered, that is the matrix can be deleted 
  *                    upon return from this function.
@@ -249,8 +236,6 @@ inline I_t send_meta_async(Dense<T>& matrix, MPI_Comm communicator,
  *
  *  \param[in]        tag
  *                    Tag of the transfer (must match tag on receiver)
- *
- *  \returns          The meta data
  */
 inline void receive_meta(MetaData& meta, MPI_Comm communicator, 
                          int sending_rank, int tag) {
@@ -304,7 +289,7 @@ inline MetaData receive_meta(MPI_Comm communicator, int sending_rank, int tag) {
 
 }
 
-/** \brief            Receive meta data asynchronously using an MPIStream
+/** \brief            Receive meta data asynchronously
  *
  *  \param[in]        meta
  *                    The instance of meta to contain the meta data received.
@@ -321,58 +306,7 @@ inline MetaData receive_meta(MPI_Comm communicator, int sending_rank, int tag) {
  *  \param[in]        stream
  *                    Stream to use
  *
- *  \note             The function is unbuffered. The caller is responsible to 
- *                    ensure that the meta data object is still alive when the 
- *                    stream executes the task. Failure to do so will lead to 
- *                    undefined behavior. Use with care.
- */
-inline void receive_meta_async(MetaData& meta, MPI_Comm communicator,
-                               int sending_rank, int tag, MPIStream& stream) {
-
-  PROFILING_FUNCTION_HEADER
-
-  if (stream.synchronous_operation) {
-
-    meta = receive_meta(communicator, sending_rank, tag);
-
-    return;
-
-  }
-
-  auto internal_tag = MPI_TAG_OFFSET * tag;
-
-  // Add task to stream
-  auto stream_position = stream.add_operations(1);
-
-  auto request = &stream.requests[stream_position];
-
-  stream.synchronized = false;
-
-  auto error = mpi_irecv(meta.data(), meta.size(), sending_rank, internal_tag,
-                         communicator, request);
-
-  // Error handling happens when synchronizing on the stream.
-  stream.statuses[stream_position] = construct_status(error, communicator,
-                                                       tag);
-
-}
-
-/** \brief            Receive meta data asynchronously using a general stream 
- *
- *  \param[in]        meta
- *                    The instance of meta to contain the meta data received.
- *
- *  \param[in]        communicator
- *                    MPI communicator for the transfer
- *
- *  \param[in]        sending_rank
- *                    MPI rank of the sending arty
- *
- *  \param[in]        tag
- *                    Tag of the transfer (must match tag on receiver)
- *
- *  \param[in]        stream
- *                    Stream to use
+ *  \returns          Ticket number for synchronizing on the stream.
  *
  *  \note             The function is unbuffered. The caller is responsible to 
  *                    ensure that the meta data object is still alive when the 
@@ -380,15 +314,54 @@ inline void receive_meta_async(MetaData& meta, MPI_Comm communicator,
  *                    undefined behavior. Use with care.
  */
 inline I_t receive_meta_async(MetaData& meta, MPI_Comm communicator,
-                              int sending_rank, int tag, Stream& stream) {
+                               int sending_rank, int tag, Stream& stream) {
 
   PROFILING_FUNCTION_HEADER
 
-  return stream.add(
-    [=, &meta] () {
-      receive_meta(meta, communicator, sending_rank, tag);
+  if (stream.synchronous) {
+
+    meta = receive_meta(communicator, sending_rank, tag);
+
+    return 0;
+
+  }
+
+  if (stream.prefer_native) {
+
+    auto internal_tag = MPI_TAG_OFFSET * tag;
+
+    // Add task to stream
+    auto stream_position = stream._add_mpi_tasks(1);
+
+    auto request = &(stream.mpi_requests[stream_position]);
+
+    auto error = mpi_irecv(meta.data(), meta.size(), sending_rank, 
+                           internal_tag,
+                           communicator, request);
+
+    // Error handling happens when synchronizing on the stream.
+    stream.mpi_statuses[stream_position] = construct_status(error, communicator,
+                                                            tag);
+
+    stream.mpi_synchronized = false;
+
+    return 0;
+
+  } else {
+
+# ifndef LINALG_NO_CHECKS
+    if (!stream.thread_alive) {
+      throw excBadArgument("send_meta_async(): provided stream has no active "
+                           "worker thread");
     }
-  );
+# endif
+
+    return stream.add([=, &meta] () {
+                        receive_meta(meta, communicator, sending_rank, tag);
+                      }
+                     );
+  
+  }
 
 }
 
@@ -434,6 +407,8 @@ inline void receive_meta(Dense<T>& matrix, MPI_Comm communicator,
  *  \param[in]        tag
  *                    Tag of the transfer (must match tag on receiver)
  *
+ *  \returns          Ticket number for synchronizing on the stream.
+ *
  *  \note             The function is unbuffered. The caller is responsible to 
  *                    ensure that the meta data object is still alive when the 
  *                    stream executes the task. Failure to do so will lead to 
@@ -445,11 +420,20 @@ inline I_t receive_meta_async(Dense<T>& matrix, MPI_Comm communicator,
 
   PROFILING_FUNCTION_HEADER
 
-  return stream.add(
-    [=, &matrix] () {
-      receive_meta(matrix, communicator, sending_rank, tag);
-    }
-  );
+  if (stream.synchronous) {
+
+    receive_meta(matrix, communicator, sending_rank, tag);
+
+    return 0;
+
+  } else {
+
+    return stream.add([=, &matrix] () {
+                        receive_meta(matrix, communicator, sending_rank, tag);
+                      }
+                     );
+
+  }
 
 }
 

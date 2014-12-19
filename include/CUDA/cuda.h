@@ -34,17 +34,17 @@ namespace LinAlg {
 namespace CUDA {
 
 // "Defined" in src/CUDA/cuda.cc
-/// Global vector of CUDA streams for transfers into the GPU
-//extern std::vector<CUDAStream> in_stream;
-extern CUDAStream in_stream;
-/// Global vector of CUDA streams for transfers out of the GPU
-//extern std::vector<CUDAStream> out_stream;
-extern CUDAStream out_stream;
-/// Global vector of CUDA streams for transfers within the GPU
-//extern std::vector<CUDAStream> on_stream;
-extern CUDAStream on_stream;
-/// Global vector of CUDA streams for computations on the GPU
-//extern std::vector<CUDAStream> compute_stream;
+/// Global vector of streams for transfers into the GPU
+//extern std::vector<Stream> in_stream;
+extern Stream in_stream;
+/// Global vector of streams for transfers out of the GPU
+//extern std::vector<Stream> out_stream;
+extern Stream out_stream;
+/// Global vector of streams for transfers within the GPU
+//extern std::vector<Stream> on_stream;
+extern Stream on_stream;
+/// Global vector of streams for computations on the GPU
+//extern std::vector<tream> compute_stream;
 
 /** \brief            Routine to intialize the shared streams
  */
@@ -90,7 +90,7 @@ extern bool _GPU_structures_initialized;
 inline void init() {
 
 #ifdef USE_GLOBAL_TRANSFER_STREAMS
-  // Initialize the global CUDA streams
+  // Initialize the global streams
   LinAlg::CUDA::init();
 #endif
 

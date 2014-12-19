@@ -93,7 +93,7 @@ inline void set_2Darray(T* array, Location location, int device_id,
       I_t line_length = (format == Format::ColMajor) ? rows : cols;
       I_t lines       = (format == Format::ColMajor) ? cols : rows;
 
-      LinAlg::CUDAStream my_stream(device_id);
+      LinAlg::Stream my_stream(device_id);
 
       checkCUDA(cudaMemset2DAsync(array, leading_dimension * sizeof(T), \
                                   0, line_length * sizeof(T), lines, \

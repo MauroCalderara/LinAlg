@@ -231,17 +231,12 @@ inline void xGEAM(const T alpha, const Dense<T>& A, const T beta,
  *  For more details see cublas documentation under BLAS-like functions
  */
 template <typename T>
-inline void xGEAM_async(const T alpha, const Dense<T>& A, const T beta,
-                        const Dense<T>& B, Dense<T>& C, CUDAStream& stream) {
+inline I_t xGEAM_async(const T alpha, const Dense<T>& A, const T beta,
+                       const Dense<T>& B, Dense<T>& C, Stream& stream) {
 
   PROFILING_FUNCTION_HEADER
 
-#ifndef LINALG_NO_CHECKS
-  check_device(A, B, C, "xGEAM()");
-  check_output_transposed(C, "xGEAM()");
-  check_gpu_handles("xGEAM()");
-
-  if (stream.synchronous_operation) {
+  if (stream.synchronous) {
 
     xGEAM(alpha, A, beta, B, C);
 
@@ -249,14 +244,26 @@ inline void xGEAM_async(const T alpha, const Dense<T>& A, const T beta,
 
   }
 
+#ifndef LINALG_NO_CHECKS
+  check_device(A, B, C, "xGEAM_async()");
+  check_output_transposed(C, "xGEAM_async()");
+  check_gpu_handles("xGEAM_async()");
+
   if (A.rows() != B.rows() || A.rows() != C.rows() ||
       A.cols() != B.cols() || A.cols() != C.cols()   ) {
 
-    throw excBadArgument("xGEAM(): argument matrix size mismatch");
+    throw excBadArgument("xGEAM_async(): argument matrix size mismatch");
 
   } else if (A._location != Location::GPU) {
 
-    throw excBadArgument("xGEAM(): matrices must reside on the GPU");
+    throw excBadArgument("xGEAM_async(): matrices must reside on the GPU");
+
+  }
+
+  if (!stream.prefer_native) {
+
+    throw excUnimplemented("xGEAM_async(): using generic stream is currently "
+                           "unimplemented");
 
   }
 #endif
@@ -276,35 +283,11 @@ inline void xGEAM_async(const T alpha, const Dense<T>& A, const T beta,
   cuBLAS::xGEAM(stream.cublas_handle, transa, transb, m, n, alpha, A_ptr, lda,
                 beta, B_ptr, ldb, C_ptr, ldc);
 
-}
-/** \overload
- *
- *  \param[in]        alpha
- *
- *  \param[in]        A
- *
- *  \param[in]        beta
- *
- *  \param[in]        B
- *
- *  \param[in]        C
- *
- *  \returns          A stream to synchronize the operation on
- */
-template <typename T>
-inline CUDAStream xGEAM_async(const T alpha, const Dense<T>& A, const T beta,
-                              const Dense<T>& B, Dense<T>&C) {
+  stream.cuda_synchronized = false;
 
-  PROFILING_FUNCTION_HEADER
-
-  CUDAStream stream;
-
-  xGEAM_async(alpha, A, beta, B, C, stream);
-
-  return std::move(stream);
+  return 0;
 
 }
-
 #endif /* HAVE_CUDA */
 
 } /* namespace LinAlg::BLAS */

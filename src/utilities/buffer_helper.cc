@@ -200,7 +200,7 @@ void BufferHelper::wait(I_t n) {
         _direction = BufferDirection::increasing;
         _last_requested = -1;
         if (_manage_stream) {
-          _stream->start();
+          _stream->start_thread();
         }
         _initialized = true;
 
@@ -209,7 +209,7 @@ void BufferHelper::wait(I_t n) {
         _direction = BufferDirection::decreasing;
         _last_requested = _size;
         if (_manage_stream) {
-          _stream->start();
+          _stream->start_thread();
         }
         _initialized = true;
 
@@ -427,7 +427,7 @@ void BufferHelper::preload(BufferDirection direction) {
 
       // Initialize buffer
       _last_requested = -1;
-      if (_manage_stream) _stream->start();
+      if (_manage_stream) _stream->start_thread();
       _initialized = true;
 
       // Preload the next buffers
@@ -449,7 +449,7 @@ void BufferHelper::preload(BufferDirection direction) {
     } else if (_direction == BufferDirection::decreasing) {
 
       _last_requested = _size;
-      if (_manage_stream) _stream->start();
+      if (_manage_stream) _stream->start_thread();
       _initialized = true;
 
       for (I_t i = _size - 1; (i > _size - 1 - _lookahead - 1) && (i >= 0);

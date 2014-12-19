@@ -38,56 +38,76 @@
 
 namespace LinAlg {
 
-/** \brief            Signals that even though a stream is provided, the
- *                    operation should be synchronous.
- */
+// Makes the constructor for synchronous streams a bit more explicit
 enum class Streams { Synchronous };
 
-/** \brief            StreamBase
+/** \brief            Base class to handle mechanisms for asynchronous 
+ *                    execution
  *
  *  A stream is a unit of asynchronous execution. The .sync() routine
- *  synchronizes with the execution of the stream. Some streams may be
- *  appendable (depending on the underlying implementation).
+ *  synchronizes with the execution of the stream. The class is semantically 
+ *  similar to of C++11 std::futures with the std::future.get() functionality 
+ *  provided by Stream.sync()
  *
- *  Streams are semantically similar to of C++11 std::futures with the
- *  std::future.get() routine replaced by Stream.sync()
+ *  This stream implementation contains a thread based facility for generic 
+ *  asynchronous execution as well as an interface to CUDA streams and MPIs 
+ *  asynchronous facilities.
+ *
+ *  Thread based sub stream
+ *  -----------------------
+ *    - Tasks supported: arbitrary functions
+ *    - Ordering:        global (tasks get executed in the order they are
+ *                       added to the stream)
+ *    - Synchronization: arbitrary queue positions (incl. global 
+ *                       synchronization)
+ *
+ *  CUDA based sub stream
+ *  ---------------------
+ *    - Tasks supported: asynchronous CUDA/CuBLAS/CuSPARSE functions
+ *    - Ordering:        global (tasks get executed in the order they are
+ *                       added to the stream)
+ *    - Synchroniztion:  global
+ *
+ *  MPI based sub stream
+ *  --------------------
+ *    - Tasks supported: asynchronous MPI functions
+ *    - Ordering:        none (tasks get executed in arbitrary order)
+ *    - Synchroniztion:  global
  */
-struct StreamBase {
+struct Stream {
 
-  StreamBase() : synchronous_operation(false), synchronized(true) {}
-
-  /** \brief          Synchronous stream constructor
-   */
-  StreamBase(Streams stream_spec) {
-
-    synchronous_operation = (stream_spec == Streams::Synchronous) ? true :
-                                                                    false;
-    synchronized = true;
-
-  }
-
-  virtual ~StreamBase() {}
-
-#ifndef DOXYGEN_SKIP
-  virtual inline void sync() = 0;
-
-  bool synchronous_operation;
-  bool synchronized;
+  Stream();
+  Stream(Streams ignored);
+#ifdef HAVE_CUDA // or MIC
+  Stream(int device_id_); // use the same for MIC
+  Stream(int device_id_, Streams ignored);
 #endif
+  ~Stream();
 
-};
+  // General facilities
+  inline void sync(I_t ticket);
+  inline void sync();
+  inline void clear();
+  inline void set(int device_id_, bool asynchronous_);
 
-/** Generic stream:
- *
- *  Tasks are std::function<void()> objects. Each stream has one worker thread
- *  assigned that fetches tasks from the tail of a deque. Appending tasks is 
- *  pushing to the front to the queue. Tasks are processed in the order of 
- *  being pushed to the queue.
- */
-struct Stream : StreamBase {
 
 #ifndef DOXYGEN_SKIP
+  inline void load_defaults();
 
+  // Signal that the stream operates synchronous
+  bool synchronous;
+
+  // Signal whether to prefer the native facilities (CUDA, MPI) over the 
+  // generic, thread based stream (this is read by the routines to which the 
+  // stream is passed as argument)
+  bool prefer_native;
+
+  // Device the stream is bund to (shared for all engine types)
+  int device_id;
+
+
+  /////////////////////////////////////////
+  // Facilities for the thread based stream
   Threads::Mutex                    lock;
   Threads::ConditionVariable        cv;
 
@@ -109,72 +129,285 @@ struct Stream : StreamBase {
 # endif /* USE_POSIX_THREADS */
 
   std::deque<std::function<void()>> queue;
-  std::atomic<I_t> next_in_queue;
-  bool thread_alive;
+  std::atomic<I_t>                  next_in_queue;
 
-  inline void worker();
-  I_t next_ticket;             // next_ticket = next_in_queue -> no work;
-  bool terminate;
+  inline void                       start_thread();
+  inline void                       stop_thread();
+  bool                              terminate_thread;
+  bool                              thread_alive;
+  inline void                       worker();
+
+  inline I_t                        add(std::function<void()> task);
+  I_t                               next_ticket;
+  // next_ticket == next_in_queue => no work;
+  inline void                       sync_generic(I_t ticket);
+  bool                              generic_synchronized;
+
+# ifdef HAVE_CUDA
+  //////////////////////////////
+  // Facilities for CUDA streams
+  cudaStream_t                      cuda_stream;
+  cublasHandle_t                    cublas_handle;
+  cusparseHandle_t                  cusparse_handle;
+  inline void                       sync_cuda();
+  bool                              cuda_synchronized;
+  inline void                       cuda_create();
+  inline void                       cuda_create(int device_id);
+  inline void                       cuda_destroy();
+# endif
+
+# ifdef HAVE_MPI
+  /////////////////////////////
+  // Facilities for MPI streams
+  std::vector<MPI_Request>          mpi_requests;
+  std::vector<MPI_Status>           mpi_statuses;
+  inline I_t                        _add_mpi_tasks(I_t n_tasks);
+  inline void                       sync_mpi();
+  bool                              mpi_synchronized;
+# endif
 
 #endif /* not DOXYGEN_SKIP */
 
-  Stream();
-  Stream(Streams stream_spec);
-  ~Stream();
-
-  inline void start();
-  inline I_t  add(std::function<void()> task);
-  inline void sync(I_t ticket);
-  inline void sync();
-  inline void stop();
-  inline void clear();
-
 };
 
-/** \brief            Constructor for a stream
+/** \brief            Constructor
  *
- *  Note that this constructor doesn't spawn a thread to avoid having 
- *  lingering threads for classes with streams as members. Use start() to 
- *  create the worker thread and 'activate' the queue.
+ *  Generic stream: The constructor doesn't spawn a thread to avoid having 
+ *  lingering threads for classes with streams as members. Use start_thread() 
+ *  to create the worker thread and 'activate' the generic stream.
+ *
+ *  CUDA stream: The constructor creates a stream and handles for the current 
+ *  device. To create a stream for a specific device, use the corresponding 
+ *  constructor.
+ *
+ *  MPI stream: standard handler for asynchronous MPI calls.
  */
-inline Stream::Stream() : StreamBase() {
+inline Stream::Stream() {
 
   PROFILING_FUNCTION_HEADER
 
-  // These here can't be in the initializer list since we have delegating 
-  // constructors
-  thread_alive = false;
-  next_ticket  = 0;
-  terminate    = false;
+  load_defaults();
 
-  next_in_queue.store(0);
+#ifdef HAVE_CUDA
+  cuda_create();
+#endif
 
 }
 
-/** \brief            Constructor for a stream without a worker thread
- *                    (causes synchronous execution on all routines that use
- *                    this stream)
+/** \brief            Constructor a synchronous stream
+ *
+ *  \param[in]        ignored
+ *
+ *  \example
+ *    Stream mystream(Streams::Synchronous);
  */
-// Note: we delegate to Stream() and not to StreamBase(stream_spec) in order 
-// to avoid reproducing the constructor above
-inline Stream::Stream(Streams stream_spec) : Stream() {
+inline Stream::Stream(Streams ignored) {
 
-  synchronous_operation = (stream_spec == Streams::Synchronous) ? true : false;
+  PROFILING_FUNCTION_HEADER
+
+  load_defaults();
+  synchronous = false;
+
+#ifdef HAVE_CUDA
+  cuda_create();
+#endif
 
 }
 
-/** \brief            Enables the stream by creating the worker thread
+
+#ifdef HAVE_CUDA // or MIC
+/** \brief            Constructor for a stream on a specific device
+ *
+ *  With the exception of the device specification the same as the default 
+ *  constructor.
+ *
+ *  \param[in]        device_id
+ *                    Id of the device to be used by the stream. Shared across 
+ *                    all sub streams that support devices as there is 
+ *                    typically only one sort of accelerator in one system.
+ */
+inline Stream::Stream(int device_id_) {
+
+  PROFILING_FUNCTION_HEADER
+
+  load_defaults();
+
+# ifdef HAVE_CUDA
+  cuda_create(device_id_);
+# endif
+
+}
+
+/** \brief            Constructor for a synchronous stream on a specific 
+ *                    device
+ *
+ *  \param[in]        device_id
+ *                    Id of the device to be used by the stream. Shared across 
+ *                    all sub streams that support devices as there is 
+ *                    typically only one sort of accelerator in one system.
+ *
+ *  \param[in]        ignored
+ */
+inline Stream::Stream(int device_id_, Streams ignored) {
+
+  PROFILING_FUNCTION_HEADER
+
+  load_defaults();
+  synchronous = false;
+
+# ifdef HAVE_CUDA
+  cuda_create(device_id_);
+# endif
+
+}
+#endif /* HAVE_CUDA  or MIC */
+
+/** \brief            Destructor
+ */
+inline Stream::~Stream() {
+
+  PROFILING_FUNCTION_HEADER
+
+  stop_thread();
+  clear();
+  sync();
+
+#ifdef HAVE_CUDA
+  cuda_destroy();
+#endif
+
+}
+
+/** \brief            Synchronize with a specific task i.e. wait for a 
+ *                    specific task to be completed
+ *
+ *  For streams that don't support synchronizing with a specific ticket, 
+ *  global synchronization is performed.
+ *
+ *  \param[in]        ticket
+ *                    OPTIONAL: 'Ticket' number of the task to be processed. A 
+ *                    ticket number of 0 indicates that global synchronization 
+ *                    is requested. DEFAULT: 0
+ */
+inline void Stream::sync(I_t ticket) {
+
+  PROFILING_FUNCTION_HEADER
+
+  sync_generic(ticket);
+#ifdef HAVE_CUDA
+  sync_cuda();
+#endif
+#ifdef HAVE_MPI
+  sync_mpi();
+#endif
+
+}
+/** \overload
+ */
+inline void Stream::sync() { sync(0); }
+
+
+/** \brief            Remove all tasks from the stream
+ *
+ *  For streams not supporting clearing, synchronization is performed.
+ */
+inline void Stream::clear() {
+
+  PROFILING_FUNCTION_HEADER
+
+  // Generic stream operations
+
+  // Locking blocks if there's another thread
+  if (!synchronous && thread_alive) {
+
+    Threads::MutexLock clear_lock(lock);
+
+    // Remove all tasks from the queue
+    queue.clear();
+
+    // This signals that no work is available
+    next_ticket = next_in_queue;
+
+  } else {
+
+    // Remove all tasks from the queue
+    queue.clear();
+
+    // This signals that no work is available
+    next_ticket = next_in_queue;
+
+  }
+
+#ifdef HAVE_CUDA
+  sync_cuda();
+#endif
+#ifdef HAVE_MPI
+  sync_mpi();
+#endif
+
+}
+
+/** \brief            Set properties of the stream
+ *
+ *  \param[in]        device_id_
+ *                    Device to bind the stream to
+ *
+ *  \param[in]        asynchronous_
+ *                    True -> make the stream asynchronous
+ *                    False -> make the stream synchronous
+ */
+inline void Stream::set(int device_id_, bool asynchronous_) {
+
+#ifdef HAVE_CUDA
+  sync_cuda();
+  cuda_destroy();
+#endif
+
+  synchronous = !asynchronous_;
+  device_id = device_id;
+
+#ifdef HAVE_CUDA
+  cuda_create(device_id);
+#endif
+
+}
+
+#ifndef DOXYGEN_SKIP
+/** \brief            Set all members to default values
+ */
+inline void Stream::load_defaults() {
+
+  synchronous          = false;
+  prefer_native        = true;
+  device_id            = 0;
+  thread_alive         = false;
+  next_ticket          = 1;
+  generic_synchronized = true;
+# ifdef HAVE_CUDA
+  cuda_synchronized    = true;
+# endif
+# ifdef HAVE_MPI
+  mpi_synchronized     = true;
+# endif
+  terminate_thread     = false;
+  next_in_queue.store(1);
+
+}
+#endif /* not DOXYGEN_SKIP */
+
+// Generic stream facilities
+/** \brief            Enables the generic stream by creating the worker thread
  *
  *  For synchronous streams, no worker thread is spawned.
  */
-inline void Stream::start() {
+inline void Stream::start_thread() {
 
   PROFILING_FUNCTION_HEADER
 
-  if (synchronous_operation) {
-  
+  if (synchronous) {
+
     return;
-  
+
   } else {
 
     // Start the worker thread
@@ -203,19 +436,40 @@ inline void Stream::start() {
 
 }
 
-/** \brief            Terminate the stream
+/** \brief            Signal the worker thread to exit, thereby stopping the 
+ *                    queue
  */
-inline Stream::~Stream() {
+inline void Stream::stop_thread() {
 
   PROFILING_FUNCTION_HEADER
 
-  stop();
-  clear();
+  if (!synchronous && thread_alive) {
+
+    {
+
+      Threads::MutexLock terminate_lock(lock);
+
+      terminate_thread = true;
+
+    }
+
+    cv.notify_all();
+
+#ifdef USE_POSIX_THREADS
+    pthread_join(worker_thread, NULL);
+#else /* C++11 threads */
+    worker_thread.join();
+#endif
+
+  }
+
+  thread_alive = false;
 
 }
 
-// The routine for the worker thread
 #ifndef DOXYGEN_SKIP
+/** \brief            Payload for the thread
+ */
 inline void Stream::worker() {
 
   PROFILING_FUNCTION_HEADER
@@ -223,7 +477,7 @@ inline void Stream::worker() {
   // Buffer so we can release the lock before executing
   std::function<void()> current_task;
 
-  while (!terminate) {
+  while (!terminate_thread) {
 
     { // RAII scope for thread_lock
 
@@ -235,9 +489,10 @@ inline void Stream::worker() {
 
         // If the queue is empty we wait (releases the lock while waiting and 
         // reacquires it when the condition becomes true)
-        cv.wait(thread_lock, [this](){ return (!queue.empty() || terminate); });
+        cv.wait(thread_lock,
+                [this](){ return (!queue.empty() || terminate_thread); });
 
-        if (terminate) return;
+        if (terminate_thread) return;
 
       }
 
@@ -263,7 +518,7 @@ inline void Stream::worker() {
 }
 #endif /* DOXYGEN_SKIP */
 
-/** \brief            Add a new task to the queue
+/** \brief            Add a new task to the queue of the generic stream
  *
  *  \param[in]        task
  *                    Functor to be put on the queue and processed
@@ -277,7 +532,7 @@ inline I_t Stream::add(std::function<void()> task) {
 
   I_t my_ticket;
 
-  if (synchronous_operation || !thread_alive) {
+  if (synchronous || !thread_alive) {
 
     // No worker thread, no locking required
     my_ticket = next_ticket;
@@ -285,7 +540,7 @@ inline I_t Stream::add(std::function<void()> task) {
     queue.push_front(task);
 
     ++next_ticket;
-  
+
   } else {
 
     // Do the locking dance
@@ -308,19 +563,23 @@ inline I_t Stream::add(std::function<void()> task) {
 
   }
 
+  generic_synchronized = false;
+
   return my_ticket;
 
 }
 
-/** \brief            Synchronize with a specific task, i.e. wait for a
- *                    specific task to be completed
+/** \brief            Synchronize with a specific task in the generic stream, 
+ *                    i.e. wait for a specific task to be completed
  *
  *  \param[in]        ticket
  *                    'Ticket' number of the task to be processed.
  */
-inline void Stream::sync(I_t ticket) {
+inline void Stream::sync_generic(I_t ticket) {
 
   PROFILING_FUNCTION_HEADER
+
+  if (generic_synchronized) return;
 
   if (next_in_queue > ticket) {
 
@@ -328,8 +587,8 @@ inline void Stream::sync(I_t ticket) {
 
   } else {
 
-    if (synchronous_operation || !thread_alive) {
-    
+    if (synchronous || !thread_alive) {
+
       // Work off the queue in the current thread (no locking required)
 
       std::function<void()> current_task;
@@ -341,9 +600,9 @@ inline void Stream::sync(I_t ticket) {
 
         ++next_in_queue;
         queue.pop_back();
-      
+
       }
-    
+
     } else {
 
       // Acquire the lock, check the condition, wait till next_in_queue is 
@@ -355,77 +614,152 @@ inline void Stream::sync(I_t ticket) {
 
   }
 
-}
-
-/** \brief            Synchronize with the stream (i.e. waits till all tasks
- *                    are processed)
- */
-inline void Stream::sync() {
-
-  sync(next_ticket - 1);
+  if (ticket == next_in_queue - 1) generic_synchronized = true;
 
 }
 
-/** \brief            Signal the worker thread to exit, thereby stopping the 
- *                    queue
+
+// CUDA Stream facilities
+#ifdef HAVE_CUDA
+/** \brief            Synchronize with the CUDA stream
  */
-inline void Stream::stop() {
+inline void Stream::sync_cuda() {
 
   PROFILING_FUNCTION_HEADER
 
-  if (!synchronous_operation && thread_alive) {
+  if (cuda_synchronized) return;
 
-    {
+  checkCUDA(cudaStreamSynchronize(cuda_stream));
 
-      Threads::MutexLock terminate_lock(lock);
+  cuda_synchronized = true;
 
-      terminate = true;
+}
 
-    }
+/** \brief            Create all handles for the cuda stream
+ *
+ *  \param[in]        device_id_
+ *                    OPTIONAL: the id of the device to create the handlers 
+ *                    for. If none is given, it is assumed that the handles 
+ *                    are to be created for the current device.
+ *
+ *  \note             The function reads 'synchronous' and assumes the current
+ *                    device is the one to create the handlers for
+ */
+inline void Stream::cuda_create(int device_id_) {
 
-    cv.notify_all();
 
-#ifdef USE_POSIX_THREADS
-    pthread_join(worker_thread, NULL);
-#else /* C++11 threads */
-    worker_thread.join();
-#endif
+  int prev_device;
+  checkCUDA(cudaGetDevice(&prev_device));
+  checkCUDA(cudaSetDevice(device_id_));
+
+  if (!synchronous) checkCUDA(cudaStreamCreate(&cuda_stream));
+
+  checkCUBLAS(cublasCreate(&cublas_handle));
+  if (!synchronous) {
+
+    checkCUBLAS(cublasSetStream(cublas_handle, cuda_stream));
+
+  } else { 
+
+    checkCUBLAS(cublasSetStream(cublas_handle, NULL));
 
   }
 
-  thread_alive = false;
+  checkCUSPARSE(cusparseCreate(&cusparse_handle));
+  if (!synchronous) {
 
-}
-
-/** \brief            Remove all tasks from the stream
- */
-inline void Stream::clear() {
-
-  PROFILING_FUNCTION_HEADER
-
-  // Locking blocks if there's another thread
-  if (!synchronous_operation && thread_alive) {
-
-    Threads::MutexLock clear_lock(lock);
-
-    // Remove all tasks from the queue
-    queue.clear();
-
-    // This signals that no work is available
-    next_ticket = next_in_queue;
+    checkCUSPARSE(cusparseSetStream(cusparse_handle, cuda_stream));
 
   } else {
   
-    // Remove all tasks from the queue
-    queue.clear();
-
-    // This signals that no work is available
-    next_ticket = next_in_queue;
+    checkCUSPARSE(cusparseSetStream(cusparse_handle, NULL));
   
   }
 
+  checkCUDA(cudaSetDevice(prev_device));
+
+  device_id = device_id_;
+
+}
+/** \overload
+ */
+inline void Stream::cuda_create() {
+
+  int current_device;
+  checkCUDA(cudaGetDevice(&current_device));
+
+  cuda_create(current_device);
+
 }
 
+/** \brief            Destroy all handles for the cuda stream
+ */
+inline void Stream::cuda_destroy() {
+
+  checkCUSPARSE(cusparseDestroy(cusparse_handle));
+  checkCUBLAS(cublasDestroy(cublas_handle));
+  if (!synchronous) checkCUDA(cudaStreamDestroy(cuda_stream));
+
+}
+#endif /* HAVE_CUDA */
+
+
+#ifdef HAVE_MPI
+# ifndef DOXYGEN_SKIP
+/*  \brief              Internal helper function facilitating appending to the 
+ *                      MPI stream
+ *
+ *  \param[in]          n_tasks
+ *                      Number of tasks that will be added
+ *
+ *  \returns            The position at which insertion can start
+ */
+inline I_t Stream::_add_mpi_tasks(I_t n_tasks) {
+
+  PROFILING_FUNCTION_HEADER
+
+  auto current = mpi_requests.size();
+  mpi_requests.resize(current + n_tasks);
+  mpi_statuses.resize(current + n_tasks);
+
+  return current;
+
+}
+# endif /* not DOXYGEN_SKIP */
+
+/** \brief            Synchronize with the MPI stream
+ */
+inline void Stream::sync_mpi() {
+
+  PROFILING_FUNCTION_HEADER
+
+  if (mpi_synchronized) return;
+
+  for (unsigned int i = 0; i < mpi_requests.size(); ++i) {
+
+    MPI_Wait(&mpi_requests[i], &mpi_statuses[i]);
+
+# ifndef LINALG_NO_CHECKS
+    if (mpi_statuses[i].MPI_ERROR != MPI_SUCCESS) {
+
+      MPI::excMPIError my_exception("MPIStream: operation %d in stream "
+                                    "failed: ", i);
+      my_exception.set_status(mpi_statuses[i]);
+
+      throw my_exception;
+
+    }
+# endif
+
+  }
+
+  mpi_requests.clear();
+  mpi_statuses.clear();
+
+  mpi_synchronized = true;
+
+}
+#endif /* HAVE_MPI */
 
 #ifndef DOXYGEN_SKIP
 /*  \brief            Helper class to bundle some matrix with a function.  
@@ -443,7 +777,8 @@ inline void Stream::clear() {
  *
  *                    All in all this definitely smells like bad design. Maybe 
  *                    it'd be better to provide copy constructors for Dense<T> 
- *                    and Sparse<T> in the first place ...
+ *                    and Sparse<T> in the first place but I've chosen to stay 
+ *                    with the Google C++ style guide on this point.
  */
 template <typename T>
 struct DenseMatrixFunctionBundle {
@@ -479,246 +814,6 @@ struct DenseMatrixFunctionBundle {
 
 };
 #endif /* not DOXYGEN_SKIP */
-
-
-#ifdef HAVE_CUDA
-/** \brief            Class to encapsulate a CUDA stream
- *
- *  The stream is bound to a device and includes a cublasHandle and
- *  cusparseHandle associated with the stream. The stream is ordered but can't
- *  be synchronized on arbitrary positions. It only supports CUDA, cuBLAS and
- *  cuSPARSE functions.
- */
-struct CUDAStream : StreamBase {
-
-# ifndef DOXYGEN_SKIP
-  cudaStream_t   cuda_stream;
-  cublasHandle_t cublas_handle;
-  int device_id;
-# endif
-
-  CUDAStream();
-  CUDAStream(Streams stream_spec);
-  CUDAStream(int device_id);
-  ~CUDAStream();
-  inline void sync();
-  inline void set(int device_id, bool synchronous);
-
-};
-
-/** \brief              Constructor for a stream on the current device
- */
-inline CUDAStream::CUDAStream() {
-
-  PROFILING_FUNCTION_HEADER
-
-  checkCUDA(cudaGetDevice(&device_id));
-  checkCUDA(cudaStreamCreate(&cuda_stream));
-  checkCUBLAS(cublasCreate(&cublas_handle));
-
-}
-
-/** \brief              Constructor for the default (synchronous) stream on
- *                      the current device
- */
-inline CUDAStream::CUDAStream(Streams stream_spec)
-                     : StreamBase(stream_spec) {
-
-  PROFILING_FUNCTION_HEADER
-
-  checkCUBLAS(cublasCreate(&cublas_handle));
-
-}
-
-/** \brief              Constructor for a stream on a specific device
- *
- *  \param[in]          device_id_
- *                      Id of the device for which to create the stream.
- */
-inline CUDAStream::CUDAStream(int device_id_)
-                     : device_id(device_id_) {
-
-  PROFILING_FUNCTION_HEADER
-
-  int prev_device;
-  checkCUDA(cudaGetDevice(&prev_device));
-
-  checkCUDA(cudaSetDevice(device_id));
-  checkCUDA(cudaStreamCreate(&cuda_stream));
-  checkCUBLAS(cublasCreate(&cublas_handle));
-
-  checkCUDA(cudaSetDevice(prev_device));
-
-}
-
-// Destructor
-inline CUDAStream::~CUDAStream() {
-
-  PROFILING_FUNCTION_HEADER
-
-  checkCUBLAS(cublasDestroy(cublas_handle));
-
-  if (!synchronous_operation) {
-
-    checkCUDA(cudaStreamDestroy(cuda_stream));
-
-  }
-
-}
-
-/** \brief            Synchronize with the stream (i.e. waits till all tasks
- *                    are processed)
- */
-inline void CUDAStream::sync() {
-
-  PROFILING_FUNCTION_HEADER
-
-  if (synchronized || synchronous_operation) {
-
-    return;
-
-  }
-
-  checkCUDA(cudaStreamSynchronize(cuda_stream));
-  synchronized = true;
-
-}
-
-/** \brief            Function change/reinitialize a stream
- *
- *  \param[in]        device_id_
- *                    The id of the device the stream should be bound to
- */
-inline void CUDAStream::set(int device_id_, bool synchronous) {
-
-  // A stream is always pre-initialized, so we need to destruct that first
-  checkCUBLAS(cublasDestroy(cublas_handle));
-  if (!synchronous_operation) checkCUDA(cudaStreamDestroy(cuda_stream));
-
-  device_id = device_id_;
-  synchronous_operation = synchronous;
-
-  if (synchronous_operation) {
-  
-    checkCUBLAS(cublasCreate(&cublas_handle));
-  
-  } else {
-
-    int prev_device;
-    checkCUDA(cudaGetDevice(&prev_device));
-
-    checkCUDA(cudaSetDevice(device_id));
-    checkCUDA(cudaStreamCreate(&cuda_stream));
-    checkCUBLAS(cublasCreate(&cublas_handle));
-
-    checkCUDA(cudaSetDevice(prev_device));
-
-  }
-
-}
-
-
-#endif /* HAVE_CUDA */
-
-
-#ifdef HAVE_MPI
-/** \brief            MPIStream
- *
- *  The MPI stream handle allows for synchronization of multiple asynchronous
- *  MPI calls. However, there is no ordering guarantee for the calls (as there
- *  is none with one synchronization unit in MPI itself). It is in that sense
- *  not appendable as it does not guarantee that earlier operations are
- *  completed before later operations.
- */
-struct MPIStream : StreamBase {
-
-  MPIStream();
-  MPIStream(Streams stream_spec);
-
-# ifndef DOXYGEN_SKIP
-  std::vector<MPI_Request> requests;
-  std::vector<MPI_Status>  statuses;
-  inline I_t add_operations(I_t i);
-# endif
-
-  inline void sync();
-
-};
-
-/** \brief            Constructor for an asynchronous stream
- */
-inline MPIStream::MPIStream() {
-
-  PROFILING_FUNCTION_HEADER
-
-}
-
-/** \brief            Constructor for a synchronous stream
- */
-inline MPIStream::MPIStream(Streams stream_spec) : StreamBase(stream_spec) {
-
-  PROFILING_FUNCTION_HEADER
-
-}
-
-
-// Internal helper function to append to the stream
-# ifndef DOXYGEN_SKIP
-inline I_t MPIStream::add_operations(I_t i) {
-
-  PROFILING_FUNCTION_HEADER
-
-  auto current = requests.size();
-  requests.resize(current + i);
-  statuses.resize(current + i);
-
-  return current;
-
-}
-# endif
-
-/** \brief            Synchronize with the stream (i.e. waits till all tasks
- *                    are processed)
- */
-inline void MPIStream::sync() {
-
-  PROFILING_FUNCTION_HEADER
-
-  if (synchronized) {
-
-    return;
-
-  } else {
-
-    for (unsigned int i = 0; i < requests.size(); ++i) {
-
-      MPI_Wait(&requests[i], &statuses[i]);
-
-# ifndef LINALG_NO_CHECKS
-      if (statuses[i].MPI_ERROR != MPI_SUCCESS) {
-
-        MPI::excMPIError my_exception("MPIStream: operation %d in stream "
-                                      "failed: ", i);
-        my_exception.set_status(statuses[i]);
-
-        throw my_exception;
-
-      }
-# endif
-
-    }
-
-    requests.clear();
-    statuses.clear();
-    synchronized = true;
-
-    return;
-
-  }
-
-}
-
-#endif /* HAVE_MPI */
 
 } /* namespace LinAlg */
 
