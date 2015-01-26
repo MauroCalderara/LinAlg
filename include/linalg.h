@@ -22,7 +22,7 @@
 #include "dense.h"
 #include "sparse.h"
 #include "copy.h"
-#include "abstract.h"
+#include "abstract/abstract.h"
 #include "metadata.h"
 
 #ifdef HAVE_CUDA
