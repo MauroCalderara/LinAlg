@@ -18,6 +18,7 @@
 #include <fstream>    // std::fstream
 #include <sstream>    // std::istringstream
 #include <utility>    // std::move
+#include <limits>     // std::numeric_limits
 
 #include "../preprocessor.h"
 #include "../types.h"
@@ -298,6 +299,9 @@ void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
       auto indices = matrix._indices.get();
       auto edges   = matrix._edges.get();
 
+      I_t minimal_index = std::numeric_limits<I_t>::max();
+      I_t maximal_index = std::numeric_limits<I_t>::min();
+
       I_t i, j;
       I_t last_i = first_index;
       bool format_real_ok = true;
@@ -332,9 +336,17 @@ void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
           }
         }
 
+        minimal_index = std::min(minimal_index, j);
+        maximal_index = std::max(maximal_index, j + 1); // upper limit is ex-
+                                                        // clusive
+
         last_i = i;
       }
+
       edges[size] = n_nonzeros + first_index;
+
+      matrix._minimal_index = minimal_index - first_index;
+      matrix._maximal_index = maximal_index - first_index;
 
       // TODO: Optionally check for consistency
 
@@ -349,7 +361,7 @@ void read_CSR(LinAlg::Sparse<T>& matrix, std::string filename) {
     }
 #endif
 
-    matrix._first_index = first_index;
+    matrix.first_index(first_index, false);
 
     file_to_read.close();
 

@@ -34,7 +34,6 @@
 // and templated members of Sparse<T>
 #include "forward.h"
 
-
 namespace LinAlg {
 
 /** \brief            Sparse matrix struct
@@ -48,12 +47,12 @@ struct Sparse : Matrix {
   // Destructor.
   ~Sparse();
 
-  // See dense.h for an argument why we don't provide assignment and copy
-  // constructors
+  // See dense.h for an argument on why we provide the constructors and 
+  // operators we do
   Sparse(Sparse&& other);
+  Sparse(Sparse& other);
+  Sparse(const Sparse& other);
 #ifndef DOXYGEN_SKIP
-  Sparse(Sparse& other) = delete;
-  Sparse(const Sparse& other) = delete;
   Sparse& operator=(Sparse other) = delete;
 #endif
 
@@ -89,7 +88,7 @@ struct Sparse : Matrix {
   template <typename U>
   inline void reallocate_like(const U& other);
 
-  // Explicitly copy
+  // Explicit, synchronous copy
   inline void copy_from(const Sparse<T>& source, SubBlock sub_block);
   inline void copy_from(const Dense<T>& source, SubBlock sub_block);
   inline void copy_from(const Sparse<T>& source, I_t first_row, I_t last_row,
@@ -101,9 +100,20 @@ struct Sparse : Matrix {
   inline void operator<<(const Sparse<T>& source);
   inline void operator<<(const Dense<T>& source);
 
-  // Should have an asynchronous variant as well
-  // int copy_async_from(const Sparse<T>& source, SubBlock sub_block, Stream& 
-  // stream); ...
+  // Explicit, asynchronous copy
+  inline I_t copy_from_async(const Sparse<T>& source, SubBlock sub_block,
+                             Stream& stream);
+  inline I_t copy_from_async(const Dense<T>& source, SubBlock sub_block,
+                             Stream& stream);
+  inline I_t copy_from_async(const Sparse<T>& source, I_t first_row,
+                             I_t last_row, I_t first_col, I_t last_col,
+                             Stream& stream);
+  inline I_t copy_from_async(const Dense<T>& source, I_t first_row,
+                             I_t last_row, I_t first_col, I_t last_col, 
+                             Stream& stream);
+  inline I_t copy_from_async(const Sparse<T>& source, Stream& stream);
+  inline I_t copy_from_async(const Dense<T>& source, Stream& stream);
+
 
   /// Mark the matrix as transposed
   inline void transpose() { _transposed = !_transposed; }
@@ -148,7 +158,7 @@ struct Sparse : Matrix {
   /// Return index of first element in arrays
   inline int first_index() const { return _first_index; }
   // Set index of first element in arrays
-  inline void first_index(int new_first_index);
+  inline void first_index(int new_first_index, bool update_indices = true);
 
   // Return the indexed width within a certain row or column range
   std::tuple<I_t, I_t> find_extent(const I_t first_line,
@@ -183,9 +193,8 @@ struct Sparse : Matrix {
   bool _transposed;
   Format _format;
 
-  // Whether the matrix is complex or not. Overridden in sparse.cc with
-  // specializations for C_t and Z_t:
-  inline bool _is_complex() const { return false; }
+  // Whether the matrix is complex or not, specializations for C_t and Z_t:
+  inline bool _is_complex() const;
 
 #ifdef HAVE_CUDA
   // The CUSPARSE matrix descriptor
@@ -202,7 +211,8 @@ struct Sparse : Matrix {
   unsigned char _properties;
 
   // Optional width of the matrix (columns for CSR, rows for CSC matrices), 
-  // C-style indexing
+  // C-style indexing (i.e. actual minimal index stored in indices is 
+  // _minimal_index + first_index)
   I_t _minimal_index;
   I_t _maximal_index;
 
@@ -222,11 +232,14 @@ Sparse<T>::Sparse()
                   _values(nullptr),
                   _indices(nullptr),
                   _edges(nullptr),
-                  _first_index(0),
+                  _first_index(1),
                   _location(Location::host),
                   _device_id(0),
                   _transposed(false),
                   _format(Format::CSR),
+#ifdef HAVE_CUDA
+                  _cusparse_descriptor(NULL),
+#endif
 #ifdef HAVE_MPI
                   _row_offset(0),
 #endif
@@ -243,12 +256,6 @@ Sparse<T>::~Sparse() {
 
   PROFILING_FUNCTION_HEADER
 
-#ifdef HAVE_CUDA
-  if (_location == Location::GPU) {
-    checkCUSPARSE(cusparseDestroyMatDescr(_cusparse_descriptor));
-  }
-#endif
-
   unlink();
 
 }
@@ -263,6 +270,28 @@ Sparse<T>::Sparse(Sparse&& other) : Sparse() {
 
   // Default initialize (already happened at this point) and swap
   swap(*this, other);
+
+}
+
+/** \brief              Copy constructor
+ */
+template <typename T>
+Sparse<T>::Sparse(Sparse<T>& other) : Sparse() {
+
+  PROFILING_FUNCTION_HEADER
+
+  clone_from(other);
+
+}
+
+/** \brief              Copy const constructor
+ */
+template <typename T>
+Sparse<T>::Sparse(const Sparse<T>& other) : Sparse() {
+
+  PROFILING_FUNCTION_HEADER
+
+  clone_from(other);
 
 }
 
@@ -348,6 +377,12 @@ Sparse<T>::Sparse(I_t size, I_t n_nonzeros, int first_index, Location location,
                 _device_id(device_id),
                 _transposed(false),
                 _format(format),
+#ifdef HAVE_CUDA
+                _cusparse_descriptor(NULL),
+#endif
+#ifdef HAVE_MPI
+                _row_offset(0),
+#endif
                 _properties(0x0),
                 _minimal_index(0),
                 _maximal_index(0) {
@@ -374,9 +409,12 @@ Sparse<T>::Sparse(I_t size, I_t n_nonzeros, int first_index, Location location,
   if (_location == Location::GPU) {
 
     checkCUSPARSE(cusparseCreateMatDescr(&_cusparse_descriptor));
+
     if (_first_index == 1) {
+
       checkCUSPARSE(cusparseSetMatIndexBase(_cusparse_descriptor, \
                                             CUSPARSE_INDEX_BASE_ONE));
+
     }
 
   }
@@ -445,6 +483,12 @@ Sparse<T>::Sparse(I_t size, I_t n_nonzeros, T* values, I_t* indices, I_t* edges,
                   _device_id(device_id),
                   _transposed(false),
                   _format(format),
+#ifdef HAVE_CUDA
+                  _cusparse_descriptor(NULL),
+#endif
+#ifdef HAVE_MPI
+                  _row_offset(0),
+#endif
                   _properties(0x0),
                   _minimal_index(0),
                   _maximal_index(0) {
@@ -478,9 +522,12 @@ Sparse<T>::Sparse(I_t size, I_t n_nonzeros, T* values, I_t* indices, I_t* edges,
   if (location == Location::GPU) {
 
     checkCUSPARSE(cusparseCreateMatDescr(&_cusparse_descriptor));
+
     if (_first_index == 1) {
+
       checkCUSPARSE(cusparseSetMatIndexBase(_cusparse_descriptor, \
                                             CUSPARSE_INDEX_BASE_ONE));
+
     }
 
   }
@@ -516,7 +563,21 @@ inline void Sparse<T>::clone_from(const Sparse<T>& source) {
   _transposed          = source._transposed;
   _format              = source._format;
 #ifdef HAVE_CUDA
-  _cusparse_descriptor = source._cusparse_descriptor;
+  // We never copy a descriptor because we can't guarantee that other 
+  // Sparse<T> won't destroy it without us being aware of it
+  _cusparse_descriptor = NULL;
+  if (_location == Location::GPU) {
+
+    checkCUSPARSE(cusparseCreateMatDescr(&_cusparse_descriptor));
+
+    if (_first_index == 1) {
+
+      checkCUSPARSE(cusparseSetMatIndexBase(_cusparse_descriptor, \
+                                            CUSPARSE_INDEX_BASE_ONE));
+
+    }
+
+  }
 #endif
 #ifdef HAVE_MPI
   _row_offset          = source._row_offset;
@@ -573,10 +634,10 @@ inline void Sparse<T>::reallocate(I_t size, I_t n_nonzeros, Location location,
 
 #ifndef LINALG_NO_CHECKS
   if (size < 0 || n_nonzeros < 0) {
-  
+
     throw excBadArgument("Sparse.reallocate(): size and n_nonzeros must be "
                          "non-negative.");
-  
+
   }
 #endif
 
@@ -605,9 +666,12 @@ inline void Sparse<T>::reallocate(I_t size, I_t n_nonzeros, Location location,
     if (_location != Location::GPU) {
 
       checkCUSPARSE(cusparseCreateMatDescr(&_cusparse_descriptor));
+
       if (_first_index == 1) {
+
         checkCUSPARSE(cusparseSetMatIndexBase(_cusparse_descriptor, \
                                               CUSPARSE_INDEX_BASE_ONE));
+
       }
 
     }
@@ -627,8 +691,9 @@ inline void Sparse<T>::reallocate(I_t size, I_t n_nonzeros, Location location,
 
 #ifdef HAVE_CUDA
   if (location != Location::GPU && _location == Location::GPU) {
-  
+
     checkCUSPARSE(cusparseDestroyMatDescr(_cusparse_descriptor));
+    _cusparse_descriptor = NULL;
 
   }
 #endif
@@ -812,6 +877,122 @@ inline void Sparse<T>::operator<<(const Dense<T>& source) {
 
 }
 
+/** \brief            Copies data from a (sub)matrix asynchronously
+ *
+ *  \param[in]        source
+ *                    The matrix from which to copy the data.
+ *
+ *  \param[in]        sub_block
+ *                    Submatrix specification  (C-style indexing).
+ *
+ *  \param[in,out]    stream
+ *                    Stream to use for the transfer
+ *
+ *  \returns          The ticket number on the stream for the transfer
+ *
+ *  \note             This function copies memory
+ */
+template <typename T>
+inline I_t Sparse<T>::copy_from_async(const Sparse<T>& source,
+                                      SubBlock sub_block, Stream& stream) {
+
+  PROFILING_FUNCTION_HEADER
+
+  return copy_async(source, sub_block, *this, stream);
+
+}
+/** \overload
+ */
+template <typename T>
+inline I_t Sparse<T>::copy_from_async(const Dense<T>& source,
+                                      SubBlock sub_block, Stream& stream) {
+
+  PROFILING_FUNCTION_HEADER
+
+  return copy_async(source, sub_block, *this, stream);
+
+}
+
+/** \brief            Copies a (sub)matrix into the current matrix
+ *
+ *  \param[in]        source
+ *                    The matrix from which to copy the data.
+ *
+ *  \param[in]        first_row
+ *                    The first row of the source matrix which is part of
+ *                    the submatrix (i.e. inclusive, C-style indexing).
+ *
+ *  \param[in]        last_row
+ *                    The first row of the source matrix which is not part
+ *                    of the submatrix (i.e. exclusive, C-style indexing).
+ *
+ *  \param[in]        first_col
+ *                    The first column of the source matrix which is part of
+ *                    the submatrix (i.e. inclusive, C-style indexing).
+ *
+ *  \param[in]        last_col
+ *                    The first column of the source matrix which is not
+ *                    part of the submatrix (i.e. exclusive, C-style indexing).
+ *
+ *  \param[in,out]    stream
+ *                    Stream to use for the transfer
+ *
+ *  \returns          The ticket number on the stream for the transfer
+ *
+ *  \note             This function copies memory
+ */
+template <typename T>
+inline I_t Sparse<T>::copy_from_async(const Sparse<T>& source, I_t first_row, 
+                                      I_t last_row, I_t first_col,
+                                      I_t last_col, Stream& stream) {
+
+  return copy_from_async(source, SubBlock(first_row, last_row, first_col, 
+                         last_col), stream);
+
+}
+/** \overload
+ */
+template <typename T>
+inline I_t Sparse<T>::copy_from_async(const Dense<T>& source, I_t first_row, 
+                                      I_t last_row, I_t first_col,
+                                      I_t last_col, Stream& stream) {
+
+  return copy_from_async(source, SubBlock(first_row, last_row, first_col, 
+                         last_col), stream);
+
+}
+
+/** \brief            Copies a matrix into the current matrix
+ *
+ *  \param[in]        source
+ *                    The matrix from which to copy the data.
+ *
+ *  \param[in,out]    stream
+ *                    Stream to use for the transfer
+ *
+ *  \returns          The ticket number on the stream for the transfer
+ *
+ *  \note             This function copies memory
+ */
+template <typename T>
+inline I_t Sparse<T>::copy_from_async(const Sparse<T>& source, Stream& stream) {
+
+  PROFILING_FUNCTION_HEADER
+
+  return copy_async(source, *this, stream);
+
+}
+/** \overload
+ */
+template <typename T>
+inline I_t Sparse<T>::copy_from_async(const Dense<T>& source, Stream& stream) {
+
+  PROFILING_FUNCTION_HEADER
+
+  return copy_async(source, *this, stream);
+
+}
+
 /** \brief            Return the number of rows in the matrix
  */
 template <typename T>
@@ -854,7 +1035,7 @@ inline I_t Sparse<T>::cols() const {
   if (_format == Format::CSR) {
 
     if (_minimal_index == 0 && _maximal_index == 0 && !_transposed) {
-      throw excUserError("rows(): run .update_extent() before querying the "
+      throw excUserError("cols(): run .update_extent() before querying the "
                          "columns of a CSR matrix");
     }
     return (_transposed) ? _size : _maximal_index - _minimal_index;
@@ -862,7 +1043,7 @@ inline I_t Sparse<T>::cols() const {
   } else if (_format == Format::CSC) {
 
     if (_minimal_index == 0 && _maximal_index == 0 && _transposed) {
-      throw excUserError("rows(): run .update_extent() before querying the "
+      throw excUserError("cols(): run .update_extent() before querying the "
                          "columns of a transposed CSC matrix");
     }
     return (_transposed) ? _maximal_index - _minimal_index : _size;
@@ -927,11 +1108,19 @@ inline void Sparse<T>::unlink() {
 
   _n_nonzeros = 0;
   _size = 0;
-  _first_index = 0;
-  _location = Location::host;
+  _first_index = 1;
   _device_id = 0;
   _transposed = false;
   _format = Format::CSR;
+#ifdef HAVE_CUDA
+  if (_location == Location::GPU) {
+
+    checkCUSPARSE(cusparseDestroyMatDescr(_cusparse_descriptor));
+    _cusparse_descriptor = NULL;
+
+  }
+#endif
+  _location = Location::host;
 #ifdef HAVE_MPI
   _row_offset = 0;
 #endif
@@ -1023,17 +1212,18 @@ inline void Sparse<T>::unset(Property property) {
  *                    style, 1 for FORTRAN style indexing). Other values
  *                    are invalid.
  *
+ *  \param[in]        update_indices
+ *                    OPTIONAL: whether to update the indices. DEFAULT: true.
+ *
  *  \todo             The loop over the elements could be vectorized and
  *                    parallelized.
  */
 template <typename T>
-inline void Sparse<T>::first_index(int new_first_index) {
+inline void Sparse<T>::first_index(int new_first_index, bool update_indices) {
 
   PROFILING_FUNCTION_HEADER
 
-  if (new_first_index == _first_index) {
-    return;
-  }
+  if (new_first_index == _first_index) return;
 
 #ifndef LINALG_NO_CHECKS
   if (new_first_index != 0 && new_first_index != 1) {
@@ -1050,31 +1240,59 @@ inline void Sparse<T>::first_index(int new_first_index) {
   if (_location == Location::host || _location == Location::MIC) {
 #endif
 
-    auto index_change = new_first_index - _first_index;
-    auto _indices_ptr = _indices.get();
-    auto _edges_ptr   = _edges.get();
+    if (update_indices) {
 
-    for (int i = 0; i < _n_nonzeros; ++i) {
-      _indices_ptr[i] += index_change;
-    }
+      auto index_change = new_first_index - _first_index;
+      auto _indices_ptr = _indices.get();
+      auto _edges_ptr   = _edges.get();
 
-    for (int i = 0; i < _size + 1; ++i) {
-      _edges_ptr[i] += index_change;
+      for (int i = 0; i < _n_nonzeros; ++i) {
+        _indices_ptr[i] += index_change;
+      }
+
+      for (int i = 0; i < _size + 1; ++i) {
+        _edges_ptr[i] += index_change;
+      }
+
     }
 
     _first_index = new_first_index;
+
   }
 
 #ifdef HAVE_CUDA
   else if (_location == Location::GPU) {
 
+    if (update_indices) {
+
 # ifndef LINALG_NO_CHECKS
-    throw excUnimplemented("Sparse.first_index(): Can not change first index on "
-                           "matrices on the GPU");
+      throw excUnimplemented("Sparse.first_index(): Can not change first " 
+                             "index on matrices on the GPU");
 # endif
 
-    // To support this we would need a CUDA kernel that increments all elements
-    // in the vectors.
+      // To support this we would need a CUDA kernel that increments all 
+      // elements in the vectors.
+
+    }
+
+    _first_index = new_first_index;
+
+    printf("LinAlg: Warning, changing the index on a cuSPARSE handle has "
+           "previously led to subsequent crashes, please investigate");
+
+    // Maybe one should destroy the handle and recreate it?
+    if (new_first_index == 0) {
+
+      checkCUSPARSE(cusparseSetMatIndexBase(_cusparse_descriptor, \
+                                            CUSPARSE_INDEX_BASE_ZERO));
+
+    } else {
+
+      checkCUSPARSE(cusparseSetMatIndexBase(_cusparse_descriptor, \
+                                            CUSPARSE_INDEX_BASE_ONE));
+
+    }
+
 
   }
 #endif
@@ -1095,7 +1313,9 @@ inline void Sparse<T>::first_index(int new_first_index) {
  *                    Last row or column to analyze in a CSR or CSC matrix 
  *                    (C-style numbering, exclusive)
  *
- *  \returns          Tuple (first, last) where last is exclusive
+ *  \returns          Tuple (first, last) where last is exclusive, C-style 
+ *                    numbering, that is the indices are counted from zero 
+ *                    irrespective of the matrix' first_index setting.
  *
  *  Example usage:
  *  \code
@@ -1121,7 +1341,7 @@ std::tuple<I_t, I_t> Sparse<T>::find_extent(const I_t first_line,
     throw excBadArgument("Sparse.find_extent(first_line, last_line), "
                          "last_line: invalid argument (> size())");
   } else if (_location != Location::host) {
-    throw excUnimplemented("Sparse.find_extentfirst_line, last_line(): "
+    throw excUnimplemented("Sparse.find_extent(first_line, last_line): "
                            "currently only matrices in main memory are "
                            "supported");
   }
@@ -1135,14 +1355,19 @@ std::tuple<I_t, I_t> Sparse<T>::find_extent(const I_t first_line,
 
   for (I_t line = first_line; line < last_line; ++line) {
 
-    // We assume sorted CSR here
-    auto start = indices[edges[line] - first_index];
-    // + 1 because we want largest_index to be exclusive
-    auto stop  = indices[edges[line + 1] - first_index - 1] + 1;
+    if (edges[line] != edges[line + 1]) {
 
-    smallest_index = (start < smallest_index) ? start : smallest_index;
-    largest_index  = (stop  > largest_index)  ? stop  : largest_index;
-  
+      // We assume sorted CSR/CSC here
+      auto start_index = indices[edges[line] - first_index] - first_index;
+      // + 1 because we want largest_index to be exclusive
+      auto stop_index  = indices[edges[line + 1] - first_index - 1] - 
+                         first_index + 1;
+
+      smallest_index = std::min(start_index, smallest_index);
+      largest_index  = std::max(stop_index, largest_index);
+
+    }
+
   }
 
   return std::tuple<I_t, I_t>(smallest_index, largest_index);
@@ -1161,6 +1386,24 @@ inline void Sparse<T>::update_extent() {
   tie(_minimal_index, _maximal_index) = find_extent(0, _size);
 
 }
+
+#ifndef DOXYGEN_SKIP
+/*  \brief            Returns whether the matrix is complex or not
+ *
+ *  \return           True if the matrix is of complex data type (C_t, Z_t),
+ *                    false otherwise.
+ */
+template <typename T>
+inline bool Sparse<T>::_is_complex() const { return false; }
+/** \overload
+ */
+template <>
+inline bool Sparse<C_t>::_is_complex() const { return true; }
+/** \overload
+ */
+template <>
+inline bool Sparse<Z_t>::_is_complex() const { return true; }
+#endif
 
 } /* namespace LinAlg */
 
