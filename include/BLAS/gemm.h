@@ -39,6 +39,7 @@
 #include "../profiling.h"
 #include "../exceptions.h"
 #include "../utilities/checks.h"
+#include "../streams.h"
 #include "../dense.h"
 
 #ifndef DOXYGEN_SKIP
@@ -324,8 +325,12 @@ inline void xGEMM(cublasHandle_t handle, cublasOperation_t transa,
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_output_transposed;
 #ifdef HAVE_CUDA
-using LinAlg::Utilities::check_gpu_handles;
-using LinAlg::CUDA::cuBLAS::handles;
+using LinAlg::Utilities::check_gpu_structures;
+using LinAlg::Utilities::check_stream_prefer_native;
+using LinAlg::Utilities::check_stream_device_id;
+using LinAlg::Utilities::check_stream_alive;
+using LinAlg::CUDA::cuBLAS::prepare_cublas;
+using LinAlg::CUDA::cuBLAS::finish_cublas;
 #endif
 
 // Convenience bindings (bindings for Dense<T>)
@@ -362,9 +367,7 @@ inline void xGEMM(const T alpha, const Dense<T>& A, const Dense<T>& B,
 #endif
 
   auto location = A._location;
-#if defined(HAVE_CUDA) || defined(HAVE_MIC)
   auto device_id = A._device_id;
-#endif
   auto m = A.rows();
   auto n = B.cols();
   auto k = B.rows();
@@ -376,29 +379,53 @@ inline void xGEMM(const T alpha, const Dense<T>& A, const Dense<T>& B,
   auto ldc = C._leading_dimension;
 
   if (location == Location::host) {
+
     char transa = (A._transposed) ? 'T' : 'N';
     char transb = (B._transposed) ? 'T' : 'N';
+
     FORTRAN::xGEMM(transa, transb, m, n, k, alpha, A_ptr, lda, B_ptr, ldb, beta,
                    C_ptr, ldc);
+
   }
 #ifdef HAVE_CUDA
   else if (location == Location::GPU) {
 
+    using BLAS::cuBLAS::xGEMM;
+
 # ifndef LINALG_NO_CHECKS
-    check_gpu_handles("xGEMM()");
+    check_gpu_structures("xGEMM()");
 # endif
 
     cublasOperation_t transa = (A._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
     cublasOperation_t transb = (B._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
-    cuBLAS::xGEMM(handles[device_id], transa, transb, m, n, k, &alpha, A_ptr,
-                  lda,  B_ptr, ldb, &beta, C_ptr, ldc);
+
+    int               prev_device = 0;
+    cudaStream_t      prev_cuda_stream;
+    Stream*           stream_;
+
+# ifndef USE_LOCAL_STREAMS
+    stream_ = &(LinAlg::CUDA::compute_stream[device_id]);
+# else
+    Stream my_stream(device_id);
+    stream_ = &my_stream;
+# endif
+
+    auto handle = prepare_cublas(*stream_, &prev_device, &prev_cuda_stream);
+    xGEMM(*handle, transa, transb, m, n, k, &alpha, A_ptr, lda,  B_ptr, ldb, 
+          &beta, C_ptr, ldc);
+    finish_cublas(*stream_, &prev_device, &prev_cuda_stream, handle);
+
+    stream_->sync_cuda();
+
   }
 #endif
 
 #ifndef LINALG_NO_CHECKS
   else {
+
     throw excUnimplemented("xGEMM(): BLAS-3 GEMM not supported on selected "
                            "location");
+
   }
 #endif
 
@@ -466,11 +493,27 @@ inline void xGEMM(const T alpha, const Dense<U>& A, const Dense<V>& B,
 
 }
 
-/** \overload
+/** \brief            General asynchronous matrix-matrix multiply
+ *
+ *  C = alpha * op(A) * op(B) + beta * C
+ *
+ *  \param[in]        alpha
+ *
+ *  \param[in]        A
+ *
+ *  \param[in]        B
+ *
+ *  \param[in]        beta
+ *
+ *  \param[in,out]    C
+ *
+ *  \param[in]        stream
+ *
+ *  \returns          The ticket number for the operation on the stream
  */
-template <typename T, typename U>
-inline void xGEMM(const T alpha, const Dense<T>& A, const Dense<U>& B,
-                  const T beta, Dense<T>& C) {
+template <typename T>
+inline I_t xGEMM_async(const T alpha, const Dense<T>& A, const Dense<T>& B,
+                       const T beta, Dense<T>& C, Stream& stream) {
 
   PROFILING_FUNCTION_HEADER
 
@@ -486,6 +529,8 @@ inline void xGEMM(const T alpha, const Dense<T>& A, const Dense<U>& B,
   }
 #endif
 
+  I_t ticket = 0;
+
   auto location = A._location;
   auto device_id = A._device_id;
   auto m = A.rows();
@@ -499,26 +544,166 @@ inline void xGEMM(const T alpha, const Dense<T>& A, const Dense<U>& B,
   auto ldc = C._leading_dimension;
 
   if (location == Location::host) {
-    char transa = (A._transposed) ? 'T' : 'N';
-    char transb = (B._transposed) ? 'T' : 'N';
-    FORTRAN::xGEMM(transa, transb, m, n, k, alpha, A_ptr, lda, B_ptr, ldb, beta,
-                   C_ptr, ldc);
+
+    if (stream.synchronous) {
+
+      char transa = (A._transposed) ? 'T' : 'N';
+      char transb = (B._transposed) ? 'T' : 'N';
+
+      FORTRAN::xGEMM(transa, transb, m, n, k, alpha, A_ptr, lda, B_ptr, ldb, 
+                     beta, C_ptr, ldc);
+
+    } else {
+    
+      // Create a task using the synchronous variant
+
+#ifndef LINALG_NO_CHECKS
+      check_stream_alive(stream, "xGEMM_async()");
+#endif
+
+      // Arguments passed by copy, ensures memory lifetime but callee can't 
+      // modify the arguments anymore
+      auto task = [=]() mutable { xGEMM(alpha, A, B, beta, C); };
+
+      ticket = stream.add(task);
+
+    }
+
   }
 #ifdef HAVE_CUDA
   else if (location == Location::GPU) {
+
+    using BLAS::cuBLAS::xGEMM;
+
+# ifndef LINALG_NO_CHECKS
+    check_gpu_structures("xGEMM_async()");
+    check_stream_prefer_native(stream, "xGEMM_async()");
+    check_stream_device_id(stream, device_id, "xGEMM_async()");
+# endif
+
     cublasOperation_t transa = (A._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
     cublasOperation_t transb = (B._transposed) ? CUBLAS_OP_T : CUBLAS_OP_N;
-    cuBLAS::xGEMM(handles[device_id], transa, transb, m, n, k, &alpha, A_ptr,
-                  lda,  B_ptr, ldb, &beta, C_ptr, ldc);
+
+    int               prev_device = 0;
+    cudaStream_t      prev_cuda_stream;
+
+    auto handle = prepare_cublas(stream, &prev_device, &prev_cuda_stream);
+    xGEMM(*handle, transa, transb, m, n, k, &alpha, A_ptr, lda,  B_ptr, ldb, 
+          &beta, C_ptr, ldc);
+    finish_cublas(stream, &prev_device, &prev_cuda_stream, handle);
+
   }
 #endif
 
 #ifndef LINALG_NO_CHECKS
   else {
+
     throw excUnimplemented("xGEMM(): BLAS-3 GEMM not supported on selected "
                            "location");
+
   }
 #endif
+
+  return ticket;
+
+}
+
+/** \overload
+ */
+template <typename T, typename U, typename V>
+inline I_t xGEMM_async(const T alpha, const Dense<U>& A, const Dense<V>& B,
+                       const V beta, Dense<V>& C, Stream& stream) {
+
+  // This is the most general case that is only supported on the CPU if we 
+  // have MKL support
+
+  PROFILING_FUNCTION_HEADER
+
+#ifndef LINALG_NO_CHECKS
+  check_device(A, B, C, "xGEMM_async(alpha, A, B, beta, C)");
+  check_output_transposed(C, "xGEMM_async(alpha, A, B, beta, C)");
+
+  if (A.rows() != C.rows() || A.cols() != B.rows() || B.cols() != C.cols()) {
+    throw excBadArgument("xGEMM_async(alpha, A, B, beta, C), A, B, C: " 
+                         "argument matrix size mismatch (A:%dx%d B:%dx%d "
+                         "C:%dx%d)", A.rows(), A.cols(), B.rows(), B.cols(), 
+                         C.rows(), C.cols());
+  }
+
+  if (A._location != Location::host) {
+    throw excUnimplemented("xGEMM_async(alpha, A, B, beta, C): the most "
+                           "general case of this operation is only supported "
+                           "for matrices in main memory (see BLAS/gemm.h)");
+  
+  }
+# ifndef HAVE_MKL
+  throw excUnimplemented("xGEMM_async(alpha, A, B, beta, C): the most "
+                         "general case of this operation (alpha complex, beta "
+                         "complex != 1) is only supported when using MKL "
+                         "(see BLAS/gemm.h)");
+# endif
+#else /* LINALG_NO_CHECKS */
+# ifndef HAVE_MKL
+  std::printf("xGEMM_async(alpha, A, B, beta, C): real-complex requires MKL, "
+              "returning\n");
+  return;
+# endif
+#endif /* not LINALG_NO_CHECKS */
+
+  I_t ticket = 0;
+
+#ifdef HAVE_MKL
+  auto location = A._location;
+  auto device_id = A._device_id;
+  auto m = A.rows();
+  auto n = B.cols();
+  auto k = B.rows();
+  auto A_ptr = A._begin();
+  auto lda = A._leading_dimension;
+  auto B_ptr = B._begin();
+  auto ldb = B._leading_dimension;
+  auto C_ptr = C._begin();
+  auto ldc = C._leading_dimension;
+
+  if (location == Location::host) {
+
+    char transa = (A._transposed) ? 'T' : 'N';
+    char transb = (B._transposed) ? 'T' : 'N';
+
+    if (stream.synchronous) {
+      
+      MKL::xGEMM(transa, transb, m, n, k, cast<V>(alpha), A_ptr, lda, B_ptr, 
+                 ldb, beta, C_ptr, ldc);
+
+    } else {
+
+      // Create a task using the synchronous variant
+
+# ifndef LINALG_NO_CHECKS
+      check_stream_alive(stream, "xGEMM_async()");
+# endif
+
+      // Arguments passed by copy, ensures memory lifetime but callee can't 
+      // modify the arguments anymore
+      auto task = [=]() mutable { xGEMM(alpha, A, B, beta, C); };
+
+      ticket = stream.add(task);
+
+    }
+
+  }
+# ifndef LINALG_NO_CHECKS
+  else {
+
+    throw excUnimplemented("xGEMM_async(): BLAS-3 GEMM not supported on "
+                           "selected location");
+
+  }
+# endif
+
+#endif /* HAVE_MKL */
+
+  return ticket;
 
 }
 
