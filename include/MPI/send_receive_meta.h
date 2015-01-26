@@ -39,6 +39,8 @@ namespace LinAlg {
 
 namespace MPI {
 
+using LinAlg::Utilities::check_rank;
+
 /** \brief            Send meta data
  *
  *  \param[in]        meta
@@ -57,6 +59,10 @@ inline void send_meta(MetaData meta, MPI_Comm communicator, int receiving_rank,
                       int tag) {
 
   PROFILING_FUNCTION_HEADER
+
+# ifndef LINALG_NO_CHECKS
+  check_rank(receiving_rank, communicator, "send_meta()");
+# endif
 
   auto internal_tag = MPI_TAG_OFFSET * tag;
 
@@ -93,7 +99,7 @@ inline void send_meta(MetaData meta, MPI_Comm communicator, int receiving_rank,
  *                    MPI rank of the receiving party
  *
  *  \param[in]        tag
- *                    Tag of the transfer (must match tag on receiver)
+ *                    Tag of the transfer (must match tag on sender)
  *
  *  \param[in]        stream
  *                    Stream to use
@@ -112,6 +118,10 @@ inline I_t send_meta_async(MetaData& meta, MPI_Comm communicator,
                            int receiving_rank, int tag, Stream& stream) {
 
   // Note: we have to accept by reference as mpi_isend copies the pointer
+
+# ifndef LINALG_NO_CHECKS
+  check_rank(receiving_rank, communicator, "send_meta_async()");
+# endif
 
   PROFILING_FUNCTION_HEADER
 
@@ -151,12 +161,10 @@ inline I_t send_meta_async(MetaData& meta, MPI_Comm communicator,
                            "worker thread");
     }
 # endif
+
+    auto task = [=]() { send_meta(meta, communicator, receiving_rank, tag); };
   
-    return stream.add(
-                       [=] () {
-                         send_meta(meta, communicator, receiving_rank, tag);
-                       }
-                     );
+    return stream.add(task);
   
   }
 
@@ -242,6 +250,10 @@ inline void receive_meta(MetaData& meta, MPI_Comm communicator,
 
   PROFILING_FUNCTION_HEADER
 
+# ifndef LINALG_NO_CHECKS
+  check_rank(sending_rank, communicator, "receive_meta()");
+# endif
+
   auto internal_tag = MPI_TAG_OFFSET * tag;
 
   MPI_Status status;
@@ -275,7 +287,7 @@ inline void receive_meta(MetaData& meta, MPI_Comm communicator,
  *                    MPI rank of the sending party
  *
  *  \param[in]        tag
- *                    Tag of the transfer (must match tag on receiver)
+ *                    Tag of the transfer (must match tag on sender)
  *
  *  \returns          The meta data
  */
@@ -301,7 +313,7 @@ inline MetaData receive_meta(MPI_Comm communicator, int sending_rank, int tag) {
  *                    MPI rank of the sending arty
  *
  *  \param[in]        tag
- *                    Tag of the transfer (must match tag on receiver)
+ *                    Tag of the transfer (must match tag on sender)
  *
  *  \param[in]        stream
  *                    Stream to use
@@ -314,9 +326,13 @@ inline MetaData receive_meta(MPI_Comm communicator, int sending_rank, int tag) {
  *                    undefined behavior. Use with care.
  */
 inline I_t receive_meta_async(MetaData& meta, MPI_Comm communicator,
-                               int sending_rank, int tag, Stream& stream) {
+                              int sending_rank, int tag, Stream& stream) {
 
   PROFILING_FUNCTION_HEADER
+
+# ifndef LINALG_NO_CHECKS
+  check_rank(sending_rank, communicator, "receive_meta_async()");
+# endif
 
   if (stream.synchronous) {
 
@@ -356,10 +372,10 @@ inline I_t receive_meta_async(MetaData& meta, MPI_Comm communicator,
     }
 # endif
 
-    return stream.add([=, &meta] () {
-                        receive_meta(meta, communicator, sending_rank, tag);
-                      }
-                     );
+    auto task = [=, &meta]() mutable { receive_meta(meta, communicator, 
+                                                    sending_rank, tag); };
+
+    return stream.add(task);
   
   }
 
@@ -386,6 +402,10 @@ inline void receive_meta(Dense<T>& matrix, MPI_Comm communicator,
 
   PROFILING_FUNCTION_HEADER
 
+# ifndef LINALG_NO_CHECKS
+  check_rank(sending_rank, communicator, "receive_meta()");
+# endif
+
   MetaData meta = receive_meta(communicator, sending_rank, tag);
 
   meta.apply(matrix);
@@ -401,11 +421,11 @@ inline void receive_meta(Dense<T>& matrix, MPI_Comm communicator,
  *  \param[in]        communicator
  *                    MPI communicator for the transfer
  *
- *  \param[in]        receiving_rank
- *                    MPI rank of the receiving party
+ *  \param[in]        sending_rank
+ *                    MPI rank of the sending party
  *
  *  \param[in]        tag
- *                    Tag of the transfer (must match tag on receiver)
+ *                    Tag of the transfer (must match tag on sender)
  *
  *  \returns          Ticket number for synchronizing on the stream.
  *
@@ -420,6 +440,10 @@ inline I_t receive_meta_async(Dense<T>& matrix, MPI_Comm communicator,
 
   PROFILING_FUNCTION_HEADER
 
+# ifndef LINALG_NO_CHECKS
+  check_rank(sending_rank, communicator, "receive_meta_async()");
+# endif
+
   if (stream.synchronous) {
 
     receive_meta(matrix, communicator, sending_rank, tag);
@@ -428,10 +452,10 @@ inline I_t receive_meta_async(Dense<T>& matrix, MPI_Comm communicator,
 
   } else {
 
-    return stream.add([=, &matrix] () {
-                        receive_meta(matrix, communicator, sending_rank, tag);
-                      }
-                     );
+    auto task = [=, &matrix]() mutable { receive_meta(matrix, communicator, 
+                                                      sending_rank, tag); };
+
+    return stream.add(task);
 
   }
 

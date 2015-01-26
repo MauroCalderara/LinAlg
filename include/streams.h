@@ -18,6 +18,9 @@
 # include <cuda_runtime.h> // various CUDA routines
 # include <cublas_v2.h>
 # include <cusparse_v2.h>
+# ifdef HAVE_MAGMA
+#   include <magma.h>
+# endif
 # include "CUDA/cuda_checks.h"
 #endif
 
@@ -63,10 +66,22 @@ enum class Streams { Synchronous };
  *
  *  CUDA based sub stream
  *  ---------------------
- *    - Tasks supported: asynchronous CUDA/CuBLAS/CuSPARSE functions
+ *    - Tasks supported: asynchronous CUDA/cuBLAS/cuSPARSE functions
  *    - Ordering:        global (tasks get executed in the order they are
  *                       added to the stream)
  *    - Synchroniztion:  global
+ *    - Notes:
+ *
+ *      1 - The cuBLAS/cuSPARSE handles are 'orthogonal' to the streams: each 
+ *          device (and preferably each thread) has one handle and there can 
+ *          be multiple streams. Handles are not tied to streams but to 
+ *          devices.
+ *
+ *      2 - For how to properly use the Stream class in CUDA/cuBLAS/cuSPARSE 
+ *          wrapper functions see
+ *            utilities/copy_array.h  (for CUDA calls like cudaMemcpy2DAsync)
+ *            BLAS/gemm.h             (for cuBLAS calls)
+ *            BLAS/cuSPARSE/          (for cuSPARSE calls)
  *
  *  MPI based sub stream
  *  --------------------
@@ -89,7 +104,6 @@ struct Stream {
   inline void sync();
   inline void clear();
   inline void set(int device_id_, bool asynchronous_);
-
 
 #ifndef DOXYGEN_SKIP
   inline void load_defaults();
@@ -146,9 +160,13 @@ struct Stream {
 # ifdef HAVE_CUDA
   //////////////////////////////
   // Facilities for CUDA streams
+  //
+  // For how to use this properly, see the comment in the class description!
   cudaStream_t                      cuda_stream;
-  cublasHandle_t                    cublas_handle;
-  cusparseHandle_t                  cusparse_handle;
+#   ifdef HAVE_MAGMA
+  // A magma queue is the same as a stream, not as a handle
+  magma_queue_t                     magma_queue;
+#   endif
   inline void                       sync_cuda();
   bool                              cuda_synchronized;
   inline void                       cuda_create();
@@ -206,7 +224,7 @@ inline Stream::Stream(Streams ignored) {
   PROFILING_FUNCTION_HEADER
 
   load_defaults();
-  synchronous = false;
+  synchronous = true;
 
 #ifdef HAVE_CUDA
   cuda_create();
@@ -231,6 +249,7 @@ inline Stream::Stream(int device_id_) {
   PROFILING_FUNCTION_HEADER
 
   load_defaults();
+  device_id = device_id_;
 
 # ifdef HAVE_CUDA
   cuda_create(device_id_);
@@ -253,6 +272,7 @@ inline Stream::Stream(int device_id_, Streams ignored) {
   PROFILING_FUNCTION_HEADER
 
   load_defaults();
+  device_id = device_id_;
   synchronous = false;
 
 # ifdef HAVE_CUDA
@@ -349,10 +369,10 @@ inline void Stream::clear() {
 
 /** \brief            Set properties of the stream
  *
- *  \param[in]        device_id_
+ *  \param[in]        device_id
  *                    Device to bind the stream to
  *
- *  \param[in]        asynchronous_
+ *  \param[in]        asynchronous
  *                    True -> make the stream asynchronous
  *                    False -> make the stream synchronous
  */
@@ -364,7 +384,7 @@ inline void Stream::set(int device_id_, bool asynchronous_) {
 #endif
 
   synchronous = !asynchronous_;
-  device_id = device_id;
+  device_id = device_id_;
 
 #ifdef HAVE_CUDA
   cuda_create(device_id);
@@ -385,6 +405,7 @@ inline void Stream::load_defaults() {
   generic_synchronized = true;
 # ifdef HAVE_CUDA
   cuda_synchronized    = true;
+  cuda_stream          = NULL;
 # endif
 # ifdef HAVE_MPI
   mpi_synchronized     = true;
@@ -631,52 +652,55 @@ inline void Stream::sync_cuda() {
 
   checkCUDA(cudaStreamSynchronize(cuda_stream));
 
+# ifdef HAVE_MAGMA
+  magma_queue_sync(magma_queue);
+# endif
+
   cuda_synchronized = true;
 
 }
 
-/** \brief            Create all handles for the cuda stream
+/** \brief            Create the cuda stream
  *
  *  \param[in]        device_id_
- *                    OPTIONAL: the id of the device to create the handlers 
- *                    for. If none is given, it is assumed that the handles 
- *                    are to be created for the current device.
+ *                    OPTIONAL: the id of the device to create the CUDA stream 
+ *                    for. If none is given, it is assumed that the stream is 
+ *                    to be created for the current device.
  *
  *  \note             The function reads 'synchronous' and assumes the current
- *                    device is the one to create the handlers for
+ *                    device is the one to create the stream for
  */
 inline void Stream::cuda_create(int device_id_) {
 
+  PROFILING_FUNCTION_HEADER
 
-  int prev_device;
-  checkCUDA(cudaGetDevice(&prev_device));
-  checkCUDA(cudaSetDevice(device_id_));
-
-  if (!synchronous) checkCUDA(cudaStreamCreate(&cuda_stream));
-
-  checkCUBLAS(cublasCreate(&cublas_handle));
   if (!synchronous) {
+  
+    int prev_device;
+    checkCUDA(cudaGetDevice(&prev_device));
+    checkCUDA(cudaSetDevice(device_id_));
 
-    checkCUBLAS(cublasSetStream(cublas_handle, cuda_stream));
+    checkCUDA(cudaStreamCreate(&cuda_stream));
 
-  } else { 
-
-    checkCUBLAS(cublasSetStream(cublas_handle, NULL));
-
-  }
-
-  checkCUSPARSE(cusparseCreate(&cusparse_handle));
-  if (!synchronous) {
-
-    checkCUSPARSE(cusparseSetStream(cusparse_handle, cuda_stream));
+    checkCUDA(cudaSetDevice(prev_device));
+  
 
   } else {
+
+    // Internally cuda_stream is actually a pointer and the NULL pointer 
+    // indicates the default stream. However, we generally wrap around 
+    // accessing cuda_stream if the stream is synchronous by using the 
+    // synchronous variants of CUDA functions. cuBLAS, cuSPARSE and MAGMA
+    // can deal with the NULL pointer when creating their handles so there we 
+    // don't treat the synchronous stream specially.
   
-    checkCUSPARSE(cusparseSetStream(cusparse_handle, NULL));
+    cuda_stream = NULL;
   
   }
 
-  checkCUDA(cudaSetDevice(prev_device));
+# ifdef HAVE_MAGMA
+  magma_queue_set_cuda_stream(magma_queue, cuda_stream);
+# endif
 
   device_id = device_id_;
 
@@ -692,13 +716,21 @@ inline void Stream::cuda_create() {
 
 }
 
-/** \brief            Destroy all handles for the cuda stream
+/** \brief            Destroy all cuda stream
  */
 inline void Stream::cuda_destroy() {
 
-  checkCUSPARSE(cusparseDestroy(cusparse_handle));
-  checkCUBLAS(cublasDestroy(cublas_handle));
-  if (!synchronous) checkCUDA(cudaStreamDestroy(cuda_stream));
+  if (!synchronous) {
+
+# ifdef HAVE_MAGMA
+    // Note: currently MAGMA queues == CUDA streams, but that might change one 
+    // day.
+    if (magma_queue != cuda_stream) magma_queue_destroy(magma_queue);
+#endif
+
+    checkCUDA(cudaStreamDestroy(cuda_stream));
+
+  }
 
 }
 #endif /* HAVE_CUDA */
@@ -760,60 +792,6 @@ inline void Stream::sync_mpi() {
 
 }
 #endif /* HAVE_MPI */
-
-#ifndef DOXYGEN_SKIP
-/*  \brief            Helper class to bundle some matrix with a function.  
- *                    Effectively it is a function object that holds a matrix. 
- *
- *  \note             This class is neccessary only because Dense<T> and 
- *                    Sparse<T> explicitly don't have a copy constructor (see
- *                    in dense.h for an explanation). Otherwise matrices could 
- *                    be passed to lambda functions and std::bind calls by copy.
- *                    This class on the other hand is both copyable and 
- *                    callable, thereby solving the problem.
- *
- *                    This is probably not required anymore with C++14's 
- *                    'identifier initializer' lambda captures...
- *
- *                    All in all this definitely smells like bad design. Maybe 
- *                    it'd be better to provide copy constructors for Dense<T> 
- *                    and Sparse<T> in the first place but I've chosen to stay 
- *                    with the Google C++ style guide on this point.
- */
-template <typename T>
-struct DenseMatrixFunctionBundle {
-
-  Dense<T>               bundled_matrix;
-  std::function<void()>  bundled_function;
-
-  /*  \param[in]      matrix
-   *                  Matrix to bundle with the function
-   *
-   *  \param[in]      function
-   *                  Function object that takes a reference to a matrix as 
-   *                  single argument. This function object would typically be 
-   *                  created using a lambda function.
-   *
-   *  \example        See MPI/send_receive_matrix.h
-   */
-  DenseMatrixFunctionBundle(Dense<T>& matrix, T function) 
-                         : bundled_function(function) {
-    bundled_matrix.clone_from(matrix);
-  }
-
-  // Make the object copyable
-  DenseMatrixFunctionBundle(const DenseMatrixFunctionBundle& other) {
-    bundled_matrix.clone_from(other.bundled_matrix);
-    bundled_function = other.bundled_function;
-  }
-
-  ~DenseMatrixFunctionBundle() { bundled_matrix.unlink(); }
-
-  // Call operator
-  inline void operator()() { bundled_function(bundled_matrix); }
-
-};
-#endif /* not DOXYGEN_SKIP */
 
 } /* namespace LinAlg */
 

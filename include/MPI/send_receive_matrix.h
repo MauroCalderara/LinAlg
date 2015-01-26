@@ -40,6 +40,8 @@ namespace LinAlg {
 
 namespace MPI {
 
+using LinAlg::Utilities::check_rank;
+
 /** \brief            Send a matrix to a remote host synchronously
  *
  *  \param[in]        matrix
@@ -67,6 +69,10 @@ void send_matrix(Dense<T>& matrix, MPI_Comm communicator, int receiving_rank,
   if (matrix.is_empty()) {
     return;
   }
+
+# ifndef LINALG_NO_CHECKS
+  check_rank(receiving_rank, communicator, "send_matrix()");
+#endif
 
   // Avoid collisions with multi-tag operations. If sender and receiver are 
   // inconsistent in whether they need to exchange the metadata first, this 
@@ -201,6 +207,10 @@ inline I_t send_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
 
   PROFILING_FUNCTION_HEADER
 
+#ifndef LINALG_NO_CHECKS
+  check_rank(receiving_rank, communicator, "send_matrix_async()");
+#endif
+
   if (stream.synchronous) {
 
     send_matrix(matrix, communicator, receiving_rank, tag, 
@@ -215,18 +225,12 @@ inline I_t send_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
     if (buffered) buffer << matrix;
     else          buffer.clone_from(matrix);
 
-    // Create a bundle of the buffer and a lambda function that gets all static 
-    // parameters by value
-    DenseMatrixFunctionBundle<T> bundle(buffer, 
-      [=] (Dense<T>& tmp_matrix) { 
-        send_matrix(tmp_matrix, communicator, receiving_rank, tag, 
-                    recipient_preallocated, buffered); 
-      }
-    );
+    // The lambda function captures tmp_matrix using a copy so it's lifetime 
+    // is ensured 
+    auto task = [=](){ send_matrix(buffer, communicator, receiving_rank, tag, 
+                                   recipient_preallocated, buffered); };
 
-    // This here creates a lasting copy of bundle, including a clone of buffer.
-    // Thus buffer is not deleted when leadving the scope.
-    return stream.add(std::bind(bundle));
+    return stream.add(task);
 
   }
 
@@ -258,6 +262,10 @@ void receive_matrix(Dense<T>& matrix, MPI_Comm communicator, int sending_rank,
                     int tag) {
 
   PROFILING_FUNCTION_HEADER
+
+# ifndef LINALG_NO_CHECKS
+  check_rank(sending_rank, communicator, "receive_matrix()");
+#endif
 
   // Avoid collisions with multi-tag operations. If sender and receiver are 
   // inconsistent in whether they need to exchange the metadata first, this 
@@ -379,6 +387,8 @@ I_t receive_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
     if (stream.prefer_native && matrix.is_empty() == false) {
 
 #ifndef LINALG_NO_CHECKS
+      check_rank(sending_rank, communicator, "receive_matrix_async()");
+
       // Check if the matrix is continuous/sendable or not. If it is not, we
       // can't receive it asynchronously since we can't create a buffer with
       // an asynchronous MPI call
@@ -433,25 +443,21 @@ I_t receive_matrix_async(Dense<T>& matrix, MPI_Comm communicator,
         // Can't buffer as we need to update the matrix meta data. That is we
         // pass matrix by reference and trust the user to maintain lifetime of
         // the object till invocation of the function in the stream.
-        auto payload = [=, &matrix] () {
-          receive_matrix(matrix, communicator, sending_rank, tag);
-        };
+        auto task = [=, &matrix]() mutable { receive_matrix(matrix, 
+                                                            communicator, 
+                                                            sending_rank, 
+                                                            tag); };
 
-        return stream.add(payload);
+        return stream.add(task);
 
       } else {
 
-        // Create a bundle of the buffer and a lambda function that gets all 
-        // static parameters by value
-        Dense<T> buffer;
-        buffer.clone_from(matrix);
-        DenseMatrixFunctionBundle<T> bundle(buffer,
-          [=] (Dense<T>& tmp_matrix) {
-            receive_matrix(tmp_matrix, communicator, sending_rank, tag);
-          }
-        );
+        // This lambda captures by copy, so the transfer is going into the 
+        // matrix
+        auto task = [=]() mutable { receive_matrix(matrix, communicator, 
+                                                   sending_rank, tag); };
 
-        return stream.add(std::bind(bundle));
+        return stream.add(task);
 
       }
 
