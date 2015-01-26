@@ -48,16 +48,18 @@ struct Dense : Matrix {
   // Destructor.
   ~Dense();
 
-  // This would be the famous four and half. However, I find the arguments in
+  // This would be the famous four and half. I still find the arguments in
   // the Google C++ Style Guide against copy constructors and assignment
   // operators convincing, in particular for a library that is performance
-  // critical. It makes everything a bit more explicit and clear as well. The
-  // user code looks less elegant but is more expressive, which I consider a
+  // critical. However, memory lifetime is bound to the existence of an 
+  // instance. When using lambda functions for the stream tasks it is 
+  // neccessary to have a copy in the lambda function and thus we need a copy 
+  // constructor ...
   // good thing.
   Dense(Dense<T>&& other);
+  Dense(Dense<T>& other);
+  Dense(const Dense<T>& other);
 #ifndef DOXYGEN_SKIP
-  Dense(Dense<T>& other) = delete;
-  Dense(const Dense<T>& other) = delete;
   Dense& operator=(Dense<T> other) = delete;
 #endif
 
@@ -75,9 +77,9 @@ struct Dense : Matrix {
         I_t last_col);
 
   // Submatrix creation from ()-operator
-  inline Dense<T> operator()(SubBlock sub_block);
+  inline Dense<T> operator()(SubBlock sub_block) const;
   inline Dense<T> operator()(I_t first_row, I_t last_row, I_t first_col,
-                             I_t last_col);
+                             I_t last_col) const;
 
   // Common Matrix operations
 
@@ -95,13 +97,23 @@ struct Dense : Matrix {
   inline void reallocate(I_t rows, I_t cols, Location location = Location::host,
                          int device_id = 0);
 
+  // Create a matrix in another matrix's memory (does not neccessarily create 
+  // a submatrix)
+  inline void use_memory_from(const Dense<T>& source, I_t rows, I_t cols,
+                              I_t offset);
+  inline void use_memory_from(const Dense<T>& source, I_t rows, I_t cols);
+  inline void use_memory_from(const Dense<T>& source, SubBlock sub_block,
+                              I_t offset);
+  inline void use_memory_from(const Dense<T>& source, SubBlock sub_block);
+
   // Allocate new memory according to the size of another matrix (no memory is 
   // copied)
   template <typename U>
   inline void reallocate_like(const U& other, SubBlock sub_block,
                               Location location, int device_id = 0);
   template <typename U>
-  inline void reallocate_like(const U& other, Location location, int device_id);
+  inline void reallocate_like(const U& other, Location location,
+                              int device_id);
   template <typename U>
   inline void reallocate_like(const U& other);
 
@@ -117,7 +129,19 @@ struct Dense : Matrix {
   inline void operator<<(const Dense<T>& source);
   inline void operator<<(const Sparse<T>& source);
 
-  // Provide asynchronous variants of the above as well
+  // Asynchronous data copy from one (sub)matrix to the current instance
+  inline I_t copy_from_async(const Dense<T>& source, SubBlock sub_block,
+                             Stream& stream);
+  inline I_t copy_from_async(const Sparse<T>& source, SubBlock sub_block,
+                             Stream& stream);
+  inline I_t copy_from_async(const Dense<T>& source, I_t first_row,
+                             I_t last_row, I_t first_col, I_t last_col,
+                             Stream& stream);
+  inline I_t copy_from_async(const Sparse<T>& source, I_t first_row,
+                             I_t last_row, I_t first_col, I_t last_col,
+                             Stream& stream);
+  inline I_t copy_from_async(const Dense<T>& source, Stream& stream);
+  inline I_t copy_from_async(const Sparse<T>& source, Stream& stream);
 
   /// Mark the matrix as transposed
   inline void transpose() { _transposed = !_transposed; }
@@ -136,7 +160,7 @@ struct Dense : Matrix {
 
   /// Return the storage format
   inline Format format() const { return _format; }
-  
+
   // Set the format
   inline void format(Format new_format);
 
@@ -193,9 +217,8 @@ struct Dense : Matrix {
   // Transposition
   bool _transposed;
 
-  // Whether the matrix is complex or not. Overridden in dense.cc with
-  // specializations for C_t and Z_t:
-  inline bool _is_complex() const { return false; }
+  // Whether the matrix is complex or not, specializations for C_t and Z_t:
+  inline bool _is_complex() const;
 
   // Properties of the matrix
   unsigned char _properties;
@@ -244,6 +267,28 @@ Dense<T>::Dense(Dense<T>&& other) : Dense() {
 
   // Default initialize using the default initialization and swap
   swap(*this, other);
+
+}
+
+/** \brief              Copy constructor
+ */
+template <typename T>
+Dense<T>::Dense(Dense<T>& other) : Dense() {
+
+  PROFILING_FUNCTION_HEADER
+
+  clone_from(other);
+
+}
+
+/** \brief              Copy const constructor
+ */
+template <typename T>
+Dense<T>::Dense(const Dense<T>& other) : Dense() {
+
+  PROFILING_FUNCTION_HEADER
+
+  clone_from(other);
 
 }
 
@@ -403,14 +448,14 @@ Dense<T>::Dense(const Dense<T>& source, SubBlock sub_block)
 
   if ((sub_block.first_row == sub_block.first_col) &&
       (sub_block.last_row  == sub_block.last_col )   ) {
-  
+
     if (source.is(Property::symmetric)) {
       set(Property::symmetric);
     }
     if (source.is(Property::hermitian)) {
       set(Property::hermitian);
     }
-  
+
   }
 
 }
@@ -445,8 +490,8 @@ Dense<T>::Dense(const Dense<T>& source, SubBlock sub_block)
 template <typename T>
 Dense<T>::Dense(const Dense<T>& source, I_t first_row, I_t last_row,
                 I_t first_col, I_t last_col)
-              : Dense(source, 
-                      SubBlock(first_row, last_row, first_col, last_col)){
+              : Dense(source, SubBlock(first_row, last_row, first_col, 
+                      last_col)) {
 }
 
 /** \brief            Submatrix creation
@@ -457,7 +502,7 @@ Dense<T>::Dense(const Dense<T>& source, I_t first_row, I_t last_row,
  *  \returns          A submatrix with the given coordinates
  */
 template <typename T>
-inline Dense<T> Dense<T>::operator()(SubBlock sub_block) {
+inline Dense<T> Dense<T>::operator()(SubBlock sub_block) const {
 
   return Dense<T>(*this, sub_block);
 
@@ -485,7 +530,7 @@ inline Dense<T> Dense<T>::operator()(SubBlock sub_block) {
  */
 template <typename T>
 inline Dense<T> Dense<T>::operator()(I_t first_row, I_t last_row, I_t first_col,
-                                     I_t last_col) {
+                                     I_t last_col) const {
 
   return Dense<T>(*this, SubBlock(first_row, last_row, first_col, last_col));
 
@@ -533,6 +578,22 @@ template <typename T>
 inline void Dense<T>::clone_from(const Dense<T>& source, SubBlock sub_block) {
 
   PROFILING_FUNCTION_HEADER
+
+#ifndef LINALG_NO_CHECKS
+  auto first_row = sub_block.first_row;
+  auto last_row  = sub_block.last_row;
+  auto first_col = sub_block.first_col;
+  auto last_col  = sub_block.last_col;
+  if ((first_row < 0) || (first_row > source.rows()) ||
+      (last_row < 0)  || (last_row > source.rows())  ||
+      (first_col < 0) || (first_col > source.cols()) ||
+      (last_col < 0)  || (last_col > source.cols())    ) {
+    throw excBadArgument("Dense.clone_from(source, sub_block), sub_block: "
+                         "sub_block (%d:%d,%d:%d) not contained in matrix "
+                         "of size %dx%d", first_row, last_row, first_col, 
+                         last_col, source.rows(), source.cols());
+  }
+#endif
 
   clone_from(source);
 
@@ -684,6 +745,89 @@ inline void Dense<T>::reallocate(I_t rows, I_t cols, Location location,
   _cols      = cols;
   _rows      = rows;
 
+}
+
+/** \brief            Uses the memory of a matrix to create another matrix 
+ *                    (not neccessarily a submatrix of the donor matrix)
+ *
+ *  \param[in]        donor
+ *
+ *  \param[in]        rows
+ *                    Number of rows in the new matrix
+ *
+ *  \param[in]        cols
+ *                    Number of columns in the new matrix
+ *
+ *  \param[in]        offset
+ *                    OPTIONAL: Offset from the beginning of the donor memory.
+ *                    Default: 0.
+ */
+template <typename T>
+inline void Dense<T>::use_memory_from(const Dense<T>& donor, I_t rows,
+                                      I_t columns, I_t offset) {
+
+#ifndef LINALG_NO_CHECKS
+  // Donor can't have an offset
+  if (donor._offset != 0) {
+    throw excBadArgument("Dense.use_memory_from(donor, sub_block, offset), "
+                         "donor: donor has an offset");
+  }
+  // Donor must be continuous in memory
+  if (((donor._format == Format::ColMajor) &&
+       (donor._leading_dimension != donor._rows)) ||
+      ((donor._format == Format::RowMajor) &&
+       (donor._leading_dimension != donor._cols))   ) {
+    throw excBadArgument("Dense.use_memory_from(donor, sub_block), "
+                         "donor: donor not continuous in memory");
+  }
+  // It also must have enough space
+  if (donor._rows * donor._cols < offset + rows * columns) {
+    throw excBadArgument("Dense.use_memory_from(donor, sub_block), "
+                         "donor: donor not large enough (%dx%d) for "
+                         "requested alias (%d + %dx%d)", offset, donor.rows(),
+                         donor.cols(), rows, columns);
+  }
+#endif
+
+  Dense<T> tmp(donor._begin() + offset, rows, rows, columns, donor._location, 
+               donor._device_id);
+
+  swap(*this, tmp);
+
+}
+/** \overload
+ */
+template <typename T>
+inline void Dense<T>::use_memory_from(const Dense<T>& donor, I_t rows,
+                                      I_t columns) {
+  use_memory_from(donor, rows, columns, 0);
+}
+
+/** \brief            Uses the memory of a matrix to create another matrix 
+ *                    (not neccessarily a submatrix of the donor matrix)
+ *
+ *  \param[in]        donor
+ *
+ *  \param[in]        sub_block
+ *                    Specification of the matrix size to be created (only the 
+ *                    size of sub_block is extracted, not its position, in 
+ *                    that sense it is not interpreted as a sub_block)
+ *
+ *  \param[in]        offset
+ *                    OPTIONAL: Offset from the beginning of the donor memory.  
+ *                    Default: 0.
+ */
+template <typename T>
+inline void Dense<T>::use_memory_from(const Dense<T>& donor,
+                                      SubBlock sub_block, I_t offset) {
+  use_memory_from(donor, sub_block.rows(), sub_block.cols(), offset);
+}
+/** \overload
+ */
+template <typename T>
+inline void Dense<T>::use_memory_from(const Dense<T>& donor,
+                                      SubBlock sub_block) {
+  use_memory_from(donor, sub_block.rows(), sub_block.cols(), 0);
 }
 
 
@@ -852,6 +996,120 @@ inline void Dense<T>::operator<<(const Sparse<T>& source) {
 
 }
 
+/** \brief            Copies data from a (sub)matrix into the current matrix
+ *                    asynchronously
+ *
+ *  \param[in]        source
+ *                    The matrix from which to copy the data.
+ *
+ *  \param[in]        sub_block
+ *                    Submatrix specification (C-style indexing).
+ *
+ *  \param[in,out]    stream
+ *                    Stream to use for the transfer
+ *
+ *  \returns          The ticket number on the stream for the transfer
+ *
+ *  \note             This function copies memory
+ */
+template <typename T>
+inline I_t Dense<T>::copy_from_async(const Dense<T>& source,
+                                     SubBlock sub_block, Stream& stream) {
+
+  PROFILING_FUNCTION_HEADER
+
+  return copy_async(source, sub_block, *this, stream);
+
+}
+/** \overload
+ */
+template <typename T>
+inline I_t Dense<T>::copy_from_async(const Sparse<T>& source,
+                                     SubBlock sub_block, Stream& stream) {
+
+  PROFILING_FUNCTION_HEADER
+
+  return copy_async(source, sub_block, *this, stream);
+
+}
+
+/** \brief            Copies data from a (sub)matrix into the current matrix
+ *                    asynchronously
+ *
+ *  \param[in]        source
+ *                    The matrix from which to copy the data.
+ *
+ *  \param[in]        first_row
+ *                    The first row of the source matrix which is part of
+ *                    the submatrix (i.e. inclusive, C-style indexing).
+ *
+ *  \param[in]        last_row
+ *                    The first row of the source matrix which is not part
+ *                    of the submatrix (i.e. exclusive, C-style indexing).
+ *
+ *  \param[in]        first_col
+ *                    The first column of the source matrix which is part of
+ *                    the submatrix (i.e. inclusive, C-style indexing).
+ *
+ *  \param[in]        last_col
+ *                    The first column of the source matrix which is not
+ *                    part of the submatrix (i.e. exclusive, C-style indexing).
+ *
+ *  \param[in,out]    stream
+ *                    Stream to use for the transfer
+ *
+ *  \returns          The ticket number on the stream for the transfer
+ *
+ */
+template <typename T>
+inline I_t Dense<T>::copy_from_async(const Dense<T>& source, I_t first_row,
+                               I_t last_row, I_t first_col, I_t last_col,
+                               Stream& stream) {
+  return copy_from_async(source,
+                         SubBlock(first_row, last_row, first_col, last_col), 
+                         stream);
+}
+/** \overload
+ */
+template <typename T>
+inline I_t Dense<T>::copy_from_async(const Sparse<T>& source, I_t first_row, 
+                                     I_t last_row, I_t first_col,
+                                     I_t last_col, Stream& stream) {
+  return copy_from_async(source,
+                         SubBlock(first_row, last_row, first_col, last_col),
+                         stream);
+}
+
+/** \brief            Copies a matrix into the current matrix
+ *
+ *  \param[in]        source
+ *                    The matrix from which to copy the data.
+ *
+ *  \param[in,out]    stream
+ *                    Stream to use for the transfer
+ *
+ *  \returns          The ticket number on the stream for the transfer
+ *
+ */
+template <typename T>
+inline I_t Dense<T>::copy_from_async(const Dense<T>& source, Stream& stream) {
+
+  PROFILING_FUNCTION_HEADER
+
+  return copy_async(source, *this, stream);
+
+}
+/** \overload
+ */
+template <typename T>
+inline I_t Dense<T>::copy_from_async(const Sparse<T>& source, Stream& stream) {
+
+  PROFILING_FUNCTION_HEADER
+
+  return copy_async(source, *this, stream);
+
+}
+
 /** \brief            Changes the matrix' location
  *
  *  \param[in]        new_location
@@ -883,8 +1141,18 @@ void Dense<T>::location(Location new_location, int device_id) {
     tmp._format = _format;
     tmp.reallocate_like(*this, new_location, device_id);
 
+#ifdef HAVE_CUDA
+    // Transfers out of the GPU don't support transposing on the fly so we 
+    // unset the transpose flags prior to transfering and set them back 
+    // afterwards
+    bool was_transposed = _transposed;
+    if (_location == Location::GPU && was_transposed) _transposed = false;
+#endif
     copy(*this, tmp);
     clone_from(tmp);
+#ifdef HAVE_CUDA
+    if (was_transposed) _transposed = true;
+#endif
 
   }
 
@@ -1067,6 +1335,24 @@ inline void Dense<T>::unset(Property property) {
   _properties = _properties & ~(property);
 
 }
+
+#ifndef DOXYGEN_SKIP
+/*  \brief            Returns whether the matrix is complex or not
+ *
+ *  \return           True if the matrix is of complex data type (C_t, Z_t),
+ *                    false otherwise.
+ */
+template <typename T>
+inline bool Dense<T>::_is_complex() const { return false; }
+/** \overload
+ */
+template <>
+inline bool Dense<C_t>::_is_complex() const { return true; }
+/** \overload
+ */
+template <>
+inline bool Dense<Z_t>::_is_complex() const { return true; }
+#endif
 
 } /* namespace LinAlg */
 
