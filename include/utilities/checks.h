@@ -32,7 +32,7 @@ namespace Utilities {
 #ifndef DOXYGEN_SKIP
 
 # ifndef LINALG_NO_CHECKS
-/*  \brief            Checks if two matrices are on the same device, throws an
+/** \brief            Checks if two matrices are on the same device, throws an
  *                    exception if not.
  *
  *  \param[in]        A
@@ -73,8 +73,8 @@ inline void check_device(const Sparse<T>& A, const Dense<U>& B,
 
 }
 
-/*  \brief            Checks if three matrices are on the same device, throws an
- *                    exception if not.
+/** \brief            Checks if three matrices are on the same device, throws 
+ *                    an exception if not.
  *
  *  \param[in]        A
  *                    First matrix
@@ -103,7 +103,7 @@ inline void check_device(const Dense<T>& A, const Dense<U>& B,
 
 }
 
-/*  \brief            Checks if a matrix is transposed.  Raises an exception if
+/** \brief            Checks if a matrix is transposed. Raises an exception if 
  *                    it is.
  *
  *  This helper is used for routines that do not support transposed input.
@@ -142,7 +142,7 @@ inline void check_input_transposed(const Sparse<T>& A,
 
 }
 
-/*  \brief            Checks if a matrix that is supposed to be written to is
+/** \brief            Checks if a matrix that is supposed to be written to is
  *                    transposed.  Raises an exception if it is.
  *
  *  \param[in]        A
@@ -165,7 +165,7 @@ inline void check_output_transposed(const Dense<T>& A,
 
 }
 
-/*  \brief            Checks if a Stream has the same device id as a matrix.
+/** \brief            Checks if a Stream has the same device id as a matrix.
  *                    Raises an exception if the devices are different.
  *
  *  \param[in]        A
@@ -193,35 +193,29 @@ inline void check_stream(const Dense<T>& A, const Stream& stream,
 }
 
 #ifdef HAVE_CUDA
-/*  \brief            Checks if the cublas handles are initialized, raises an 
- *                    exception if not.
+/** \brief            Checks if the global GPU structures are initialized, 
+ *                    raises an exception if not.
  *
  *  \param[in]        caller_name
  *                    Name of the calling routine
  */
-inline void check_gpu_handles(const char* caller_name) {
+inline void check_gpu_structures(const char* caller_name) {
 
-  if (!GPU::_GPU_structures_initialized) {
+  if (!GPU::GPU_structures_initialized) {
 
     std::string message = caller_name;
-#     ifdef HAVE_MAGMA
-    message = message + ": cuBLAS/cuSPARSE/MAGMA handles are not initialized, "
-              "call LinAlg::GPU::init() before calling any "
-              "cuBLAS/cuSPARSE/MAGMA routines";
-#     else
-    message = message + ": cuBLAS/cuSPARSE handles are not initialized, call "
-              "LinAlg::GPU::init() before calling any cuBLAS/cuSPARSE "
+    message = message + ": GPU structures are not initialized, call " 
+              "LinAlg::GPU::init() before calling any cuBLAS/cuSPARSE/MAGMA "
               "routines";
-#     endif
-  
+
     throw CUDA::excCUDAError(message);
-  
+
   }
 
 }
 #   endif /* HAVE_CUDA */
 
-/*  \brief            Checks if a matrix is in a certain format. Raises an
+/** \brief            Checks if a matrix is in a certain format. Raises an
  *                    exception if it is not.
  *
  *  \param[in]        format
@@ -282,7 +276,7 @@ inline void check_format(Format format, const Sparse<T>& A,
 
 }
 
-/*  \brief            Checks if a matrix has certain dimensions. Throws an
+/** \brief            Checks if a matrix has certain dimensions. Throws an
  *                    exception if it does not.
  *
  *  \param[in]        rows
@@ -319,10 +313,10 @@ inline void check_dimensions(I_t rows, I_t columns, const Sparse<T>& A,
                              const char* caller_name) {
 
   if (A._minimal_index == 0 && A._maximal_index == 0) {
-  
+
     throw excBadArgument("check_dimensions(): sparse matrix has undefined "
                          "extent, call .update_extent() first");
-  
+
   }
 
   auto A_rows = A.rows();
@@ -340,8 +334,8 @@ inline void check_dimensions(I_t rows, I_t columns, const Sparse<T>& A,
 
 }
 
-/*  \brief            Checks if a matrix has certain minimal dimensions. Throws 
- *                    an exception if it does not.
+/** \brief            Checks if a matrix has certain minimal dimensions.  
+ *                    Throws an exception if it does not.
  *
  *  \param[in]        rows
  *                    Minimal number of rows.
@@ -371,7 +365,7 @@ inline void check_minimal_dimensions(I_t rows, I_t columns, const Dense<T>& A,
 
 }
 
-/*  \brief            Checks two matrices have the same dimensions. Throws an
+/** \brief            Checks two matrices have the same dimensions. Throws an
  *                    exception if they do not.
  *
  *  \param[in]        A
@@ -416,6 +410,117 @@ inline void check_same_dimensions(const Sparse<T>& A, const Sparse<U>& B,
   }
 
 }
+
+/** \brief            Check if the thread of a stream is alive
+ *
+ *  \param[in]        stream
+ *                    Stream to check.
+ *
+ *  \param[in]        caller_name
+ *                    Name of the calling routine.
+ */
+inline void check_stream_alive(Stream& stream, const char* caller_name) {
+
+  if (!stream.thread_alive) {
+
+    throw excBadArgument("%s: stream has no active thread (call "
+                         "Stream.start_thread() first", caller_name);
+
+  }
+
+}
+
+/** \brief            Check that a stream has prefer_native set
+ *
+ *  \param[in]        stream
+ *                    Stream to check.
+ *
+ *  \param[in]        caller_name
+ *                    Name of the calling routine.
+ */
+inline void check_stream_prefer_native(Stream& stream,
+                                       const char* caller_name) {
+
+  if (!stream.prefer_native) {
+
+    throw excUnimplemented("%s: non native stream support not yet "
+                           "implemented", caller_name);
+
+  }
+
+}
+
+/** \brief            Check that a stream has prefer_native not set
+ *
+ *  \param[in]        stream
+ *                    Stream to check.
+ *
+ *  \param[in]        caller_name
+ *                    Name of the calling routine.
+ */
+inline void check_stream_no_prefer_native(Stream& stream,
+                                          const char* caller_name) {
+
+  if (stream.prefer_native) {
+
+    throw excUnimplemented("%s: native stream support not yet implemented", 
+                           caller_name);
+
+  }
+
+}
+
+/** \brief            Checks the stream device_id
+ *
+ *  \param[in]        stream
+ *                    Stream to check.
+ *
+ *  \param[in]        device_id
+ *                    Device id to compare against.
+ *
+ *  \param[in]        caller_name
+ *                    Name of the calling routine.
+ */
+inline void check_stream_device_id(Stream& stream, int device_id,
+                                   const char* caller_name) {
+
+  if (stream.device_id != device_id) {
+
+    throw excBadArgument("%s: stream's device id (%d) doesn't match data "
+                         "device id (%d)", caller_name, stream.device_id,
+                         device_id);
+
+  }
+
+}
+
+#   ifdef HAVE_MPI
+/** \brief            Checks whether a rank can be in a given communicator
+ * 
+ *  \param[in]        rank
+ *                    MPI rank.
+ *
+ *  \param[in]        communicator
+ *                    MPI communicator.
+ *
+ *  \param[in]        caller_name
+ *                    Name of the calling routine.
+ */
+inline void check_rank(int rank, MPI_Comm communicator,
+                       const char* caller_name) {
+
+  int comm_size = 0;
+  MPI_Comm_size(communicator, &comm_size);
+
+  if (rank >= comm_size) {
+
+    throw excBadArgument("%s: specified rank larger than communicator size",
+                         caller_name);
+
+  }
+
+}
+#   endif /* HAVE_MPI */
 
 # endif /* LINALG_NO_CHECKS */
 
