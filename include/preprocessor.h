@@ -60,42 +60,66 @@
 //
 //    Enable exception stack traces (not yet implemented)
 
-// USE_GLOBAL_TRANSFER_STREAMS
-//
-//    Use a global stream for each of the following tasks:
-//
-//      transfer data into a GPU
-//      transfer data out of a GPU
-//      transfer data within one GPU
-//
-//    and each GPU in the system.
-//
-//    The streams will be stored in LinAlg::CUDA::
-//      in_stream[device_id]
-//      out_stream[device_id]
-//      on_stream[device_id]
-//
-
 // USE_POSIX_THREADS
 //
 //    Use pthreads instead of C++11 threads (which are faster) for the general 
 //    Stream class
 
+// USE_LOCAL_STREAMS
+//
+//    Create a new stream for each _synchronous_ operation. This prevents 
+//    blocking of other operations in non-default streams. If not set, LinAlg 
+//    reuses a set of global streams (for each GPU a separate stream for 
+//    transfers into, transfers out of, transfers within, and computations on 
+//    the device). LinAlg uses other streams than the default whenever 
+//    possible such that operations in other streams do not block during the 
+//    execution. However, all MAGMA LAPACK calls use the default stream.
+
+// USE_LOCAL_CUDA_HANDLES
+//
+//    Create a new cuBLAS / cuSPARSE handle for each operation. If not set, 
+//    LinAlg reuses a set of global handles (a separate one for each GPU).  
+//    This is not recommended but it might improve thread safety.
+
+// CUDA_BLOCK_SIZE
+//
+//    Number of tasks for each CUDA thread
+#ifndef CUDA_BLOCK_SIZE
+# define CUDA_BLOCK_SIZE 16
+#endif
+
+
 // USE_MAGMA_GESV
 //
 //    Use Magma's GESV routine instead of one 'built' by cuBLAS parts
+//    TODO: change the default here
+//#ifndef HAVE_MAGMA
+//# define USE_CUBLAS_GESV
+//#endif
 
 // USE_MAGMA_GETRF
 //
 //    Use Magma's GETRF routine instead of the cuBLAS version
+//    TODO: change the default here
+//#ifndef HAVE_MAGMA
+//# define USE_CUBLAS_GETRF
+//#endif
 
 // USE_MAGMA_GETRI
 //
 //    Use Magma's GETRI routine instead of the cuBLAS version
+//    TODO: change the default here
+//#ifndef HAVE_MAGMA
+//# define USE_CUBLAS_GETRI
+//#endif
 
 // USE_MAGMA_TRSM
 //
 //    Use Magma's TRSM routine instead of the cuBLAS version
+//    TODO: change the default here
+//#ifndef HAVE_MAGMA
+//# define USE_CUBLAS_TRSM
+//#endif
 
 // BUFFER_HELPER_DISPLAY
 //
@@ -109,7 +133,6 @@
 // SIMPLE_PROFILER
 //
 //    Enable the simple profiler
-//#define SIMPLE_PROFILER
 
 // SIMPLE_PROFILER_PREALLOCATED_RECORDS
 //
