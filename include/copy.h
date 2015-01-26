@@ -47,10 +47,10 @@ inline void copy(const Dense<T>& source, Dense<T>& destination) {
 
   using Utilities::copy_2Darray;
 
-  copy_2Darray(source._transposed, source._format, source._memory.get(),
+  copy_2Darray(source._transposed, source._format, source._begin(),
                source._leading_dimension, source._location, source._device_id, 
                source._rows, source._cols, destination._format, 
-               destination._memory.get(), destination._leading_dimension, 
+               destination._begin(), destination._leading_dimension, 
                destination._location, destination._device_id);
 
 }
@@ -91,10 +91,10 @@ void copy(const Sparse<T>& source, Dense<T>& destination) {
       copy(source, complete_matrix, destination);
 
     } else if (source._format == Format::CSC) {
-    
+
       SubBlock complete_matrix(first_index, last_index, 0, source._size);
       copy(source, complete_matrix, destination);
-    
+
     }
 #ifndef LINALG_NO_CHECKS
     else {
@@ -103,7 +103,7 @@ void copy(const Sparse<T>& source, Dense<T>& destination) {
 #endif
 
     return;
-  
+
   }
 
 
@@ -132,7 +132,7 @@ void copy(const Sparse<T>& source, Dense<T>& destination) {
   if (source._location == Location::GPU      || 
       destination._location == Location::GPU   ) {
 
-    Utilities::check_gpu_handles("copy(A, B)");
+    Utilities::check_gpu_structures("copy(A, B)");
 
   }
 # endif
@@ -140,7 +140,7 @@ void copy(const Sparse<T>& source, Dense<T>& destination) {
 
   if (source._location == Location::host && 
       destination._location == Location::host) {
-  
+
     assert(false);
     // This can't happen (we checked for that case above), this if-clause is 
     // just to allow a trailing else below
@@ -149,38 +149,57 @@ void copy(const Sparse<T>& source, Dense<T>& destination) {
 #ifdef HAVE_CUDA
   else if (source._location == Location::GPU &&
            destination._location == Location::GPU) {
-  
-    if (( source._transposed && source._format == Format::CSR) ||
-        (!source._transposed && source._format == Format::CSC)   ) {
+
+    if (source._transposed && source._format == Format::CSR) {
+
+      // TODO: The original idea doesn't work for some reason (xcsc2dense 
+      // results in a CUDA crash when used on a CSR matrix)
+      throw excUnimplemented("copy(A, B): can't convert transposed matrices "
+                             "yet (see sources for an explanation)");
+
+      using LinAlg::BLAS::cuSPARSE::xcsc2dense;
+
+      Sparse<T> non_transposed_tmp;
+      non_transposed_tmp.clone_from(source);
+      non_transposed_tmp.transpose();
+
+      xcsc2dense(non_transposed_tmp, destination);
+
+    } else if (!source._transposed && source._format == Format::CSC) {
 
       using LinAlg::BLAS::cuSPARSE::xcsc2dense;
       xcsc2dense(source, destination);
 
     } else {
 
+      // Old (using cuSPARSE)
       using LinAlg::BLAS::cuSPARSE::xcsr2dense;
       xcsr2dense(source, destination);
 
+      // New (using custom CUDA code)
+      //using LinAlg::Utilities::csr2dense_gpu;
+      //csr2dense_gpu(source, destination);
+
     }
-  
+
   }
   else if ((source._location == Location::host    &&
             destination._location == Location::GPU  ) ||
            (source._location == Location::GPU      &&
             destination._location == Location::host  )  ) {
-  
+
     // Create a sparse temporary on the destination, then convert to dense
     Sparse<T> tmp;
     tmp.reallocate_like(source, destination._location, destination._device_id);
 
     copy(source, tmp);        // changing the location: copy(sparse,sparse)
     copy(tmp, destination);   // changing the format: this function
-  
+
   }
 #endif /* HAVE_CUDA */
 #ifndef LINALG_NO_CHECKS
   else {
-  
+
     throw excUnimplemented("copy(A, B): not supported on selected location");
 
   }
@@ -221,15 +240,18 @@ inline void copy(const Sparse<T>& source, Sparse<T>& destination) {
                  destination._location, destination._device_id);
 
     // Update the target matrix
-    destination.first_index(source._first_index);
-    destination._properties = source._properties;
+    destination.first_index(source._first_index, false);
+#ifdef HAVE_MPI
+    destination._row_offset    = source._row_offset;
+#endif
+    destination._properties    = source._properties;
     destination._minimal_index = source._minimal_index;
     destination._maximal_index = source._maximal_index;
 
   }
 #ifndef LINALG_NO_CHECKS
   else {
-  
+
     throw excUnimplemented("copy(A, B): format conversion not supported");
 
   }
@@ -275,8 +297,8 @@ inline void copy(const Sparse<T>& source, SubBlock source_sub_block,
 
   if (source_sub_block.is_empty()) return;
 
-  auto rows = source_sub_block.last_row - source_sub_block.first_row;
-  auto cols = source_sub_block.last_col - source_sub_block.first_col;
+  auto rows = source_sub_block.rows();
+  auto cols = source_sub_block.cols();
 
 #ifndef LINALG_NO_CHECKS
 
@@ -290,7 +312,7 @@ inline void copy(const Sparse<T>& source, SubBlock source_sub_block,
 
   } else if (destination._location == Location::GPU) {
 
-    Utilities::check_gpu_handles("copy(A, sub_block, B)");
+    Utilities::check_gpu_structures("copy(A, sub_block, B)");
 
   }
 # endif
@@ -323,7 +345,7 @@ inline void copy(const Sparse<T>& source, SubBlock source_sub_block,
 
   if (source._location == Location::host && 
       destination._location == Location::host) {
-  
+
     Fills::zero(destination);
     Utilities::sparse2dense_host(source, source_sub_block, destination);
 
@@ -332,11 +354,11 @@ inline void copy(const Sparse<T>& source, SubBlock source_sub_block,
 #ifdef HAVE_CUDA
   else if (source._location == Location::host &&
            destination._location == Location::GPU) {
-  
+
     Sparse<T> tmp;
     copy(source, source_sub_block, tmp);    // copy(sparse, sub_block, sparse)
     copy(tmp, destination);                 // copy(sparse, dense)
-  
+
   }
 #endif
 
@@ -377,25 +399,24 @@ inline void copy(const Sparse<T>& source, SubBlock source_sub_block,
 #endif
 
   if (destination.is_empty()) {
-  
+
     using Utilities::count_nonzeros;
-  
+
     auto source_sub_size = source_sub_block.last_row - 
                            source_sub_block.first_row;
     auto n_nonzeros      = count_nonzeros(source, source_sub_block);
 
     destination.reallocate(source_sub_size, n_nonzeros, source._location, 
                            source._device_id);
-  
+
   } 
 #ifndef LINALG_NO_CHECKS
   else {
 
     using Utilities::count_nonzeros;
-  
-    auto source_sub_size = source_sub_block.last_row - 
-                           source_sub_block.first_row;
-    auto n_nonzeros      = count_nonzeros(source, source_sub_block);
+
+    auto rows       = source_sub_block.rows();
+    auto n_nonzeros = count_nonzeros(source, source_sub_block);
 
     if (n_nonzeros != destination._n_nonzeros) {
 
@@ -403,15 +424,15 @@ inline void copy(const Sparse<T>& source, SubBlock source_sub_block,
                            "non_zero elements than requested submatrix of "
                            "source A");
 
-    } else if (source_sub_size != destination._size) {
-    
+    } else if (rows != destination._size) {
+
       throw excBadArgument("copy(A, B): matrix sizes differ (submatrix "
-                           "size = %d, B._size = %d", source_sub_size,
+                           "size = %d, B._size = %d", rows,
                            destination._size);
 
     }
 
-  
+
   }
 #endif
 
@@ -420,6 +441,9 @@ inline void copy(const Sparse<T>& source, SubBlock source_sub_block,
   auto source_indices     = source._indices.get();
   auto source_values      = source._values.get();
 
+  // We use the same first index as in the source
+  destination.first_index(source._first_index, false);
+
   auto first_index        = destination._first_index;
   auto edges              = destination._edges.get();
   auto indices            = destination._indices.get();
@@ -427,7 +451,7 @@ inline void copy(const Sparse<T>& source, SubBlock source_sub_block,
   auto row_offset         = source_sub_block.first_row;
   auto col_offset         = source_sub_block.first_col;
   I_t  empty_rows         = 0;
-  I_t  index              = destination._first_index;
+  I_t  index              = 0;
 
   for (auto source_row = source_sub_block.first_row;
        source_row < source_sub_block.last_row; ++source_row) {
@@ -447,20 +471,21 @@ inline void copy(const Sparse<T>& source, SubBlock source_sub_block,
       } else if (source_col < source_sub_block.last_col) {
 
         values[index]  = source_values[source_index];
-        indices[index] = source_col - col_offset;
+        indices[index] = source_col - col_offset + first_index;
 
+        // Set edges for all empty rows since last non-zero element
         auto row = source_row - row_offset; // C-style indexing
         assert(empty_rows < row + 1);
         for (I_t previous_row = row - empty_rows; previous_row < row; 
              ++previous_row) {
-        
-          edges[previous_row] = index; // includes first_index
-        
+
+          edges[previous_row] = index + first_index;
+
         }
 
         if (current_row_empty) {
-          
-          edges[row] = index;
+
+          edges[row] = index + first_index;
           current_row_empty = false;
 
         }
@@ -479,11 +504,15 @@ inline void copy(const Sparse<T>& source, SubBlock source_sub_block,
 
   }
 
-#ifdef HAVE_MPI
-  destination._row_offset = source._row_offset + row_offset;
-#endif 
+  // Set the 'imaginary' next row to begin at index + 1
+  edges[source_sub_block.last_row - row_offset] = index + 1;
 
   // Update the target matrix
+
+#ifdef HAVE_MPI
+  destination._row_offset = source._row_offset + row_offset;
+#endif
+  destination._properties  = source._properties;
 
   if (destination._format == Format::CSR) {
 
@@ -496,12 +525,10 @@ inline void copy(const Sparse<T>& source, SubBlock source_sub_block,
     destination._maximal_index = source_sub_block.last_row;
 
   } else {
-  
-    assert(false);
-  
-  }
 
-  destination._properties = source._properties;
+    assert(false);
+
+  }
 
 }
 
@@ -516,6 +543,373 @@ inline void copy(const Sparse<T>& source, SubBlock source_sub_block,
  *  \returns          Ticket number in stream (or 0 if the stream doesn't
  *                    allow syncing with tickets)
  */
+template <typename T>
+inline I_t copy_async(const Dense<T>& source, Dense<T>& destination,
+                      Stream& stream) {
+
+  PROFILING_FUNCTION_HEADER
+
+  if (source.is_empty()) return 0;
+
+  if (destination.is_empty()) destination.reallocate_like(source); 
+
+  using Utilities::copy_2Darray;
+
+  return copy_2Darray_async(source._transposed, source._format, 
+                            source._begin(), source._leading_dimension, 
+                            source._location, source._device_id, source._rows, 
+                            source._cols, destination._format, 
+                            destination._begin(), 
+                            destination._leading_dimension, 
+                            destination._location, destination._device_id, 
+                            stream);
+
+}
+/** \overload
+ */
+template <typename T>
+inline I_t copy_async(const Dense<T>& source, Sparse<T>& destination,
+                      Stream& stream) {
+
+  throw excUnimplemented("copy_async(A, B, stream): dense to sparse copy "
+                         "currently unimplemented");
+
+  if (source.is_empty()) return 0;
+
+}
+/** \overload
+ */
+template <typename T>
+I_t copy_async(const Sparse<T>& source, Dense<T>& destination,
+               Stream& stream) {
+
+  // This routine mostly handles the GPU case and delegates to the CPU 
+  // sub_blocked version for the CPU case
+
+  PROFILING_FUNCTION_HEADER
+
+  if (source.is_empty()) return 0;
+
+  if (destination.is_empty()) destination.reallocate_like(source);
+
+  I_t ticket = 0;
+
+  // On the CPU, the sub_block variant is more general so we perform all 
+  // checking there
+  if (source._location == Location::host && 
+      destination._location == Location::host) {
+
+    using std::tie;
+
+    I_t first_index, last_index;
+    tie(first_index, last_index) = source.find_extent(0, source._size);
+
+    if (source._format == Format::CSR) {
+
+      SubBlock complete_matrix(0, source._size, first_index, last_index);
+
+      if (stream.synchronous) {
+
+        copy(source, complete_matrix, destination);
+
+      } else {
+
+        // Create a task using the synchronous variant
+
+#ifndef LINALG_NO_CHECKS
+        Utilities::check_stream_alive(stream, "copy_async()");
+#endif
+
+        // Arguments passed by copy, ensures memory lifetime but callee can't 
+        // modify the arguments anymore
+        auto task = [=]() mutable { copy(source, destination); };
+
+        ticket = stream.add(task);
+
+      }
+
+    } else if (source._format == Format::CSC) {
+
+      SubBlock complete_matrix(first_index, last_index, 0, source._size);
+
+      if (stream.synchronous) {
+
+        copy(source, complete_matrix, destination);
+
+      } else {
+
+        // See above in the CSR case for why this is
+#ifndef LINALG_NO_CHECKS
+        throw excUnimplemented("copy_async(): asynchronous operation on host "
+                               "not implemented");
+#endif
+
+      }
+
+    }
+#ifndef LINALG_NO_CHECKS
+    else {
+
+      throw excUnimplemented("copy_async(A, B, stream), A: unsupported sparse "
+                             "format");
+
+    }
+#endif
+
+    return ticket;
+
+  }
+
+
+#ifndef LINALG_NO_CHECKS
+  Utilities::check_output_transposed(destination, "copy_async(A, B, stream), "
+                                     "B");
+  if (source._format != Format::CSR && source._format != Format::CSC) {
+    throw excUnimplemented("copy_async(A, B, stream), A: format must be either "
+                           "CSR or CSC");
+  }
+  Utilities::check_format(Format::ColMajor, destination, "copy_async(A, B, "
+                          "stream), B");
+#endif
+
+#ifdef LINALG_NO_CHECKS
+  if (source.rows() != destination.rows()) {
+    throw excBadArgument("copy_async(A, B): number of rows don't match "
+                         "(A.rows = %d, B.rows = %d)", source.rows(), 
+                         destination.rows());
+  }
+  if (source.cols() != destination.cols()) {
+    throw excBadArgument("copy_async(A, B): number of columns don't match "
+                         "(A.cols = %d, B.cols = %d)", source.cols(), 
+                         destination.cols());
+  }
+# ifdef HAVE_CUDA
+  if (source._location == Location::GPU      || 
+      destination._location == Location::GPU   ) {
+
+    Utilities::check_gpu_structures("copy_async(A, B)");
+
+  }
+# endif
+#endif
+
+  if (source._location == Location::host && 
+      destination._location == Location::host) {
+
+    assert(false);
+    // This can't happen (we checked for that case above), this if-clause is 
+    // just to allow a trailing else below
+
+  }
+#ifdef HAVE_CUDA
+  else if (source._location == Location::GPU &&
+           destination._location == Location::GPU) {
+
+    if (source._transposed && source._format == Format::CSR) {
+
+      // TODO: The original idea doesn't work for some reason (xcsc2dense 
+      // results in a CUDA crash when used on a CSR matrix)
+
+      // The temporary below seems not to be the problem...
+      throw excUnimplemented("copy_async(A, B): can't convert transposed "
+                             "matrices yet (see sources for an explanation)");
+
+      using LinAlg::BLAS::cuSPARSE::xcsc2dense_async;
+
+      // This temporary should work since by the time the function returns and 
+      // the temporary is destroyed, all arguments to the cusparse call have 
+      // been made by value (the pointer to the memory should remain valid 
+      // after the temporary is deleted)
+      Sparse<T> non_transposed_tmp;
+      non_transposed_tmp.clone_from(source);
+      non_transposed_tmp.transpose();
+
+      ticket = xcsc2dense_async(non_transposed_tmp, destination, stream);
+
+    } else if (!source._transposed && source._format == Format::CSC) {
+
+      using LinAlg::BLAS::cuSPARSE::xcsc2dense_async;
+      ticket = xcsc2dense_async(source, destination, stream);
+
+    } else {
+
+      // Old (using cuSPARSE)
+      using LinAlg::BLAS::cuSPARSE::xcsr2dense_async;
+      ticket = xcsr2dense_async(source, destination, stream);
+
+      // New (using custom CUDA code)
+      //using LinAlg::Utilities::csr2dense_gpu_async;
+      //ticket = csr2dense_gpu_async(source, destination, stream);
+
+
+    }
+
+  }
+  else if (source._location == Location::host    &&
+           destination._location == Location::GPU  ) {
+
+    // This should work because both operations are pure cuda operations
+
+    // Create a sparse temporary on the GPU, then convert to dense from there
+    Sparse<T> tmp;
+    tmp.reallocate_like(source, destination._location, destination._device_id);
+
+    // changing the location: copy(sparse-on-host,sparse-on-gpu)
+    ticket = copy_async(source, tmp, stream);
+
+    // changing the format: recursive call of this function
+    ticket = copy_async(tmp, destination, stream);
+
+  }
+  else if (source._location == Location::GPU      &&
+           destination._location == Location::host  ) {
+
+    throw excUnimplemented("copy_async(A,B): asynchronous copy of a matrix "
+                           "on the GPU to a dense matrix on host not yet "
+                           "implemented");
+
+    // This doesn't work because the conversion needs to be performed on the 
+    // host so we need a thread and a lambda function for that. Make sure 
+    // though that the payload doesn't create a ticket on it's own stream!
+
+  }
+#endif /* HAVE_CUDA */
+#ifndef LINALG_NO_CHECKS
+  else {
+
+    throw excUnimplemented("copy_async(A, B): not supported on selected " 
+                           "location");
+
+  }
+#endif
+
+  return ticket;
+
+}
+/** \overload
+ */
+template <typename T>
+inline I_t copy_async(const Sparse<T>& source, Sparse<T>& destination,
+                      Stream& stream) {
+
+  PROFILING_FUNCTION_HEADER
+
+  if (source.is_empty()) return 0;
+
+  if (destination.is_empty()) destination.reallocate_like(source);
+
+#ifndef LINALG_NO_CHECKS
+  Utilities::check_same_dimensions(source, destination, "copy_async(A, B)");
+#endif
+
+  I_t ticket = 0;
+
+  // Copy the data
+  if (source._format == destination._format) {
+
+    using Utilities::copy_1Darray_async;
+
+    ticket = copy_1Darray_async(source._values.get(), source._n_nonzeros, 
+                                destination._values.get(), source._location, 
+                                source._device_id, destination._location, 
+                                destination._device_id, stream);
+    ticket = copy_1Darray_async(source._indices.get(), source._n_nonzeros, 
+                                destination._indices.get(), source._location, 
+                                source._device_id, destination._location, 
+                                destination._device_id, stream);
+    ticket = copy_1Darray_async(source._edges.get(), source._size + 1, 
+                                destination._edges.get(), source._location, 
+                                source._device_id, destination._location, 
+                                destination._device_id, stream);
+
+    // Update the target matrix
+    destination.first_index(source._first_index, false);
+    destination._properties    = source._properties;
+    destination._minimal_index = source._minimal_index;
+    destination._maximal_index = source._maximal_index;
+
+  }
+#ifndef LINALG_NO_CHECKS
+  else {
+
+    throw excUnimplemented("copy(A, B): format conversion not supported");
+
+  }
+#endif
+
+  return ticket;
+
+}
+
+/** \brief            General asynchronous sub matrix copy
+ *
+ *  \param[in]        source
+ *                    The matrix from which to copy the data.
+ *
+ *  \param[in]        source_sub_block
+ *                    Source submatrix specification (C-style indexing).
+ *
+ *  \param[in,out]    destination
+ *                    The matrix to which to copy the data.
+ *
+ *  \param[in]        stream
+ *
+ *  \returns          Ticket number in stream (or 0 if the stream doesn't
+ *                    allow syncing with tickets)
+ */
+template <typename T>
+inline I_t copy_async(const Dense<T>& source, SubBlock source_sub_block,
+                      Dense<T>& destination, Stream& stream) {
+
+  if (source_sub_block.is_empty()) return 0;
+
+  return copy_async(source(source_sub_block), destination, stream);
+
+}
+/** \overload
+ */
+template <typename T>
+inline I_t copy_async(const Dense<T>& source, SubBlock source_sub_block,
+                      Sparse<T>& destination, Stream& stream) {
+
+  throw excUnimplemented("copy_async(A, sub_block, B): subDense -> Sparse "
+                         "currently not implemented");
+
+  return 0;
+
+}
+/** \overload
+ */
+template <typename T>
+inline I_t copy_async(const Sparse<T>& source, SubBlock source_sub_block,
+                      Dense<T>& destination, Stream& stream) {
+
+  // This isn't yet implemented, it generally requires a separate thread as 
+  // all variants of the function involve calling multiple functions and/or 
+  // temporaries
+
+  throw excUnimplemented("copy_async(A, sub_block, B): subSparse -> Dense "
+                         "currently not implemented");
+
+  return 0;
+
+}
+/** \overload
+ */
+template <typename T>
+inline I_t copy_async(const Sparse<T>& source, SubBlock source_sub_block,
+                      Sparse<T>& destination) {
+
+  // This isn't yet implemented, it generally requires a separate thread as 
+  // all variants of the function involve calling multiple functions and/or 
+  // temporaries
+
+  throw excUnimplemented("copy_async(A, sub_block, B): subSparse -> Sparse "
+                         "currently not implemented");
+
+  return 0;
+
+}
 
 } /* namespace LinAlg */
 

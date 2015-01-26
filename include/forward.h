@@ -22,6 +22,9 @@ struct Dense;
 template <typename T>
 struct Sparse;
 
+// streams.h
+struct Stream;
+
 // copy.h
 template <typename T>
 inline void copy(const Dense<T>&, Dense<T>&);
@@ -46,6 +49,31 @@ inline void copy(const Sparse<T>&, SubBlock, Dense<T>&);
 
 template <typename T>
 inline void copy(const Sparse<T>&, SubBlock, Sparse<T>&);
+
+// Asynchronous variants
+template <typename T>
+inline I_t copy_async(const Dense<T>&, Dense<T>&, Stream& stream);
+
+template <typename T>
+inline I_t copy_async(const Dense<T>&, Sparse<T>&, Stream& stream);
+
+template <typename T>
+inline I_t copy_async(const Sparse<T>&, Dense<T>&, Stream& stream);
+
+template <typename T>
+inline I_t copy_async(const Sparse<T>&, Sparse<T>&, Stream& stream);
+
+template <typename T>
+inline I_t copy_async(const Dense<T>&, SubBlock, Dense<T>&, Stream& stream);
+
+template <typename T>
+inline I_t copy_async(const Dense<T>&, SubBlock, Sparse<T>&, Stream& stream);
+
+template <typename T>
+inline I_t copy_async(const Sparse<T>&, SubBlock, Dense<T>&, Stream& stream);
+
+template <typename T>
+inline I_t copy_async(const Sparse<T>&, SubBlock, Sparse<T>&, Stream& stream);
 
 } /* namespace LinAlg */
 
