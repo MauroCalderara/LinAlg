@@ -23,6 +23,13 @@
 
 #include "../preprocessor.h"
 
+#ifdef HAVE_CUDA
+# include <cuda_runtime.h>
+# include <cublas_v2.h>
+# include "../CUDA/cuda_checks.h"
+# include "../CUDA/cuda_cublas.h"
+#endif
+
 #include "../types.h"
 #include "../profiling.h"
 
@@ -56,7 +63,7 @@ namespace BLAS {
 namespace FORTRAN {
 
 
-/** \brief            General matrix-matrix multiply
+/** \brief            Vector copy
  *
  *  y <- x
  *
@@ -72,7 +79,8 @@ namespace FORTRAN {
  *
  *  See [DCOPY](http://www.mathkeisan.com/usersguide/man/dcopy.html)
  */
-inline void xCOPY(int n, S_t* x, int incx, S_t* y, int incy) {
+inline void xCOPY(const int n, const S_t* x, const int incx, S_t* y,
+                  const int incy) {
 
   PROFILING_FUNCTION_HEADER
 
@@ -81,7 +89,8 @@ inline void xCOPY(int n, S_t* x, int incx, S_t* y, int incy) {
 }
 /** \overload
  */
-inline void xCOPY(int n, D_t* x, int incx, D_t* y, int incy) {
+inline void xCOPY(const int n, const D_t* x, const int incx, D_t* y,
+                  const int incy) {
 
   PROFILING_FUNCTION_HEADER
 
@@ -90,7 +99,8 @@ inline void xCOPY(int n, D_t* x, int incx, D_t* y, int incy) {
 }
 /** \overload
  */
-inline void xCOPY(int n, C_t* x, int incx, C_t* y, int incy) {
+inline void xCOPY(const int n, const C_t* x, const int incx, C_t* y,
+                  const int incy) {
 
   PROFILING_FUNCTION_HEADER
 
@@ -99,7 +109,8 @@ inline void xCOPY(int n, C_t* x, int incx, C_t* y, int incy) {
 }
 /** \overload
  */
-inline void xCOPY(int n, Z_t* x, int incx, Z_t* y, int incy) {
+inline void xCOPY(const int n, const Z_t* x, const int incx, Z_t* y,
+                  const int incy) {
 
   PROFILING_FUNCTION_HEADER
 
@@ -108,6 +119,69 @@ inline void xCOPY(int n, Z_t* x, int incx, Z_t* y, int incy) {
 }
 
 } /* namespace LinAlg::BLAS::FORTRAN */
+
+#ifdef HAVE_CUDA
+namespace cuBLAS {
+
+/** \brief            Vector copy
+ *
+ *  y <- x
+ *
+ *  \param[in]        handle
+ *
+ *  \param[in]        n
+ *
+ *  \param[in]        x
+ *
+ *  \param[in]        incx
+ *
+ *  \param[in]        y
+ *
+ *  \param[in]        incy
+ *
+ *  See [cuBLAS Documentation](http://docs.nvidia.com/cuda/cublas/)
+ */
+inline void xCOPY(cublasHandle_t handle, const int n, const S_t* x,
+                  const int incx, S_t* y, const int incy) {
+
+  PROFILING_FUNCTION_HEADER
+
+  checkCUBLAS(cublasScopy(handle, n, x, incx, y, incy));
+
+}
+/** \overload
+ */
+inline void xCOPY(cublasHandle_t handle, const int n, const D_t* x,
+                  const int incx, D_t* y, const int incy) {
+
+  PROFILING_FUNCTION_HEADER
+
+  checkCUBLAS(cublasDcopy(handle, n, x, incx, y, incy));
+
+}
+/** \overload
+ */
+inline void xCOPY(cublasHandle_t handle, const int n, const C_t* x,
+                  const int incx, C_t* y, const int incy) {
+
+  PROFILING_FUNCTION_HEADER
+
+  checkCUBLAS(cublasCcopy(handle, n, x, incx, y, incy));
+
+}
+/** \overload
+ */
+inline void xCOPY(cublasHandle_t handle, const int n, const Z_t* x,
+                  const int incx, Z_t* y, const int incy) {
+
+  PROFILING_FUNCTION_HEADER
+
+  checkCUBLAS(cublasZcopy(handle, n, x, incx, y, incy));
+
+}
+
+} /* namespace LinAlg::BLAS::cuBLAS */
+#endif
 
 } /* namespace LinAlg::BLAS */
 
