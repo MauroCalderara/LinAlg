@@ -166,16 +166,54 @@ namespace LinAlg {
 // == and != 
 #ifdef MAGMA_TYPES_H
   inline bool operator==(C_t a, C_t b) {
-    return ((real(a) == real(b)) && (real(a) == real(b)));
+    return ((real(a) == real(b)) && (imag(a) == imag(b)));
   }
   inline bool operator==(Z_t a, Z_t b) {
-    return ((real(a) == real(b)) && (real(a) == real(b)));
+    return ((real(a) == real(b)) && (imag(a) == imag(b)));
   }
   inline bool operator!=(C_t a, C_t b) {
-    return ((real(a) != real(b)) || (real(a) != real(b)));
+    return ((real(a) != real(b)) || (imag(a) != imag(b)));
   }
   inline bool operator!=(Z_t a, Z_t b) {
-    return ((real(a) != real(b)) || (real(a) != real(b)));
+    return ((real(a) != real(b)) || (imag(a) != imag(b)));
+  }
+#endif
+
+
+/////////////
+// +, -, *, /
+#ifdef MAGMA_TYPES_H
+  inline C_t operator+(C_t a, C_t b) {
+    return (LINALG_MAKE_Ct(real(a) + real(b), imag(a) + imag(b)));
+  }
+  inline Z_t operator+(Z_t a, Z_t b) {
+    return (LINALG_MAKE_Zt(real(a) + real(b), imag(a) + imag(b)));
+  }
+  inline C_t operator-(C_t a, C_t b) {
+    return (LINALG_MAKE_Ct(real(a) - real(b), imag(a) - imag(b)));
+  }
+  inline Z_t operator-(Z_t a, Z_t b) {
+    return (LINALG_MAKE_Zt(real(a) - real(b), imag(a) - imag(b)));
+  }
+  inline C_t operator*(C_t a, C_t b) {
+    return (LINALG_MAKE_Ct(real(a) * real(b) - imag(a) * imag(b),
+                           real(a) * imag(b) + imag(a) * real(b)));
+  }
+  inline Z_t operator*(Z_t a, Z_t b) {
+    return (LINALG_MAKE_Zt(real(a) * real(b) - imag(a) * imag(b),
+                           real(a) * imag(b) + imag(a) * real(b)));
+  }
+  inline C_t operator/(C_t a, C_t b) {
+    auto divisor  =  real(b) * real(b) + imag(b) * imag(b);
+    auto realpart = (real(a) * real(b) + imag(a) * imag(b)) / divisor;
+    auto imagpart = (imag(a) * real(b) - real(a) * imag(b)) / divisor;
+    return (LINALG_MAKE_Ct(realpart, imagpart));
+  }
+  inline Z_t operator/(Z_t a, Z_t b) {
+    auto divisor  =  real(b) * real(b) + imag(b) * imag(b);
+    auto realpart = (real(a) * real(b) + imag(a) * imag(b)) / divisor;
+    auto imagpart = (imag(a) * real(b) - real(a) * imag(b)) / divisor;
+    return (LINALG_MAKE_Zt(realpart, imagpart));
   }
 #endif
 
