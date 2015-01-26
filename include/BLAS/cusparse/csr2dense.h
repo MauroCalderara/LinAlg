@@ -33,7 +33,9 @@
 #include "../../profiling.h"
 #include "../../exceptions.h"
 #include "../../utilities/checks.h"
+#include "../../dense.h"
 #include "../../sparse.h"
+#include "../../CUDA/cuda_cusparse.h"
 
 namespace LinAlg {
 
@@ -116,6 +118,18 @@ inline void xcsr2dense(cusparseHandle_t handle, int m, int n,
 }
 
 // Convenience bindings (bindings for Sparse<T>)
+using LinAlg::Utilities::check_gpu_structures;
+using LinAlg::Utilities::check_format;
+using LinAlg::Utilities::check_input_transposed;
+using LinAlg::Utilities::check_output_transposed;
+using LinAlg::Utilities::check_dimensions;
+using LinAlg::Utilities::check_device;
+using LinAlg::Utilities::check_gpu_structures;
+using LinAlg::Utilities::check_stream_prefer_native;
+using LinAlg::Utilities::check_stream_device_id;
+using LinAlg::CUDA::cuSPARSE::prepare_cusparse;
+using LinAlg::CUDA::cuSPARSE::finish_cusparse;
+
 /** \brief            Converts a CSR matrix to a dense matrix in ColMajor format
  *
  *  \param[in]        A
@@ -128,17 +142,10 @@ inline void xcsr2dense(const Sparse<T>& A, Dense<T>& B) {
   PROFILING_FUNCTION_HEADER
 
 #ifndef LINALG_NO_CHECKS
-  using LinAlg::Utilities::check_gpu_handles;
-  using LinAlg::Utilities::check_format;
-  using LinAlg::Utilities::check_input_transposed;
-  using LinAlg::Utilities::check_output_transposed;
-  using LinAlg::Utilities::check_dimensions;
-  using LinAlg::Utilities::check_device;
-  using LinAlg::CUDA::cuSPARSE::handles;
 
-  check_gpu_handles("xcsr2dense()");
+  check_gpu_structures("xcsr2dense()");
   if (A._format != Format::CSR && A._format != Format::CSC) {
-    throw excBadArgument("xcsc2dense(A, B), A: format must be either CSR or " 
+    throw excBadArgument("xcsr2dense(A, B), A: format must be either CSR or " 
                          "CSC");
   }
   check_input_transposed(A, "xcsr2dense(A, B), A");
@@ -161,11 +168,88 @@ inline void xcsr2dense(const Sparse<T>& A, Dense<T>& B) {
   auto csrValA    = A._values.get();
   auto csrRowPtrA = A._edges.get();
   auto csrColIndA = A._indices.get();
-  auto A_ptr      = B._memory.get();
+  auto A_ptr      = B._begin();
   auto lda        = B._leading_dimension;
 
-  xcsr2dense(handles[device_id], m, n, A._cusparse_descriptor, csrValA, 
-             csrRowPtrA, csrColIndA, A_ptr, lda);
+  int          prev_device = 0;
+  cudaStream_t prev_cuda_stream;
+  Stream*      stream_;
+
+# ifndef USE_LOCAL_STREAMS
+  stream_     = &(LinAlg::CUDA::on_stream[device_id]);
+# else
+  Stream      my_stream(device_id);
+  stream_     = &my_stream;
+# endif
+
+  auto handle = prepare_cusparse(*stream_, &prev_device, &prev_cuda_stream);
+  xcsr2dense(*handle, m, n, A._cusparse_descriptor, csrValA, csrRowPtrA, 
+             csrColIndA, A_ptr, lda);
+  finish_cusparse(*stream_, &prev_device, &prev_cuda_stream, handle);
+
+  stream_->sync_cuda();
+
+}
+
+/** \brief            Asynchronously converts a CSR matrix to a dense matrix 
+ *                    in ColMajor format
+ *
+ *  \param[in]        A
+ *
+ *  \param[in,out]    B
+ *
+ *  \param[in,out]    stream
+ *
+ *  \returns          The ticket number for the operation on the stream
+ */
+template <typename T>
+inline I_t xcsr2dense_async(const Sparse<T>& A, Dense<T>& B, Stream& stream) {
+
+  PROFILING_FUNCTION_HEADER
+
+#ifndef LINALG_NO_CHECKS
+  check_gpu_structures("xcsr2dense_async()");
+  if (A._format != Format::CSR && A._format != Format::CSC) {
+    throw excBadArgument("xcsr2dense_async(A, B), A: format must be either "
+                         "CSR or CSR");
+  }
+  check_input_transposed(A, "xcsr2dense_async(A, B), A");
+  check_format(Format::ColMajor, B, "xcsr2dense_async(A, B), B");
+  check_output_transposed(B, "xcsr2dense_async(A, B), B");
+  check_dimensions(B.rows(), B.cols(), A, "xcsr2dense_async(A, B), A)");
+  if (A._location != Location::GPU) {
+    throw excBadArgument("xcsr2dense_async(A, A), A: matrix must reside on "  
+                         "GPU");
+  }
+  if (B._location != Location::GPU) {
+    throw excBadArgument("xcsr2dense_async(A, B), B: matrix must reside on " 
+                         "GPU");
+  }
+  check_device(A, B, "xcsr2dense_async(A, B)");
+  check_gpu_structures("xcsr2dense_async()");
+  check_stream_prefer_native(stream, "xcsr2dense_async()");
+  check_stream_device_id(stream, A._device_id, "xcsr2dense_async()");
+#endif
+
+  auto device_id  = A._device_id;
+  auto m          = B.rows();
+  auto n          = B.cols();
+  //auto descr    = A._cusparse_descriptor;
+  auto csrValA    = A._values.get();
+  auto csrRowPtrA = A._edges.get();
+  auto csrColIndA = A._indices.get();
+  auto A_ptr      = B._begin();
+  auto lda        = B._leading_dimension;
+
+  int               prev_device = 0;
+  cudaStream_t      prev_cuda_stream;
+
+  auto handle = prepare_cusparse(stream, &prev_device, &prev_cuda_stream);
+  xcsr2dense(*handle, m, n, A._cusparse_descriptor, csrValA, csrRowPtrA, 
+             csrColIndA, A_ptr, lda);
+  finish_cusparse(stream, &prev_device, &prev_cuda_stream, handle);
+
+  return 0;
 
 }
 #endif /* HAVE_CUDA */
