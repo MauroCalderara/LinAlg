@@ -11,8 +11,13 @@ endif
 
 # Compiler
 CXX = $(CXX_PRE) $(CXX_PRE_ARGS) CC
-CXX_FLAGS = -fPIC -pthread -lpthread -std=c++11 -g -O2 $(GCC_EXTRA_FLAGS)
+#CXX_FLAGS = -fPIC -pthread -lpthread -std=c++11 -g -O2 $(GCC_EXTRA_FLAGS)
+CXX_FLAGS = -fPIC -pthread -lpthread -std=c++11 -g $(GCC_EXTRA_FLAGS)
 CXX_LINKER_FLAGS = -pthread -lstdc++
+
+# CUDA compiler
+NVCC = nvcc
+NVCC_FLAGS = -gencode arch=compute_35,code=compute_35 -arch=sm_35
 
 # Flags to change behavior of the LinAlg library
 #LINALG_FLAGS = -DUSE_POSIX_THREADS -DUSE_GLOBAL_TRANSFER_STREAMS
