@@ -197,7 +197,7 @@ inline void xLASWP(const I_t n, Z_t* Atrans, const I_t lda, const I_t k1,
 using LinAlg::Utilities::check_input_transposed;
 #ifdef HAVE_CUDA
 # ifdef HAVE_MAGMA
-using LinAlg::Utilities::check_gpu_handles;
+using LinAlg::Utilities::check_gpu_structures;
 # endif
 #endif
 
@@ -246,7 +246,7 @@ inline void xLASWP(Dense<T>& A, Dense<int>& ipiv) {
   else if (location == Location::GPU) {
 
 # ifndef LINALG_NO_CHECKS
-    check_gpu_handles("xLASWP()");
+    check_gpu_structures("xLASWP()");
     if (ipiv._location != Location::host) {
     
       throw excBadArgument("xLASWP(A, ipiv), ipiv: pivot vector ipiv must "

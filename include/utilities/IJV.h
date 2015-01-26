@@ -46,7 +46,7 @@ namespace Utilities {
  *                      explicitly).
  */
 template <typename T>
-void write_IJV_data(LinAlg::Dense<T>& matrix, std::string filename) {
+void write_IJV_data(const LinAlg::Dense<T>& matrix, std::string filename) {
 
   PROFILING_FUNCTION_HEADER
 
@@ -75,7 +75,7 @@ void write_IJV_data(LinAlg::Dense<T>& matrix, std::string filename) {
           if (value != cast<T>(0.0)) {
             file_to_write << row + 1 << " " << col + 1 << " ";
             if (matrix_is_complex) {
-              file_to_write << real(value) << imag(value) << "\n";
+              file_to_write << real(value) << " " << imag(value) << "\n";
             } else {
               file_to_write << real(value) << "\n";
             }
@@ -185,7 +185,7 @@ void write_IJV_data(LinAlg::Sparse<T>& matrix, std::string filename) {
  *                      without the header).
  */
 template <typename T>
-inline void write_IJV(LinAlg::Dense<T>& matrix, std::string filename) {
+inline void write_IJV(const LinAlg::Dense<T>& matrix, std::string filename) {
 
   PROFILING_FUNCTION_HEADER
 
@@ -255,9 +255,21 @@ inline void write_IJV(LinAlg::Dense<T>& matrix, std::string filename) {
  *
  */
 template <typename T>
-inline void write_IJV(LinAlg::Sparse<T>& matrix, std::string filename) {
+inline void write_IJV(const LinAlg::Sparse<T>& matrix, std::string filename) {
 
   PROFILING_FUNCTION_HEADER
+
+  if (matrix._location != Location::host) {
+
+    // Create a temporary matrix located in main memory and try again
+    Sparse<T> temporary;
+    temporary.copy_from(matrix);
+    temporary.location(Location::host);
+    write_IJV(temporary, filename);
+
+    return;
+
+  }
 
   std::ofstream file_to_write(filename, std::ios_base::trunc);
 
@@ -306,8 +318,8 @@ inline void write_IJV(LinAlg::Sparse<T>& matrix, std::string filename) {
  *                      Formatargs for the file to write to.
  */
 template <typename T, typename... Us>
-inline void write_IJV(LinAlg::Dense<T>& matrix, const char* formatstring,
-                      Us... formatargs) {
+inline void write_IJV(const LinAlg::Dense<T>& matrix,
+                      const char* formatstring, Us... formatargs) {
   std::string filename_str = stringformat(formatstring, formatargs...);
   write_IJV(matrix, filename_str);
 }
@@ -322,7 +334,7 @@ inline void write_IJV(LinAlg::Dense<T>& matrix, const char* formatstring,
  *                      doesn't exist and overwritten if it exists).
  */
 template <typename T>
-inline void write_IJV(LinAlg::Dense<T>& matrix, const char* filename) {
+inline void write_IJV(const LinAlg::Dense<T>& matrix, const char* filename) {
   std::string filename_str = filename;
   write_IJV(matrix, filename_str);
 }
@@ -341,8 +353,8 @@ inline void write_IJV(LinAlg::Dense<T>& matrix, const char* filename) {
  *                      Formatargs for the file to write to.
  */
 template <typename T, typename... Us>
-inline void write_IJV(LinAlg::Sparse<T>& matrix, const char* formatstring,
-                      Us... formatargs) {
+inline void write_IJV(const LinAlg::Sparse<T>& matrix,
+                      const char* formatstring, Us... formatargs) {
   std::string filename_str = stringformat(formatstring, formatargs...);
   write_IJV(matrix, filename_str);
 }
@@ -357,7 +369,7 @@ inline void write_IJV(LinAlg::Sparse<T>& matrix, const char* formatstring,
  *                      doesn't exist and overwritten if it exists).
  */
 template <typename T>
-inline void write_IJV(LinAlg::Sparse<T>& matrix, const char* filename) {
+inline void write_IJV(const LinAlg::Sparse<T>& matrix, const char* filename) {
   std::string filename_str = filename;
   write_IJV(matrix, filename_str);
 }

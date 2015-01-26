@@ -116,8 +116,8 @@
 #ifdef SIMPLE_PROFILER
 
 // Idea:
-// LinAlg::SimpleProfiling -> has a vector for each function in 'abstract.h'  
-// and possibly BLAS/*, LAPACK/* that adds the timing information
+// LinAlg::SimpleProfiling -> has a vector for each abstract function in 
+// abstract/ and possibly BLAS/*, LAPACK/* that adds the timing information
 //
 // Have an object that takes a name, at construction takes the time and at 
 // destruction records it in the corresponding vector (which is lock guarded?)

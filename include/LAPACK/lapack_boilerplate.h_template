@@ -222,6 +222,9 @@ inline void xXYZ(...) {
 
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_input_transposed;
+#ifdef HAVE_CUDA
+using LinAlg::Utilities::check_gpu_structures;
+#endif
 
 /** \brief            xXYZ
  *
@@ -252,7 +255,7 @@ inline void xXYZ(Dense<T>& X, Dense<int>& Y) {
   else if (X._location == Location::GPU) {
 
 # ifndef LINALG_NO_CHECKS
-  check_cublas_handles("xXYZ()");
+  check_gpu_structures("xXYZ()");
 # endif
 
     using LinAlg::CUDA::cuBLAS::handles;

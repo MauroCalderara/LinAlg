@@ -325,7 +325,7 @@ inline void xTRSM(magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,
 using LinAlg::Utilities::check_dimensions;
 using LinAlg::Utilities::check_device;
 #ifdef HAVE_CUDA
-using LinAlg::Utilities::check_gpu_handles;
+using LinAlg::Utilities::check_gpu_structures;
 #endif
 
 /** \brief            xTRSM
@@ -392,7 +392,7 @@ inline void xTRSM(Side side, UPLO uplo, Diag diag, const T alpha,
   else if (A._location == Location::GPU) {
 
 # ifndef LINALG_NO_CHECKS
-    check_gpu_handles("xTRSM()");
+    check_gpu_structures("xTRSM()");
 # endif
 
 # ifndef USE_MAGMA_TRSM

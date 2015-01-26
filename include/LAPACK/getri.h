@@ -379,7 +379,7 @@ inline I_t get_xgetri_nb<Z_t>(I_t n) { return magma_get_zgetri_nb(n); }
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_input_transposed;
 #ifdef HAVE_CUDA
-using LinAlg::Utilities::check_gpu_handles;
+using LinAlg::Utilities::check_gpu_structures;
 #endif
 
 /** \brief            Compute the inverse using the LU decomposition of a
@@ -524,7 +524,7 @@ inline void xGETRI(Dense<T>& A, Dense<int>& ipiv, Dense<T>& work) {
 
 
 # ifndef LINALG_NO_CHECKS
-    check_gpu_handles("xGESV()");
+    check_gpu_structures("xGESV()");
 # endif
 
 # ifndef USE_MAGMA_GETRI

@@ -22,6 +22,7 @@
 #else // C++11 threading primitives
 # include <thread>
 # include <mutex>
+# include <condition_variable>
 #endif
 
 namespace LinAlg {

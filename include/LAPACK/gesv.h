@@ -220,7 +220,7 @@ using LinAlg::Utilities::check_input_transposed;
 using LinAlg::Utilities::check_dimensions;
 using LinAlg::Utilities::check_minimal_dimensions;
 #ifdef HAVE_CUDA
-using LinAlg::Utilities::check_gpu_handles;
+using LinAlg::Utilities::check_gpu_structures;
 #endif
 
 /** \brief            xGESV
@@ -279,51 +279,10 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
   else if (A._location == Location::GPU) {
 
 # ifndef LINALG_NO_CHECKS
-    check_gpu_handles("xGESV()");
+    check_gpu_structures("xGESV()");
 # endif
 
-# ifndef USE_MAGMA_GESV
-    // When using the cuBLAS variant, we basically do xGESV by hand.
-
-    using LinAlg::CUDA::cuBLAS::handles;
-
-#   ifndef LINALG_NO_CHECKS
-    // Note that the MAGMA GETRF would support non-square matrices
-    if (A._rows != A._cols) {
-      throw excBadArgument("xGETSV(A, ipiv, B), A: matrix must be square (when "
-                           "using cublasXgetrfBatched)");
-    }
-#   endif
-
-    auto handle        = CUDA::cuBLAS::handles[A._device_id];
-    auto ipiv_override = nullptr;
-
-    // LU decompose using xGETRF without pivoting (use ipiv_override == empty
-    // vector to enforce no pivoting. cudaXtrsm doesn't support pivoting, 
-    // there is no xLASWP in cuBLAS, respectively)
-
-    // TODO: this call here doesn't work
-    LAPACK::cuBLAS::xGETRF(handle, n, A_ptr, lda, ipiv_override, info);
-
-#   ifndef LINALG_NO_CHECKS
-    if (info != 0) {
-      throw excMath("xGESV() (using cuBLAS::GETRF + cuBLAS::TRSM): unable to "
-                    "LU decompose A (cuBLAS::xGETRF(): backend error = %d)", 
-                    info);
-    }
-#   endif
-
-    // Directly solve using xTRSM (no xLASWP since we didn't pivot):
-    // 1: y = L\b
-    BLAS::cuBLAS::xTRSM(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
-                        CUBLAS_OP_N, CUBLAS_DIAG_UNIT, n, nrhs, cast<T>(1.0),
-                        A_ptr, lda, B_ptr, ldb);
-    // 2: x = U\y
-    BLAS::cuBLAS::xTRSM(handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_UPPER,
-                        CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, n, nrhs,
-                        cast<T>(1.0), A_ptr, lda, B_ptr, ldb);
-
-# else /* USE_MAGMA_GESV */
+# ifdef USE_MAGMA_GESV
 
 #   ifndef LINALG_NO_CHECKS
     if (ipiv.location() != Location::host) {
@@ -339,6 +298,60 @@ inline void xGESV(Dense<T>& A, Dense<int>& ipiv, Dense<T>& B) {
       throw excMath("xGESV(): backend error = %d)", info);
     }
 #   endif
+
+# else /* not USE_MAGMA_GESV */
+    // When using the cuBLAS variant, we basically do xGESV by hand.
+
+#   ifndef LINALG_NO_CHECKS
+    // Note that the MAGMA GETRF would support non-square matrices
+    if (A._rows != A._cols) {
+      throw excBadArgument("xGETSV(A, ipiv, B), A: matrix must be square (when "
+                           "using cublasXgetrfBatched)");
+    }
+#   endif
+
+    auto ipiv_override = nullptr;
+
+    int          prev_device = 0;
+    cudaStream_t prev_cuda_stream;
+    Stream*      stream_;
+
+#   ifndef USE_LOCAL_STREAMS
+    stream_ = &(LinAlg::CUDA::compute_stream[device_id]);
+#   else
+    Stream my_stream(device_id);
+    stream_ = &my_stream;
+#   endif
+
+    auto handle = prepare_cublas(*stream_, &prev_device, &prev_cuda_stream);
+
+    // LU decompose using xGETRF without pivoting (use ipiv_override == empty
+    // vector to enforce no pivoting. cudaXtrsm doesn't support pivoting, 
+    // there is no xLASWP in cuBLAS, respectively)
+
+    LAPACK::cuBLAS::xGETRF(*handle, n, A_ptr, lda, ipiv_override, info);
+
+#   ifndef LINALG_NO_CHECKS
+    if (info != 0) {
+      throw excMath("xGESV() (using cuBLAS::GETRF + cuBLAS::TRSM): unable to "
+                    "LU decompose A (cuBLAS::xGETRF(): backend error = %d)", 
+                    info);
+    }
+#   endif
+
+    // Directly solve using xTRSM (no xLASWP since we didn't pivot):
+    // 1: y = L\b
+    BLAS::cuBLAS::xTRSM(*handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_LOWER,
+                        CUBLAS_OP_N, CUBLAS_DIAG_UNIT, n, nrhs, cast<T>(1.0),
+                        A_ptr, lda, B_ptr, ldb);
+    // 2: x = U\y
+    BLAS::cuBLAS::xTRSM(*handle, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_UPPER,
+                        CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, n, nrhs,
+                        cast<T>(1.0), A_ptr, lda, B_ptr, ldb);
+
+    finish_cublas(*stream_, &prev_device, &prev_cuda_stream, handle);
+
+    stream_->cuda_sync();
 
 # endif /* not USE_MAGMA_GESV */
 

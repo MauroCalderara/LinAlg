@@ -207,7 +207,7 @@ inline void xSYTRF(magma_uplo_t uplo, I_t n, S_t* A, I_t lda, I_t* ipiv,
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_input_transposed;
 #ifdef HAVE_CUDA
-using LinAlg::Utilities::check_gpu_handles;
+using LinAlg::Utilities::check_gpu_structures;
 #endif
 
 /** \brief            Compute the LDLt decomposition of a symmetric matrix
@@ -282,7 +282,7 @@ inline void xSYTRF(Dense<T>& A, Dense<int>& ipiv) {
   else if (A._location == Location::GPU) {
 
 # ifndef LINALG_NO_CHECKS
-    check_gpu_handles("xSYTRF()");
+    check_gpu_structures("xSYTRF()");
 # endif
 
 # ifndef USE_MAGMA_SYTRF

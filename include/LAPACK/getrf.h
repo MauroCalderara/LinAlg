@@ -404,7 +404,7 @@ inline void xGETRF(I_t m, I_t n, Z_t* A, I_t lda, I_t* ipiv, int* info) {
 using LinAlg::Utilities::check_device;
 using LinAlg::Utilities::check_input_transposed;
 #ifdef HAVE_CUDA
-using LinAlg::Utilities::check_gpu_handles;
+using LinAlg::Utilities::check_gpu_structures;
 #endif
 
 /** \brief            Compute the LU decomposition of a matrix
@@ -479,7 +479,7 @@ inline void xGETRF(Dense<T>& A, Dense<int>& ipiv) {
   else if (A._location == Location::GPU) {
 
 # ifndef LINALG_NO_CHECKS
-    check_gpu_handles("xGETRF()");
+    check_gpu_structures("xGETRF()");
 # endif
 
 # ifndef USE_MAGMA_GETRF

@@ -222,15 +222,11 @@ inline void xLASET(T alpha, T beta, Dense<T>& A) {
 #ifdef HAVE_CUDA
 #ifdef HAVE_MAGMA
   else if (A._location == Location::GPU) {
-    // TODO:
-    // Don't know how to set magma_uplo_t to 'all' so we do both upper and 
-    // lower :-/
     auto m = (A._format == Format::ColMajor) ? A._rows : A._cols;
     auto n = (A._format == Format::ColMajor) ? A._cols : A._rows;
     auto A_ptr = A._begin();
     auto lda = A._leading_dimension;
-    MAGMA::xLASET(MagmaUpper, m, n, alpha, beta, A_ptr, lda);
-    MAGMA::xLASET(MagmaLower, m, n, alpha, beta, A_ptr, lda);
+    MAGMA::xLASET(MagmaUpperLower, m, n, alpha, beta, A_ptr, lda);
   }
 #endif
 #endif
