@@ -11,35 +11,33 @@
  */
 
 #ifdef HAVE_CUDA
-#include <vector>
-#include <cublas_v2.h>
 
-#include "CUDA/cuda.h"
-
-#include "streams.h"
+# ifndef USE_LOCAL_TRANSFER_STREAMS
+#   include <cublas_v2.h>
+#   include "CUDA/cuda.h"
+#   include "streams.h"
+# endif
 
 namespace LinAlg {
-
-#ifdef USE_GLOBAL_TRANSFER_STREAMS
-namespace CUDA {
-
-//std::vector<Stream> in_stream;
-//std::vector<Stream> out_stream;
-//std::vector<Stream> on_stream;
-//std::vector<Stream> compute_stream;
-Stream in_stream;
-Stream out_stream;
-Stream on_stream;
-
-}
-#endif
 
 namespace GPU {
 
 // GPU status
-bool _GPU_structures_initialized = false;
+bool GPU_structures_initialized = false;
+int  n_devices = 0;
 
 } /* namespace LinAlg::GPU */
+
+# ifndef USE_LOCAL_TRANSFER_STREAMS
+namespace CUDA {
+
+Stream* in_stream;
+Stream* out_stream;
+Stream* on_stream;
+Stream* compute_stream;
+
+} /* namespace LinAlg::CUDA */
+# endif
 
 } /* namespace LinAlg */
 

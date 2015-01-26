@@ -11,9 +11,12 @@
  */
 
 #ifdef HAVE_CUDA
-#include <cublas_v2.h>
 
-#include "CUDA/cuda_cublas.h"
+# ifndef USE_LOCAL_CUDA_HANDLES
+
+#   include <cublas_v2.h>
+
+#   include "CUDA/cuda_cublas.h"
 
 namespace LinAlg {
 
@@ -21,13 +24,15 @@ namespace CUDA {
 
 namespace cuBLAS {
 
-// The vector of handles (extern in cuda_cublas.h)
-std::vector<cublasHandle_t> handles;
+// Global array of cuBLAS handles (extern in cuda_cublas.h)
+cublasHandle_t* handles;
 
 } /* namespace LinAlg::CUDA::cuBLAS */
 
 } /* namespace LinAlg::CUDA */
 
 } /* namespace LinAlg */
+
+# endif /* not USE_LOCAL_CUDA_HANDLES */
 
 #endif /* HAVE_CUDA */

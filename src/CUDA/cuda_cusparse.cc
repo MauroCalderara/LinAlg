@@ -11,9 +11,12 @@
  */
 
 #ifdef HAVE_CUDA
-#include <cusparse_v2.h>
 
-#include "CUDA/cuda_cusparse.h"
+# ifndef USE_LOCAL_CUDA_HANDLES
+
+#   include <cusparse_v2.h>
+
+#   include "CUDA/cuda_cusparse.h"
 
 namespace LinAlg {
 
@@ -21,13 +24,15 @@ namespace CUDA {
 
 namespace cuSPARSE {
 
-// The vector of handles (extern in cuda_cusparse.h)
-std::vector<cusparseHandle_t> handles;
+// Global array of cuSPARSE handles (extern in cuda_cusparse.h)
+cusparseHandle_t* handles;
 
 } /* namespace LinAlg::CUDA::cuSPARSE */
 
 } /* namespace LinAlg::CUDA */
 
 } /* namespace LinAlg */
+
+# endif /* not USE_LOCAL_CUDA_HANDLES */
 
 #endif /* HAVE_CUDA */
