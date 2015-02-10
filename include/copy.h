@@ -553,7 +553,7 @@ inline I_t copy_async(const Dense<T>& source, Dense<T>& destination,
 
   if (destination.is_empty()) destination.reallocate_like(source); 
 
-  using Utilities::copy_2Darray;
+  using Utilities::copy_2Darray_async;
 
   return copy_2Darray_async(source._transposed, source._format, 
                             source._begin(), source._leading_dimension, 
