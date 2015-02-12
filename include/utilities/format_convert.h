@@ -432,7 +432,8 @@ inline void sparse2dense_host(const Sparse<T>& source, SubBlock sub_block,
             array_pos = row_out * destination_ld + col_out;
           }
 
-          destination_data[array_pos] += values[index];
+          destination_data[array_pos] = destination_data[array_pos] + 
+                                        values[index];
 
         } else {
 
